@@ -94,7 +94,7 @@ scrna$seurat_clusters <- scrna@meta.data[["RNA_snn_res.0.8"]]
 
 
 
-homotypic.prop <- modelHomotypic(scrna$seurat_clusters)           ## ex: annotations <- seu_kidney@meta.data$ClusteringResults
+homotypic.prop <- modelHomotypic(scrna$seurat_clusters)         
 nExp_poi <- round(0.075*nrow(scrna@meta.data))  ## Assuming 7.5% doublet formation rate - tailor for your dataset
 nExp_poi.adj <- round(nExp_poi*(1-homotypic.prop))
 
