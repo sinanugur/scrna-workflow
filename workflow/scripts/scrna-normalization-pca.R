@@ -4,8 +4,6 @@
 option_list = list(
   optparse::make_option(c("--scale.factor"), type="integer", default=10000, 
               help="Scale factor [default= %default]", metavar="character"),
-              optparse::make_option(c("--resolution"), type="double", default=0.8, 
-              help="Scale factor [default= %default]", metavar="character"),
   optparse::make_option(c("--nfeatures"), type="integer", default=2000, 
               help="Highly variable features [default= %default]", metavar="integer"),
     optparse::make_option(c("--rds"), type="character", default=NULL, 
@@ -30,7 +28,6 @@ require(optparse)
 require(tidyverse)
 require(Seurat)
 require(patchwork)
-require(clustree)
 require(DoubletFinder)
 
 source("workflow/scripts/scrna-functions.R")
@@ -86,7 +83,7 @@ dimensionReduction=function_pca_dimensions(scrna)
 
 
 scrna <- FindNeighbors(scrna, dims = 1:dimensionReduction)
-scrna <- FindClusters(scrna, resolution = seq(0.1,2.5,0.1))
+scrna <- FindClusters(scrna, resolution = c(0.8,2.5))
 
 scrna <- RunUMAP(scrna, dims = 1:dimensionReduction)
 
@@ -108,17 +105,9 @@ scrna <- doubletFinder_v3(scrna, PCs = 1:10, pN = 0.25, pK = 0.09, nExp = nExp_p
 
 
 
-clustree(scrna) -> p1
-
-
-output.dir=paste0("results/",opt$sampleid,"/clusteringTree/")
-dir.create(output.dir,recursive = T)
-
-
-ggsave(paste0("results/",opt$sampleid,"/clusteringTree/clusteringTree-",opt$sampleid,".pdf"),p1,width=8,height=15)
-
-
 output.dir=paste0("analyses/",opt$sampleid,"/processed/")
 dir.create(output.dir,recursive = T)
 
 saveRDS(scrna,file = paste0(output.dir,opt$sampleid,".rds"))
+
+

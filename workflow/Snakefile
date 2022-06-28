@@ -2,15 +2,16 @@ from collections import defaultdict
 from yaml import load
 
 files, = glob_wildcards("data/{sample}/raw_feature_bc_matrix/matrix.mtx.gz")
+#files, = glob_wildcards("data/{sample}/raw_feature_bc_matrix/matrix.mtx.gz")
 
 
 include: "rules/seurat.smk"
 
 resolution=config.get("resolution",["0.8","2.5"])
-min.cells=config.get("min.cells",3)
-min.features=config.get("min.features",200)
-
-
+min_cells=config.get("min_cells",3)
+min_features=config.get("min_features",200)
+percent_mt=config.get("percent_mt",10)
+min_coverage=config.get("min_coverage",1000)
 route=config.get("route","standart")
 
 
@@ -18,5 +19,10 @@ route=config.get("route","standart")
 if route == "standart":
     rule all:
         input:
-            expand("results/{sample}/clusteringTree/clusteringTree-{sample}.pdf",sample=files)
+            expand("results/{sample}/clusteringTree/clusteringTree-{sample}.pdf",sample=files),
+            expand(["results/{sample}/resolution-" + x + "/{sample}.positive-markers-forAllClusters.xlsx" for x in resolution],sample=files),
+            expand("analyses/{sample}/rawrds/{sample}.rds",sample=files),
+            expand("analyses/{sample}/processed/{sample}.rds",sample=files)
 
+else:
+    pass
