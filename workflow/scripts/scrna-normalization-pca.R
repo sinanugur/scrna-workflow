@@ -103,9 +103,15 @@ scrna <- doubletFinder_v3(scrna, PCs = 1:10, pN = 0.25, pK = 0.09, nExp = nExp_p
 scrna <- doubletFinder_v3(scrna, PCs = 1:10, pN = 0.25, pK = 0.09, nExp = nExp_poi.adj, reuse.pANN = paste0("pANN_0.25_0.09_",nExp_poi), sct = FALSE)
 
 
+scrna@meta.data %>% tibble::rownames_to_column("barcodes") %>% select(barcodes,startsWith("DF")) %>% select(barcodes,2) -> Doublet_Df
+
+scrna@meta.data <- scrna@meta.data %>% select(!startsWith("DF"),!startsWith("pANN")) %>%
+  tibble::rownames_to_column("barcodes") %>%
+  dplyr::left_join(Doublet_Df, by = "barcodes") %>%
+  tibble::column_to_rownames("barcodes")
 
 
-output.dir=paste0("analyses/",opt$sampleid,"/processed/")
+output.dir=paste0("analyses/processed/")
 dir.create(output.dir,recursive = T)
 
 saveRDS(scrna,file = paste0(output.dir,opt$sampleid,".rds"))
