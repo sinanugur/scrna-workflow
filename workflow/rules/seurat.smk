@@ -55,3 +55,13 @@ rule  metrics:
     shell:
         "workflow/scripts/scrna-metrics.R --rds {input} --resolution {wildcards.res} --sampleid {wildcards.sample}"
 
+rule integration_with_harmony:
+    input:
+        expand("analyses/processed/{sample}.rds",sample=files)
+    output:
+        "analyses/harmony/" + integration_id + "_harmony.rds"
+    shell:
+        """
+        workflow/scripts/scrna-harmony.R --rds "{input}" --sampleid {integration_id}
+        """
+

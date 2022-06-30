@@ -23,7 +23,7 @@ require(patchwork)
 require(harmony)
 source("workflow/scripts/scrna-functions.R")
 
-files= unlist(strsplit(opt$rds, ","))
+files= unlist(strsplit(opt$rds, " "))
 print(files)
 for(i in files) {
 
@@ -64,8 +64,10 @@ scrna <- scrna %>%
   FindClusters() %>% 
   identity()
 
+output.dir=paste0("analyses/harmony/")
+dir.create(output.dir,recursive = T)
 
-saveRDS(scrna,file = paste0("epi_integrated",".rds"))
+saveRDS(scrna,file = paste0(output.dir,opt$sampleid,"_harmony",".rds"))
 
 
 
