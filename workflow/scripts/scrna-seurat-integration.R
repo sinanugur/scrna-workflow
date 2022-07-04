@@ -20,20 +20,19 @@ if (is.null(opt$rds) || is.null(opt$sampleid) ){
 require(tidyverse)
 require(Seurat)
 require(patchwork)
-require(harmony)
 source("workflow/scripts/scrna-functions.R")
 
 files= unlist(strsplit(opt$rds, " "))
 print(files)
 for(i in files) {
 
-    if(!exists("scrna")) {
+    if(!exists("scrna_list")) {
 
-        scrna=readRDS(file = i)
+        scrna_list=list(readRDS(file = i))
 
     } else {
 
-        scrna=merge(scrna,readRDS(file = i))
+        scrna_list=append(scrna_list,readRDS(file = i))
     }
     
 
@@ -41,50 +40,33 @@ for(i in files) {
 }
 
 
-scrna <- NormalizeData(scrna, normalization.method = opt$normalization.method, scale.factor = opt$scale.factor)
 
-scrna <- FindVariableFeatures(scrna, selection.method = "vst", nfeatures = 2000)
+scrna_anchors    <- FindIntegrationAnchors(object.list = scrna_list, dims = 1:30)
+
+
+scrna     <- IntegrateData(anchorset = scrna_anchors, dims = 1:30)
+
 
 scrna <- ScaleData(scrna)
-
 scrna <- RunPCA(scrna)
-
 dimensionReduction=function_pca_dimensions(scrna)
 
 scrna <- RunUMAP(scrna, dims = 1:dimensionReduction)
 
+scrna <- FindNeighbors(scrna, reduction = "pca", dims = 1:dimensionReduction)
+scrna <- FindClusters(scrna, resolution = c(0.8,2.5))
 
 
-output.dir=paste0("results/integration/harmony/technicals/")
+output.dir=paste0("results/integration/seurat/technicals/")
 dir.create(output.dir,recursive = T)
-DimPlot(scrna,reduction = "umap",group.by="orig.ident")
-ggsave(file=paste0(output.dir,opt$sampleid,"-before-integration-umap.pdf"))
-
-
-
-
-
-scrna <- scrna %>% RunHarmony("orig.ident",plot_convergence=T)
-
-
-scrna <- scrna %>% 
-  RunUMAP(reduction = "harmony", dims = 1:30, verbose = F) %>% 
-  FindNeighbors(reduction = "harmony", k.param = 10, dims = 1:30) %>% 
-  FindClusters(resolution = c(0.8,2.5)) %>% 
-  identity()
 
 DimPlot(scrna,reduction = "umap",group.by="orig.ident")
 ggsave(file=paste0(output.dir,opt$sampleid,"-after-integration-umap.pdf"))
 
 
 
-output.dir=paste0("analyses/harmony/")
+
+output.dir=paste0("analyses/seuratintegration/")
 dir.create(output.dir,recursive = T)
 
-saveRDS(scrna,file = paste0(output.dir,opt$sampleid,"_harmony",".rds"))
-
-
-
-
-
-
+saveRDS(scrna,file = paste0(output.dir,opt$sampleid,"_seurat",".rds"))
