@@ -83,7 +83,7 @@ dimensionReduction=function_pca_dimensions(scrna)
 
 
 scrna <- FindNeighbors(scrna, dims = 1:dimensionReduction)
-scrna <- FindClusters(scrna, resolution = c(0.8,2.5))
+scrna <- FindClusters(scrna, resolution = c(2.5,0.8))
 
 scrna <- RunUMAP(scrna, dims = 1:dimensionReduction)
 

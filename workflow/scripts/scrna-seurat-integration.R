@@ -54,8 +54,13 @@ dimensionReduction=function_pca_dimensions(scrna)
 scrna <- RunUMAP(scrna, dims = 1:dimensionReduction)
 
 scrna <- FindNeighbors(scrna, reduction = "pca", dims = 1:dimensionReduction)
-scrna <- FindClusters(scrna, resolution = c(0.8,2.5))
+scrna <- FindClusters(scrna, resolution = c(2.5,0.8))
 
+
+
+Idents(object = scrna) <- scrna@meta.data[["integrated_snn_res.0.8"]]
+
+scrna$seurat_clusters <- scrna@meta.data[["integrated_snn_res.0.8"]]
 
 output.dir=paste0("results/integration/seurat/technicals/")
 dir.create(output.dir,recursive = T)
