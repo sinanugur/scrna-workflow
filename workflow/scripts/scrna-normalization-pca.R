@@ -37,7 +37,7 @@ scrna=readRDS(file = opt$rds)
 
 scrna <- NormalizeData(scrna, normalization.method = opt$normalization.method, scale.factor = opt$scale.factor)
 
-scrna <- FindVariableFeatures(scrna, selection.method = "vst", nfeatures = 2000)
+scrna <- FindVariableFeatures(scrna, selection.method = "vst", nfeatures = opt$nfeatures)
 
 output.dir=paste0("results/",opt$sampleid,"/technicals/")
 dir.create(output.dir,recursive = T)

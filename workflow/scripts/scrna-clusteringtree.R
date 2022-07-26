@@ -35,4 +35,4 @@ clustree(scrna) -> p1
 output.dir=paste0("results/",opt$sampleid,"/clusteringTree/")
 dir.create(output.dir,recursive = T)
 
-ggsave(paste0("results/",opt$sampleid,"/clusteringTree/clusteringTree-",opt$sampleid,".pdf"),p1,width=8,height=15)
+ggsave(paste0(output.dir,"/clusteringTree-",opt$sampleid,".pdf"),p1,width=8,height=15)
