@@ -8,8 +8,10 @@ option_list = list(
 
     optparse::make_option(c("--sampleid"), type="character", default=NULL, 
               help="Sample ID", metavar="character"),
-      optparse::make_option(c("--nfeatures"), type="integer", default=50, 
+      optparse::make_option(c("--n"), type="integer", default=50, 
               help="How many features to plot per cluster [default= %default]", metavar="integer"),
+    optparse::make_option(c("--xlsx"), type="character", default=NULL, 
+              help="Excel table of markers", metavar="character")
 
 
 )
@@ -37,7 +39,7 @@ scrna=readRDS(file = opt$rds)
 RNA_=paste0("RNA_snn_res.",opt$resolution)
 
 
-Positive_Features=openxlsx::read.xlsx(paste0("results/",opt$sampleid,"/resolution-",opt$resolution,"/",opt$sampleid,".positive-markers-forAllClusters",".xlsx")) %>% group_by(cluster) %>% slice_min(order_by = p_val_adj,n = opt$nfeatures) %>% select(cluster,gene) 
+Positive_Features=openxlsx::read.xlsx(opt$xlsx) %>% group_by(cluster) %>% slice_min(order_by = p_val_adj,n = opt$n) %>% select(cluster,gene) 
 
 
 for(d in (Positive_Features %>% distinct(cluster) %>% pull())) {
@@ -57,6 +59,6 @@ p3 <- VlnPlot(scrna,features=gene)
 
 suppressWarnings(((p1|p2)/p3) -> wp)
 
-ggsave(paste0("results/",opt$sampleid,"/resolution-",opt$resolution,"/markers/","cluster",cluster,"/",gene,".pdf"),wp,height=9,width=9)
+ggsave(paste0("results/",opt$sampleid,"/resolution-",opt$resolution,"/markers/cluster",cluster,"/",gene,".pdf"),wp,height=9,width=9)
 
 })

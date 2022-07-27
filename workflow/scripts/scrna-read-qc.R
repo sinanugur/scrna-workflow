@@ -55,17 +55,29 @@ ggsave(paste0(output.dir,"before-qc-trimming-violinplot.pdf"), width = 10,height
 
 
 
- minCov=opt$minCov #if a sample has a good coverage (>=minCov), then don't set a lower thresold for nCount, it's already pretty good. 
- if(min(scrna$nCount_RNA)>=minCov){
-    countLOW=min(scrna$nCount_RNA)
-  }else{
-    countLOW=quantile(scrna$nCount_RNA, prob=0.01)  
- }
- countHIGH=quantile(scrna$nCount_RNA, prob=0.99) 
- featureLOW=quantile(scrna$nFeature_RNA, prob=0.01)
+ #minCov=opt$minCov #if a sample has a good coverage (>=minCov), then don't set a lower thresold for nCount, it's already pretty good. 
+ #if(min(scrna$nCount_RNA)>=minCov){
+ #   countLOW=min(scrna$nCount_RNA)
+ # }else{
+ #   countLOW=quantile(scrna$nCount_RNA, prob=0.01)  
+ #}
+ #countHIGH=quantile(scrna$nCount_RNA, prob=0.99) 
+ #featureLOW=quantile(scrna$nFeature_RNA, prob=0.01)
+
+
+lower_bound_nCount_RNA <- median(scrna$nCount_RNA) - 3 * mad(scrna$nCount_RNA, constant = 1)
+upper_bound_nCount_RNA <- median(scrna$nCount_RNA) + 3 * mad(scrna$nCount_RNA, constant = 1)
+
+
+lower_bound_nFeature_RNA <- median(scrna$nFeature_RNA) - 3 * mad(scrna$nFeature_RNA, constant = 1)
+upper_bound_nFeature_RNA <- median(scrna$nFeature_RNA) + 3 * mad(scrna$nFeature_RNA, constant = 1)
+
+
 
 ##subset
-scrna <- subset(scrna, subset = nFeature_RNA > featureLOW & nCount_RNA > countLOW  & nCount_RNA < countHIGH & percent.mt < 10)
+#scrna <- subset(scrna, subset = nFeature_RNA > featureLOW & nCount_RNA > countLOW  & nCount_RNA < countHIGH & opt$percent.mt < opt$percent.mt)
+
+scrna <- subset(scrna, subset = nFeature_RNA > lower_bound_nFeature_RNA & nFeature_RNA < upper_bound_nFeature_RNA & nCount_RNA > lower_bound_nCount_RNA  & nCount_RNA < upper_bound_nCount_RNA & percent.mt < opt$percent.mt)
 
 VlnPlot(scrna, features = c("nFeature_RNA", "nCount_RNA", "percent.mt","percent.rp"), ncol = 4)
 ggsave(paste0(output.dir,"after-qc-trimming-violinplot.pdf"), width = 10,height = 4)

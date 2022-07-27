@@ -25,7 +25,7 @@ rule process_rds:
     output:
         "analyses/processed/{sample}.rds"
     shell:
-        "workflow/scripts/scrna-normalization-pca.R --rds {input} --sampleid {wildcards.sample} --normalization.method {normalization_method} --scale.factor {scale_factor}"
+        "workflow/scripts/scrna-normalization-pca.R --rds {input} --sampleid {wildcards.sample} --normalization.method {normalization_method} --scale.factor {scale_factor} --nfeature {highly_variable_features}"
 
 
 rule clustree:
@@ -47,7 +47,7 @@ rule clustermarkers:
         workflow/scripts/scrna-find-markers.R --rds {input} --resolution {wildcards.res} --sampleid {wildcards.sample} --logfc.threshold {logfc_threshold} --test.use {test_use}
         """
 
-rule  metrics:
+rule metrics:
     input:
         "analyses/processed/{sample}.rds"
     output:
@@ -55,13 +55,42 @@ rule  metrics:
     shell:
         "workflow/scripts/scrna-metrics.R --rds {input} --resolution {wildcards.res} --sampleid {wildcards.sample}"
 
+rule selected_markers:
+    input:
+        "analyses/processed/{sample}.rds"
+    output:
+        "results/{sample}/resolution-{res}/selected-markers-dotplot.pdf",
+        directory("results/{sample}/resolution-{res}/selected-markers/plots/")
+    shell:
+        "workflow/scripts/scrna-selected-marker-plots.R --rds {input} --resolution {wildcards.res} --sampleid {wildcards.sample}"
+
+
+rule positive_markers:
+    input:
+        rds="analyses/processed/{sample}.rds",
+        excel="results/{sample}/resolution-{res}/{sample}.positive-markers-forAllClusters.xlsx"
+    output:
+        directory("results/{sample}/resolution-{res}/markers/")
+    shell:
+        "workflow/scripts/scrna-marker-plots.R --rds {input.rds} --resolution {wildcards.res} --sampleid {wildcards.sample} --xlsx {input.excel}"
+
 rule integration_with_harmony:
     input:
         expand("analyses/processed/{sample}.rds",sample=files)
     output:
-        "analyses/harmony/" + integration_id + "_harmony.rds"
+        "analyses/integration/harmony/" + integration_id + "_harmony.rds"
     shell:
         """
-        workflow/scripts/scrna-harmony.R --rds "{input}" --sampleid {integration_id}
+        workflow/scripts/scrna-harmony.R --rds "{input}" --sampleid {integration_id} --resolution {integration_resolution} --normalization.method {normalization_method} --scale.factor {scale_factor} --nfeature {highly_variable_features}
         """
 
+
+rule integration_with_seurat:
+    input:
+        expand("analyses/processed/{sample}.rds",sample=files)
+    output:
+        "analyses/integration/seurat/" + integration_id + "_seurat.rds"
+    shell:
+        """
+        workflow/scripts/scrna-seurat-integration.R --rds "{input}" --sampleid {integration_id} --resolution {integration_resolution}
+        """

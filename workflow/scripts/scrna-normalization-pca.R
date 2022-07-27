@@ -36,7 +36,6 @@ scrna=readRDS(file = opt$rds)
 
 
 scrna <- NormalizeData(scrna, normalization.method = opt$normalization.method, scale.factor = opt$scale.factor)
-
 scrna <- FindVariableFeatures(scrna, selection.method = "vst", nfeatures = opt$nfeatures)
 
 output.dir=paste0("results/",opt$sampleid,"/technicals/")
@@ -57,26 +56,20 @@ ggsave(paste0(output.dir,"highly-variable-features.pdf"), plot2 ,width = 8,heigh
 
 all.genes <- rownames(scrna)
 scrna <- ScaleData(scrna, features = all.genes)
-
-
 scrna <- RunPCA(scrna, features = VariableFeatures(object = scrna))
 
 
 DimHeatmap(scrna, dims = 1:15, cells = 500, balanced = TRUE,fast = FALSE)
-
 ggsave(paste0(output.dir,"DimHeatMap_plot.pdf") ,width = 8,height = 15)
 
 
-# NOTE: This process can take a long time for big datasets, comment out for expediency. More
-# approximate techniques such as those implemented in ElbowPlot() can be used to reduce
-# computation time
+
 scrna <- JackStraw(scrna, num.replicate = 100,  dims=50)
 scrna <- ScoreJackStraw(scrna, dims = 1:50)
 
 
 plot1 <- JackStrawPlot(scrna, dims = 1:50) 
 plot2 <- ElbowPlot(scrna, ndims=50)
-
 ggsave(paste0(output.dir,"JackandElbow_plot.pdf"), plot1 + plot2,width = 13,height = 5)
 
 dimensionReduction=function_pca_dimensions(scrna)
@@ -89,7 +82,6 @@ scrna <- RunUMAP(scrna, dims = 1:dimensionReduction)
 
 
 Idents(object = scrna) <- scrna@meta.data[["RNA_snn_res.0.8"]]
-
 scrna$seurat_clusters <- scrna@meta.data[["RNA_snn_res.0.8"]]
 
 

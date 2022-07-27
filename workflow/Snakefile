@@ -12,6 +12,8 @@ min_cells=config.get("min_cells",3)
 min_features=config.get("min_features",200)
 percent_mt=config.get("percent_mt",10)
 min_coverage=config.get("min_coverage",1000)
+highly_variable_features=config.get("highly_variable_features",2000)
+#doublet_filter=config.get("doublet_filter","T") #True:T or False:F
 
 #clustering and normalization paramaters
 normalization_method=config.get("normalization_method","LogNormalize")
@@ -22,12 +24,11 @@ resolution=config.get("resolution",["0.8","2.5"])
 logfc_threshold=config.get("logfc_threshold",0.25)
 test_use=config.get("test_use","wilcox")
 
-
-
-
 #alternative routes
 route=config.get("route","standart")
 integration_id=config.get("integration_id","combined")
+integration_resolution=config.get("resolution","0.8")
+
 include: "rules/seurat.smk"
 
 if route == "standart":
@@ -39,13 +40,17 @@ if route == "standart":
             expand(["results/{sample}/resolution-" + x + "/{sample}.positive-markers-forAllClusters.xlsx" for x in resolution],sample=files),
             expand(["results/{sample}/resolution-" + x + "/{sample}.number-of-cells-per-cluster.xlsx" for x in resolution],sample=files),
             expand("analyses/rawrds/{sample}.rds",sample=files),
-            expand("analyses/processed/{sample}.rds",sample=files)
+            expand("analyses/processed/{sample}.rds",sample=files),
+            expand(["results/{sample}/resolution-" + x + "/selected-markers-dotplot.pdf" for x in resolution],sample=files),
+            expand(["results/{sample}/resolution-" + x + "/selected-markers/plots/" for x in resolution], sample=files),
+            expand(["results/{sample}/resolution-" + x + "/markers/" for x in resolution], sample=files)
 
 elif route == "integration":
     files, = glob_wildcards("analyses/processed/{sample}.rds")
     rule all:
         input:
-            "analyses/harmony/" + integration_id + "_harmony.rds"
+            "analyses/integration/harmony/" + integration_id + "_harmony.rds",
+            "analyses/integration/seurat/" + integration_id + "_seurat.rds"
 
 
 else:

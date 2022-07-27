@@ -4,7 +4,9 @@ option_list = list(
     optparse::make_option(c("--sampleid"), type="character", default=NULL, 
               help="Sample ID", metavar="character"),
     optparse::make_option(c("-r","--rds"), type="character", default=NULL, 
-              help="A list of RDS files of Seurat objects", metavar="character")
+              help="A list of RDS files of Seurat objects", metavar="character"),
+    optparse::make_option(c("--resolution"), type="double", default=0.8, 
+              help="Resolution [default= %default]", metavar="character")
 
 
 )
@@ -54,13 +56,15 @@ dimensionReduction=function_pca_dimensions(scrna)
 scrna <- RunUMAP(scrna, dims = 1:dimensionReduction)
 
 scrna <- FindNeighbors(scrna, reduction = "pca", dims = 1:dimensionReduction)
-scrna <- FindClusters(scrna, resolution = c(2.5,0.8))
+scrna <- FindClusters(scrna, resolution = opt$resolution)
+
+RNA_=paste0("integrated_snn_res.",opt$resolution)
 
 
 
-Idents(object = scrna) <- scrna@meta.data[["integrated_snn_res.0.8"]]
+Idents(object = scrna) <- scrna@meta.data[[RNA_]]
 
-scrna$seurat_clusters <- scrna@meta.data[["integrated_snn_res.0.8"]]
+scrna$seurat_clusters <- scrna@meta.data[[RNA_]]
 
 output.dir=paste0("results/integration/seurat/technicals/")
 dir.create(output.dir,recursive = T)
@@ -71,7 +75,7 @@ ggsave(file=paste0(output.dir,opt$sampleid,"-after-integration-umap.pdf"))
 
 
 
-output.dir=paste0("analyses/seuratintegration/")
+output.dir=paste0("analyses/integration/seurat/")
 dir.create(output.dir,recursive = T)
 
 saveRDS(scrna,file = paste0(output.dir,opt$sampleid,"_seurat",".rds"))

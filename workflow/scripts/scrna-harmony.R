@@ -4,7 +4,15 @@ option_list = list(
     optparse::make_option(c("--sampleid"), type="character", default=NULL, 
               help="Sample ID", metavar="character"),
     optparse::make_option(c("-r","--rds"), type="character", default=NULL, 
-              help="A list of RDS files of Seurat objects", metavar="character")
+              help="A list of RDS files of Seurat objects", metavar="character"),
+    optparse::make_option(c("--nfeatures"), type="integer", default=2000, 
+              help="Highly variable features [default= %default]", metavar="integer"),
+    optparse::make_option(c("--normalization.method"), type="character", default="LogNormalize", 
+              help="Normalization method[default= %default]", metavar="character"),
+    optparse::make_option(c("--scale.factor"), type="integer", default=10000, 
+              help="Scale factor [default= %default]", metavar="character"),
+    optparse::make_option(c("--resolution"), type="double", default=0.8, 
+              help="Resolution [default= %default]", metavar="character")
 
 
 )
@@ -43,7 +51,7 @@ for(i in files) {
 
 scrna <- NormalizeData(scrna, normalization.method = opt$normalization.method, scale.factor = opt$scale.factor)
 
-scrna <- FindVariableFeatures(scrna, selection.method = "vst", nfeatures = 2000)
+scrna <- FindVariableFeatures(scrna, selection.method = "vst", nfeatures = opt$nfeatures)
 
 scrna <- ScaleData(scrna)
 
@@ -53,6 +61,7 @@ dimensionReduction=function_pca_dimensions(scrna)
 
 scrna <- RunUMAP(scrna, dims = 1:dimensionReduction)
 
+saveRDS(scrna,"dd1.rds")
 
 
 output.dir=paste0("results/integration/harmony/technicals/")
@@ -70,15 +79,18 @@ scrna <- scrna %>% RunHarmony("orig.ident",plot_convergence=T)
 scrna <- scrna %>% 
   RunUMAP(reduction = "harmony", dims = 1:30, verbose = F) %>% 
   FindNeighbors(reduction = "harmony", k.param = 10, dims = 1:30) %>% 
-  FindClusters(resolution = c(0.8,2.5)) %>% 
+  FindClusters(resolution = opt$resolution) %>% 
   identity()
+
+
+saveRDS(scrna,"dd2.rds")
 
 DimPlot(scrna,reduction = "umap",group.by="orig.ident")
 ggsave(file=paste0(output.dir,opt$sampleid,"-after-integration-umap.pdf"))
 
 
 
-output.dir=paste0("analyses/harmony/")
+output.dir=paste0("analyses/integration/harmony/")
 dir.create(output.dir,recursive = T)
 
 saveRDS(scrna,file = paste0(output.dir,opt$sampleid,"_harmony",".rds"))
