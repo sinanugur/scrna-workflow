@@ -64,4 +64,4 @@ ggsave(paste0("results/",opt$sampleid,"/resolution-",opt$resolution,"/selected-m
 domanska_markers=sort(intersect(domanska_markers,rownames(scrna)))
 
 DotPlot(scrna, features = domanska_markers, dot.scale = 8) + RotatedAxis()
-ggsave(paste0(output.dir,"selected-markers-dotplot.pdf"),width = 13,height = 8)
+ggsave(paste0(output.dir,"/selected-markers/","selected-markers-dotplot.pdf"),width = 13,height = 8)

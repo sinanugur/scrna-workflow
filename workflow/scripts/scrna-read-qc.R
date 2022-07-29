@@ -83,7 +83,7 @@ VlnPlot(scrna, features = c("nFeature_RNA", "nCount_RNA", "percent.mt","percent.
 ggsave(paste0(output.dir,"after-qc-trimming-violinplot.pdf"), width = 10,height = 4)
 
 
-output.dir=paste0("analyses/rawrds/")
+output.dir=paste0("analyses/raw/")
 dir.create(output.dir,recursive = T)
 
 saveRDS(scrna,file = paste0(output.dir,opt$sampleid,".rds"))

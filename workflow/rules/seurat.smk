@@ -14,23 +14,32 @@ rule rds:
         #"data/{sample}/raw_feature_bc_matrix/"
         input_function
     output:
-        "analyses/rawrds/{sample}.rds"
+        "analyses/raw/{sample}.rds"
 
     shell:
         "workflow/scripts/scrna-read-qc.R --data.dir {input} --sampleid {wildcards.sample} --percent.mt {percent_mt} --min.features {min_features} --min.cells {min_cells} --minCov {min_coverage}"
 
-rule process_rds:
+rule normalization_pca_rds:
     input:
-        "analyses/rawrds/{sample}.rds"
+        "analyses/raw/{sample}.rds"
     output:
-        "analyses/processed/{sample}.rds"
+        "analyses/processed/{res}/{sample}.rds",
+        "results/{sample}/resolution-{res}/{sample}.number-of-cells-per-cluster.xlsx"
     shell:
-        "workflow/scripts/scrna-normalization-pca.R --rds {input} --sampleid {wildcards.sample} --normalization.method {normalization_method} --scale.factor {scale_factor} --nfeature {highly_variable_features}"
+        "workflow/scripts/scrna-normalization-pca.R --rds {input} --sampleid {wildcards.sample} --normalization.method {normalization_method} --scale.factor {scale_factor} --nfeature {highly_variable_features} --resolution {wildcards.res}"
 
+
+rule umap_plot:
+    input:
+        "analyses/processed/{res}/{sample}.rds"
+    output:
+        "results/{sample}/resolution-{res}/{sample}.umap.pdf"
+    shell:
+        "workflow/scripts/scrna-umap.R --rds {input} --sampleid {wildcards.sample} --resolution {wildcards.res}"
 
 rule clustree:
     input:
-        "analyses/processed/{sample}.rds"
+        "analyses/raw/{sample}.rds"
     output:
         "results/{sample}/clusteringTree/clusteringTree-{sample}.pdf"
     shell:
@@ -38,7 +47,7 @@ rule clustree:
     
 rule clustermarkers:
     input:
-        "analyses/processed/{sample}.rds"
+        "analyses/processed/{res}/{sample}.rds"
     output:
         "results/{sample}/resolution-{res}/{sample}.positive-markers-forAllClusters.xlsx",
         "results/{sample}/resolution-{res}/{sample}.all-markers-forAllClusters.xlsx"
@@ -47,17 +56,9 @@ rule clustermarkers:
         workflow/scripts/scrna-find-markers.R --rds {input} --resolution {wildcards.res} --sampleid {wildcards.sample} --logfc.threshold {logfc_threshold} --test.use {test_use}
         """
 
-rule metrics:
-    input:
-        "analyses/processed/{sample}.rds"
-    output:
-        "results/{sample}/resolution-{res}/{sample}.number-of-cells-per-cluster.xlsx"
-    shell:
-        "workflow/scripts/scrna-metrics.R --rds {input} --resolution {wildcards.res} --sampleid {wildcards.sample}"
-
 rule selected_markers:
     input:
-        "analyses/processed/{sample}.rds"
+        "analyses/processed/{res}/{sample}.rds"
     output:
         "results/{sample}/resolution-{res}/selected-markers-dotplot.pdf",
         directory("results/{sample}/resolution-{res}/selected-markers/plots/")
@@ -67,7 +68,7 @@ rule selected_markers:
 
 rule positive_markers:
     input:
-        rds="analyses/processed/{sample}.rds",
+        rds="analyses/processed/{res}/{sample}.rds",
         excel="results/{sample}/resolution-{res}/{sample}.positive-markers-forAllClusters.xlsx"
     output:
         directory("results/{sample}/resolution-{res}/markers/")
