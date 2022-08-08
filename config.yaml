@@ -9,7 +9,7 @@ highly_variable_features: 2000
 #clustering and normalization paramaters
 normalization_method: "LogNormalize"
 scale_factor: 10000
-resolution: 0.8
+resolution: "0.8"
 
 #Differential expression paramaters
 logfc_threshold: 0.25

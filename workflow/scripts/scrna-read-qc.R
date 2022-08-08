@@ -10,9 +10,7 @@ option_list = list(
     optparse::make_option(c("--sampleid"), type="character", default=NULL, 
               help="Sample ID", metavar="character"),
     optparse::make_option(c("--percent.mt"), type="double", default=10, 
-              help="Mitochondria filtering percentage [default= %default]", metavar="character"),
-    optparse::make_option(c("--minCov"), type="integer", default=1000, 
-              help="if a sample has a good coverage (>=minCov), then don't set a lower thresold for nCount [default= %default]", metavar="character")
+              help="Mitochondria filtering percentage [default= %default]", metavar="character")
 
 
 )
