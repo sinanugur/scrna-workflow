@@ -1,0 +1,22 @@
+
+#basic paramaters
+min_cells: 3
+min_features: 200 
+percent_mt: 10
+min_coverage: 1000
+highly_variable_features: 2000
+
+#clustering and normalization paramaters
+normalization_method: "LogNormalize"
+scale_factor: 10000
+resolution: 0.8
+
+#Differential expression paramaters
+logfc_threshold: 0.25
+test_use: "wilcox"
+
+
+#alternative route paramaters
+integration_id: "combined"
+integration_resolution: 0.8
+
