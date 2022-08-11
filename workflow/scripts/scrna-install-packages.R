@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 
-packages <- c("tidyverse","optparse","librarian","Seurat","SeuratDisk","patchwork","harmony","DoubleFinder")
+packages <- c("tidyverse","optparse","librarian","Seurat","SeuratDisk","patchwork","harmony","DoubleFinder","viridis","clustree")
 
 
 installed_packages <- packages %in% rownames(installed.packages())
@@ -16,6 +16,7 @@ if (!requireNamespace("librarian", quietly = TRUE)) {
 librarian::shelf("optparse")
 librarian::shelf("tidyverse","patchwork")
 librarian::shelf("Seurat")
+librarian::shelf('clustree')
 
 
 
@@ -23,6 +24,7 @@ if (!requireNamespace("SeuratDisk", quietly = TRUE)) {
   librarian::shelf("mojaveazure/seurat-disk") }
 
 librarian::shelf('chris-mcginnis-ucsf/DoubletFinder')
+librarian::shelf('viridis')
 
 }
 

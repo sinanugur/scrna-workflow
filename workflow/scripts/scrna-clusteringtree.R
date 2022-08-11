@@ -24,6 +24,7 @@ if (is.null(opt$rds) || is.null(opt$sampleid) ){
   stop("At least one argument must be supplied (rds file and sampleid)", call.=FALSE)
 }
 
+require(tidyverse)
 require(optparse)
 require(Seurat)
 require(clustree)
