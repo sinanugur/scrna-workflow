@@ -109,3 +109,28 @@ rule h5ad:
         "analyses/h5ad/{res}/{sample}.h5ad"
     shell:
         "workflow/scripts/scrna-convert-to-h5ad.R --rds {input.rds} --resolution {wildcards.res} --sampleid {wildcards.sample}"
+
+
+rule celltype:
+    input:
+        "analyses/h5ad/{res}/{sample}.h5ad"
+    
+    output:
+        directory("analyses/celltypist/{res}/{sample}/"),
+        "analyses/celltypist/{res}/{sample}/predicted_labels.csv"
+
+    shell:
+        """
+        celltypist --indata {input} --model {celltypist_model} --outdir {output[0]}
+        """
+
+rule seurat_celltype:
+    input:
+        csv="analyses/celltypist/{res}/{sample}/predicted_labels.csv",
+        rds="analyses/processed/{res}/{sample}.rds"
+    output:
+        "analyses/celltypist/{res}/{sample}.rds"
+    shell:
+        """
+        workflow/scripts/scrna-celltypist.R --rds {input.rds} --sampleid {wildcards.sample} --csv {input.csv} --output {output}
+        """

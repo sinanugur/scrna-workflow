@@ -20,3 +20,5 @@ test_use: "wilcox"
 integration_id: "combined"
 integration_resolution: 0.8
 
+celltypist_model: "Immune_All_Low.pkl"
+

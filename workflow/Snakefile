@@ -28,6 +28,7 @@ test_use=config.get("test_use","wilcox")
 route=config.get("route","standart")
 integration_id=config.get("integration_id","combined")
 integration_resolution=str(config.get("resolution",0.8))
+celltypist_model="Immune_All_Low.pkl"
 
 include: "rules/seurat.smk"
 
@@ -50,18 +51,20 @@ if route == "clueteringTree":
         input:
             expand("results/{sample}/clusteringTree/clusteringTree-{sample}.pdf",sample=files)
 
+
+elif route == "annotate":
+    rule all:
+        input:
+            expand(["analyses/celltypist/" + x + "/{sample}.rds" for x in resolution],sample=files)
+
+
+
 elif route == "integration":
     files, = glob_wildcards("analyses/processed/" + integration_resolution + "/{sample}.rds")
     rule all:
         input:
             "analyses/integration/harmony/" + integration_id + "_harmony.rds",
             "analyses/integration/seurat/" + integration_id + "_seurat.rds"
-
-
-elif route == "exp":
-    rule all:
-        input:
-            expand(["analyses/h5ad/" + x + "/{sample}.h5ad" for x in resolution],sample=files)
 
 else:
     pass
