@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 
-packages <- c("tidyverse","optparse","librarian","Seurat","SeuratDisk","patchwork","harmony","DoubleFinder","viridis","clustree")
+packages <- c("tidyverse","optparse","librarian","Seurat","SeuratDisk","patchwork","harmony","DoubleFinder","viridis","clustree","openxlsx")
 
 
 installed_packages <- packages %in% rownames(installed.packages())
@@ -17,7 +17,7 @@ librarian::shelf("optparse")
 librarian::shelf("tidyverse","patchwork")
 librarian::shelf("Seurat")
 librarian::shelf('clustree')
-
+librarian::shelf('openxlsx')
 
 
 if (!requireNamespace("SeuratDisk", quietly = TRUE)) {
