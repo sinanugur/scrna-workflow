@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 
-packages <- c("tidyverse","optparse","librarian","Seurat","SeuratDisk","patchwork","harmony","DoubleFinder","viridis","clustree","openxlsx")
+packages <- c("tidyverse","optparse","librarian","Seurat","SeuratDisk","patchwork","harmony","DoubletFinder","viridis","clustree","openxlsx")
 
 
 installed_packages <- packages %in% rownames(installed.packages())

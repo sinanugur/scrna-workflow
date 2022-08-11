@@ -28,7 +28,7 @@ test_use=config.get("test_use","wilcox")
 route=config.get("route","standart")
 integration_id=config.get("integration_id","combined")
 integration_resolution=str(config.get("resolution",0.8))
-celltypist_model="Immune_All_Low.pkl"
+celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
 
 include: "rules/seurat.smk"
 

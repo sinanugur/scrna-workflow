@@ -2,8 +2,9 @@ name: scrna_clean
 channels:
  - conda-forge
  - bioconda
+ - anaconda
 dependencies:
- - r-base=4.1
+ - r-base
  - snakemake-minimal
  - celltypist
  - geos
