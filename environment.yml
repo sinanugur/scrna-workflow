@@ -1,0 +1,10 @@
+name: scrna_clean
+channels:
+ - conda-forge
+ - bioconda
+dependencies:
+ - r-base=4.1
+ - snakemake-minimal
+ - celltypist
+ - geos
+ - hdf5
