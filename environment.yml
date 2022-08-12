@@ -9,3 +9,4 @@ dependencies:
  - celltypist
  - geos
  - hdf5
+ - numba

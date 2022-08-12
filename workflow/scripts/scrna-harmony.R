@@ -61,7 +61,6 @@ dimensionReduction=function_pca_dimensions(scrna)
 
 scrna <- RunUMAP(scrna, dims = 1:dimensionReduction)
 
-saveRDS(scrna,"dd1.rds")
 
 
 output.dir=paste0("results/integration/harmony/technicals/")
@@ -82,8 +81,6 @@ scrna <- scrna %>%
   FindClusters(resolution = opt$resolution) %>% 
   identity()
 
-
-saveRDS(scrna,"dd2.rds")
 
 DimPlot(scrna,reduction = "umap",group.by="orig.ident")
 ggsave(file=paste0(output.dir,opt$sampleid,"-after-integration-umap.pdf"))
