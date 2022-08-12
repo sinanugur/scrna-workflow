@@ -18,13 +18,11 @@ librarian::shelf("tidyverse","patchwork")
 librarian::shelf("Seurat")
 librarian::shelf('clustree')
 librarian::shelf('openxlsx')
-
-
-if (!requireNamespace("SeuratDisk", quietly = TRUE)) {
-  librarian::shelf("mojaveazure/seurat-disk") }
-
 librarian::shelf('chris-mcginnis-ucsf/DoubletFinder')
 librarian::shelf('viridis')
+
+if (!requireNamespace("SeuratDisk", quietly = TRUE)) {
+librarian::shelf("mojaveazure/seurat-disk") }
 
 }
 
