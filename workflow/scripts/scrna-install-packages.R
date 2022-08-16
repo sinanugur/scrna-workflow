@@ -11,6 +11,12 @@ if (any(installed_packages == FALSE)) {
 if (!requireNamespace("librarian", quietly = TRUE)) {
   install.packages("librarian") }
 
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager") }
+
+if (!requireNamespace("Biobase", quietly = TRUE)) {
+  BiocManager::install("Biobase") }
+
 
 
 librarian::shelf("optparse")
