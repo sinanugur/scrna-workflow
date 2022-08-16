@@ -5,7 +5,8 @@ import os
 
 files, = glob_wildcards("data/{sample}/raw_feature_bc_matrix/matrix.mtx.gz")    
 others, = glob_wildcards("data/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx.gz")
-files=list(filter(lambda i: "/" not in i, files+others)) #do not capture subdirectories etc
+h5files, = glob_wildcards("data/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx.gz")
+files=list(filter(lambda i: "/" not in i, files+others+h5files)) #do not capture subdirectories etc
 
 #basic paramaters
 min_cells=config.get("min_cells",3)

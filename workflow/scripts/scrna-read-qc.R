@@ -34,7 +34,11 @@ require(patchwork)
 
 
 
-scrna.data <- Read10X(data.dir = opt$data.dir)
+try({scrna.data <- Read10X(data.dir = opt$data.dir)})
+try({scrna.data <- Read10X_h5(data.dir = paste0(opt$data.dir,"filtered_feature_bc_matrix.h5"))})
+
+
+
 scrna <- CreateSeuratObject(counts = scrna.data, project = opt$sampleid, min.cells = opt$min.cells, min.features = opt$min.features)
 
 
