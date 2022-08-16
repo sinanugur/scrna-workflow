@@ -139,9 +139,9 @@ rule go_enrichment:
     input:
         "results/{sample}/resolution-{res}/{sample}.all-markers-forAllClusters.xlsx"
     output:
-        "results/{sample}/resolution-{res}/enrichment/GO-enrichment-all_clusters-ontology-{ontology}.pdf"
+        "results/{sample}/resolution-{res}/enrichment/GO-enrichment-all_clusters-ontology-{ontology}.xlsx"
     shell:
         """
-        workflow/scripts/scrna-go_enrichment.R --xlsx {input} --output {output} --ontology {ontology} --algorithm {algorithm} --mapping {mapping}  
+        workflow/scripts/scrna-go_enrichment.R --xlsx {input} --output {output} --ontology {ontology} --algorithm {algorithm} --mapping {mapping} --statistics {statistics}
         """
 

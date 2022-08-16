@@ -51,7 +51,7 @@ if route == "standart":
             expand(["results/{sample}/resolution-" + x + "/selected-markers/plots/" for x in resolution], sample=files),
             expand(["results/{sample}/resolution-" + x + "/markers/" for x in resolution], sample=files),
             expand(["results/{sample}/resolution-" + x + "/{sample}.umap.pdf" for x in resolution], sample=files),
-            expand(["results/{sample}/resolution-" + x + "/enrichment/GO-enrichment-all_clusters-ontology-{ontology}.pdf" for x in resolution], sample=files)
+            expand(["results/{sample}/resolution-" + x + "/enrichment/GO-enrichment-all_clusters-ontology-{ontology}.xlsx".format(ontology=ontology) for x in resolution], sample=files)
 
 if route == "clueteringTree":
     rule all:

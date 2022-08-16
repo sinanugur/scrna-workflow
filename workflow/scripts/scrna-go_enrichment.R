@@ -4,7 +4,15 @@ option_list = list(
     optparse::make_option(c("--xlsx"), type="character", default=NULL, 
               help="Excel table of markers", metavar="character"),
     optparse::make_option(c("--output"), type="character", default=NULL, 
-              help="Output excel file name", metavar="character")
+              help="Output excel file name", metavar="character"),
+    optparse::make_option(c("--ontology"), type="character", default="BP", 
+              help="GO ontology, possible values BP, CC or MF", metavar="character"),
+    optparse::make_option(c("--algorithm"), type="character", default="weight01", 
+              help="Algorithm", metavar="character"),
+        optparse::make_option(c("--mapping"), type="character", default="org.Hs.eg.db", 
+              help="Mapping", metavar="character"),
+                 optparse::make_option(c("--statistics"), type="character", default="ks", 
+              help="Statistics", metavar="character")
 
 
 )
@@ -23,6 +31,7 @@ if (is.null(opt$xlsx) || is.null(opt$output) ){
 
 require(Seurat)
 require(tidyverse)
+require(topGO)
 source("workflow/scripts/scrna-functions.R")
 
 
