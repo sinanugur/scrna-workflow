@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 
-packages <- c("tidyverse","optparse","librarian","Seurat","SeuratDisk","patchwork","harmony","DoubletFinder","viridis","clustree","openxlsx")
+packages <- c("tidyverse","optparse","librarian","Seurat","SeuratDisk","patchwork","harmony","DoubletFinder","viridis","clustree","openxlsx","topGO")
 
 
 installed_packages <- packages %in% rownames(installed.packages())
@@ -20,6 +20,8 @@ librarian::shelf('clustree')
 librarian::shelf('openxlsx')
 librarian::shelf('chris-mcginnis-ucsf/DoubletFinder')
 librarian::shelf('viridis')
+librarian::shelf('topGO')
+
 
 if (!requireNamespace("SeuratDisk", quietly = TRUE)) {
 librarian::shelf("mojaveazure/seurat-disk") }

@@ -134,3 +134,14 @@ rule seurat_celltype:
         """
         workflow/scripts/scrna-celltypist.R --rds {input.rds} --sampleid {wildcards.sample} --csv {input.csv} --output {output}
         """
+
+rule go_enrichment:
+    input:
+        "results/{sample}/resolution-{res}/{sample}.all-markers-forAllClusters.xlsx"
+    output:
+        "results/{sample}/resolution-{res}/enrichment/GO-enrichment-all_clusters-ontology-{ontology}.pdf"
+    shell:
+        """
+        workflow/scripts/scrna-go_enrichment.R --xlsx {input} --output {output} --ontology {ontology} --algorithm {algorithm} --mapping {mapping}  
+        """
+

@@ -24,6 +24,12 @@ resolution=[str(config.get("resolution",0.8))] #by default two resolution levels
 logfc_threshold=config.get("logfc_threshold",0.25)
 test_use=config.get("test_use","wilcox")
 
+#GO enrichment paramaters
+algorithm=config.get("algorithm","weight01")
+statistics=config.get("statistics","ks")
+mapping=config.get("mapping","org.Hs.eg.db")
+ontology = config.get("ontology","BP")
+
 #alternative routes
 route=config.get("route","standart")
 integration_id=config.get("integration_id","combined")
@@ -44,7 +50,8 @@ if route == "standart":
             expand(["results/{sample}/resolution-" + x + "/selected-markers/selected-markers-dotplot.pdf" for x in resolution],sample=files),
             expand(["results/{sample}/resolution-" + x + "/selected-markers/plots/" for x in resolution], sample=files),
             expand(["results/{sample}/resolution-" + x + "/markers/" for x in resolution], sample=files),
-            expand(["results/{sample}/resolution-" + x + "/{sample}.umap.pdf" for x in resolution], sample=files)
+            expand(["results/{sample}/resolution-" + x + "/{sample}.umap.pdf" for x in resolution], sample=files),
+            expand(["results/{sample}/resolution-" + x + "/enrichment/GO-enrichment-all_clusters-ontology-{ontology}.pdf" for x in resolution], sample=files)
 
 if route == "clueteringTree":
     rule all:
