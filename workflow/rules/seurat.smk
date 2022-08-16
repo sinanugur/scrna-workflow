@@ -23,9 +23,12 @@ rule clustree:
     input:
         "analyses/raw/{sample}.rds"
     output:
-        "results/{sample}/clusteringTree/clusteringTree-{sample}.pdf"
+        clustree="results/{sample}/clusteringTree/clusteringTree-{sample}.pdf",
+        heatmap="results/{sample}/technicals/DimHeatMap_plot.pdf",
+        hvfplot="results/{sample}/technicals/highly-variable-features.pdf",
+        jackandelbow="results/{sample}/technicals/JackandElbow_plot.pdf"
     shell:
-        "workflow/scripts/scrna-clusteringtree.R --rds {input} --sampleid {wildcards.sample}"
+        "workflow/scripts/scrna-clusteringtree.R --rds {input} --output {output.clustree} --heatmap {output.heatmap} --hvfplot {output.hvfplot} --jackandelbow {output.jackandelbow}"
 
 
 
