@@ -35,7 +35,7 @@ require(patchwork)
 
 
 try({scrna.data <- Read10X(data.dir = opt$data.dir)})
-try({scrna.data <- Read10X_h5(filename = paste0(opt$data.dir,"filtered_feature_bc_matrix.h5"))})
+try({scrna.data <- Read10X_h5(filename = paste0(opt$data.dir,"/filtered_feature_bc_matrix.h5"))})
 
 
 
