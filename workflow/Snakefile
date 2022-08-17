@@ -32,14 +32,17 @@ mapping=config.get("mapping","org.Hs.eg.db")
 ontology = config.get("ontology","BP")
 
 #alternative routes
-route=config.get("route","standart")
+route=config.get("route","minimal") # select standard route for analysis
 integration_id=config.get("integration_id","combined")
 integration_resolution=str(config.get("resolution",0.8))
 celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
 
 include: "rules/seurat.smk"
 
-if route == "standart":
+if route == "minimal":
+    expand("analyses/raw/{sample}.rds",sample=files)
+
+elif route == "standart":
 
     rule all:
         input:
@@ -54,7 +57,7 @@ if route == "standart":
             expand(["results/{sample}/resolution-" + x + "/{sample}.umap.pdf" for x in resolution], sample=files),
             expand(["results/{sample}/resolution-" + x + "/enrichment/GO-enrichment-all_clusters-ontology-{ontology}.xlsx".format(ontology=ontology) for x in resolution], sample=files)
 
-if route == "clueteringTree":
+elif route == "clustree" or route == "clusteringTree":
     rule all:
         input:
             expand("results/{sample}/clusteringTree/clusteringTree-{sample}.pdf",sample=files)
