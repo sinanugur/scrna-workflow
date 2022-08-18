@@ -41,7 +41,8 @@ include: "rules/seurat.smk"
 
 if route == "minimal":
     rule all:
-        expand("analyses/raw/{sample}.rds",sample=files)
+        input:
+            expand("analyses/raw/{sample}.rds",sample=files)
 
 elif route == "standart":
 
