@@ -40,7 +40,8 @@ celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
 include: "rules/seurat.smk"
 
 if route == "minimal":
-    expand("analyses/raw/{sample}.rds",sample=files)
+    rule all:
+        expand("analyses/raw/{sample}.rds",sample=files)
 
 elif route == "standart":
 
