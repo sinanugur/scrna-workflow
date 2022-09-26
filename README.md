@@ -4,13 +4,13 @@
 Introduction
 ------------
 
-This is a scRNA-seq analysis pipeline for Visium 10x platform. The pipeline is built in Snakemake and can be run on different platforms and high performance computing (HPC) systems.
+This is a scRNA-seq analysis pipeline. The pipeline is built in Snakemake and can be run on different platforms and high performance computing (HPC) systems.
 
 
 Quick Start Example
 -------------------
 
-The workflow excepts Visum 10x samples under data folder in this format:
+The workflow expects Visum 10x samples under data folder in this format:
 
 __"data/{sample}/outs/filtered_feature_bc_matrix.h5"__
 
