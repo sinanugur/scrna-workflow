@@ -16,7 +16,7 @@ logfc_threshold: 0.25
 test_use: "wilcox"
 
 #GO enrichment paramaters
-algorithm: weight01"
+algorithm: "weight01"
 statistics: "ks"
 mapping: "org.Hs.eg.db"
 ontology: "BP"
