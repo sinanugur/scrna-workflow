@@ -32,7 +32,7 @@ mapping=config.get("mapping","org.Hs.eg.db")
 ontology = config.get("ontology","BP")
 
 #alternative routes
-route=config.get("route","minimal") # select standard route for analysis
+route=config.get("route","standard") # select standard route for analysis
 integration_id=config.get("integration_id","combined")
 integration_resolution=str(config.get("resolution",0.8))
 celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
@@ -44,7 +44,7 @@ if route == "minimal":
         input:
             expand("analyses/raw/{sample}.rds",sample=files)
 
-elif route == "standart":
+elif route == "standard":
 
     rule all:
         input:
