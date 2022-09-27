@@ -19,7 +19,7 @@ This will register the directory name as sample name for later processing.
 You can start the pipeline by calling,
 
 ```
-snakemake -j 20
+snakemake -j 20 --configfile config.yaml
 
 ```
 
