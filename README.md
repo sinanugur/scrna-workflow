@@ -6,6 +6,22 @@ Introduction
 
 This is a scRNA-seq analysis pipeline. The pipeline is built in Snakemake and can be run on different platforms and high performance computing (HPC) systems.
 
+Installation
+------------
+
+```
+conda env create -n scrna-workflow -f environment.yml
+conda activate scrna-workflow
+
+```
+
+To install R packages:
+
+```
+workflow/scripts/scrna-install-packages.R
+
+```
+
 
 Quick Start Example
 -------------------
