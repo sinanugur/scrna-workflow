@@ -10,6 +10,8 @@ Installation
 ------------
 
 ```
+git clone https://github.com/sinanugur/scrna-workflow.git
+cd scrna-workflow
 conda env create -n scrna-workflow -f environment.yml
 conda activate scrna-workflow
 
