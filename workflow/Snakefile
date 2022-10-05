@@ -10,27 +10,27 @@ h5files, = glob_wildcards("data/{sample}/filtered_feature_bc_matrix.h5")
 files=list(filter(lambda i: "/" not in i, files+others+h5files)) #do not capture subdirectories etc
 
 #basic paramaters
-min_cells=config.get("min_cells",3)
-min_features=config.get("min_features",200)
-percent_mt=config.get("percent_mt",10)
-min_coverage=config.get("min_coverage",1000)
-highly_variable_features=config.get("highly_variable_features",2000)
+#min_cells=config.get("min_cells",3)
+#min_features=config.get("min_features",200)
+#percent_mt=config.get("percent_mt",10)
+#min_coverage=config.get("min_coverage",1000)
+#highly_variable_features=config.get("highly_variable_features",2000)
 #doublet_filter=config.get("doublet_filter","T") #True:T or False:F
 
 #clustering and normalization paramaters
-normalization_method=config.get("normalization_method","LogNormalize")
-scale_factor=config.get("scale_factor",10000)
-resolution=[str(config.get("resolution",0.8))] #by default two resolution levels will be calculated
+#normalization_method=config.get("normalization_method","LogNormalize")
+#scale_factor=config.get("scale_factor",10000)
+resolution=str(config.get("resolution",0.8))
 
 #Differential expression paramaters
-logfc_threshold=config.get("logfc_threshold",0.25)
-test_use=config.get("test_use","wilcox")
+#logfc_threshold=config.get("logfc_threshold",0.25)
+#test_use=config.get("test_use","wilcox")
 
 #GO enrichment paramaters
-algorithm=config.get("algorithm","weight01")
-statistics=config.get("statistics","ks")
-mapping=config.get("mapping","org.Hs.eg.db")
-ontology = config.get("ontology","BP")
+#algorithm=config.get("algorithm","weight01")
+#statistics=config.get("statistics","ks")
+#mapping=config.get("mapping","org.Hs.eg.db")
+#ontology = config.get("ontology","BP")
 
 #alternative routes
 route=config.get("route","standard") # select standard route for analysis
