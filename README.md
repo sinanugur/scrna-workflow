@@ -25,7 +25,7 @@ To install R packages:
 Quick Start Example
 -------------------
 
-The workflow expects Visum 10x samples under data folder in this format:
+The workflow expects 10x samples under data folder in this format:
 
 __"data/{sample}/outs/filtered_feature_bc_matrix.h5"__
 
@@ -33,18 +33,18 @@ This will register the directory name as sample name for later processing.
 
 You can start the pipeline by calling,
 ```
-snakemake -j 20 --configfile config.yaml
+snakemake -j 5
 
 ```
-which will create a 20 threads job.
+which will create a 5 threads job.
 
 
 Do a dry run:
 ```
-snakemake -j 20 -n
+snakemake -j 5 -n
 ```
 
-Show command line arguments:
+Show command line arguments and dry run:
 ```
-snakemake -j 20 -n -p
+snakemake -j 5 -n -p
 ```
