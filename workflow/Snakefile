@@ -2,6 +2,7 @@ from collections import defaultdict
 from yaml import load
 import os
 
+configfile: "config.yaml"
 
 files, = glob_wildcards("data/{sample}/raw_feature_bc_matrix/matrix.mtx.gz")    
 others, = glob_wildcards("data/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx.gz")
