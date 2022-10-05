@@ -38,4 +38,16 @@ snakemake -j 20 --configfile config.yaml
 
 ```
 
+Do a dry run:
+```
+snakemake -j 20 -n
+```
+
+Show command line arguments:
+```
+snakemake -j 20 -n -p
+```
+
+
+
 which will create a 20 threads job.
