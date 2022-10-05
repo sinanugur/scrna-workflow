@@ -20,7 +20,7 @@ doublet_filter=config.get("doublet_filter","T") #True:T or False:F
 #clustering and normalization paramaters
 normalization_method=config.get("normalization_method","LogNormalize")
 scale_factor=config.get("scale_factor",10000)
-resolution=str(config.get("resolution",0.8))
+resolution=[str(config.get("resolution",0.8))]
 
 #Differential expression paramaters
 logfc_threshold=config.get("logfc_threshold",0.25)
