@@ -32,11 +32,12 @@ __"data/{sample}/outs/filtered_feature_bc_matrix.h5"__
 This will register the directory name as sample name for later processing.
 
 You can start the pipeline by calling,
-
 ```
 snakemake -j 20 --configfile config.yaml
 
 ```
+which will create a 20 threads job.
+
 
 Do a dry run:
 ```
@@ -47,7 +48,3 @@ Show command line arguments:
 ```
 snakemake -j 20 -n -p
 ```
-
-
-
-which will create a 20 threads job.
