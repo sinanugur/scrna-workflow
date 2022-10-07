@@ -8,9 +8,25 @@ def input_function(wildcards):
         return("data/" + wildcards.sample + "/filtered_feature_bc_matrix/")
     elif os.path.isfile("data/" + wildcards.sample + "/filtered_feature_bc_matrix.h5"):
         return("data/" + wildcards.sample + "/")
+    elif os.path.isfile("data/" + wildcards.sample + "/raw_feature_bc_matrix/matrix.mtx.gz"):
+        return("data/" + wildcards.sample + "/raw_feature_bc_matrix/")
     else:
         return("data/" + wildcards.sample + "/outs/raw_feature_bc_matrix/")
 
+
+rule rds_params:
+    input:
+        #"data/{sample}/raw_feature_bc_matrix/"
+        input_function
+    output:
+        "analyses/raw/{sample}/" + f"{paramspace.wildcard_pattern}.rds"
+        #"analyses/raw/{sample}/MT~{MT}/resolution~{resolution}.rds"
+    params:
+        paramaters=paramspace.instance,
+    shell:
+        """workflow/scripts/scrna-read-qc.R --data.dir {input} --sampleid {wildcards.sample} --percent.mt {params.paramaters[MT]} --min.features {min_features} --min.cells {min_cells}"""
+
+"""
 rule rds:
     input:
         #"data/{sample}/raw_feature_bc_matrix/"
@@ -20,6 +36,7 @@ rule rds:
 
     shell:
         "workflow/scripts/scrna-read-qc.R --data.dir {input} --sampleid {wildcards.sample} --percent.mt {percent_mt} --min.features {min_features} --min.cells {min_cells}"
+"""
 
 rule clustree:
     input:

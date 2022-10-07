@@ -2,13 +2,19 @@ from collections import defaultdict
 from yaml import load
 import os
 
+from snakemake.utils import Paramspace
+import pandas as pd
+
+paramspace = Paramspace(pd.read_csv("params.tsv", sep="\t"))
+
 configfile: "config.yaml"
 
 files, = glob_wildcards("data/{sample}/raw_feature_bc_matrix/matrix.mtx.gz")    
 others, = glob_wildcards("data/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx.gz")
 h5files, = glob_wildcards("data/{sample}/filtered_feature_bc_matrix.h5")
 files=list(filter(lambda i: "/" not in i, files+others+h5files)) #do not capture subdirectories etc
-
+print(files)
+print(paramspace.instance)
 #basic paramaters
 min_cells=config.get("min_cells",3)
 min_features=config.get("min_features",200)
@@ -40,10 +46,13 @@ celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
 
 include: "rules/seurat.smk"
 
+print(expand(["analyses/raw/" + s + "/{params}.rds" for s in files],params=list(paramspace.instance_patterns)))
+
 if route == "minimal":
     rule all:
         input:
-            expand("analyses/raw/{sample}.rds",sample=files)
+            #expand("analyses/raw/{sample}/{params}.rds",sample=files,params=paramspace.instance_patterns)
+            expand(["analyses/raw/" + s + "/{params}.rds" for s in files],params=list(paramspace.instance_patterns))
 
 elif route == "standard":
 
