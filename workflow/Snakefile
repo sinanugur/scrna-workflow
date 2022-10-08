@@ -14,14 +14,13 @@ others, = glob_wildcards("data/{sample}/outs/filtered_feature_bc_matrix/matrix.m
 h5files, = glob_wildcards("data/{sample}/filtered_feature_bc_matrix.h5")
 files=list(filter(lambda i: "/" not in i, files+others+h5files)) #do not capture subdirectories etc
 print(files)
-print(paramspace.instance)
 #basic paramaters
 min_cells=config.get("min_cells",3)
 min_features=config.get("min_features",200)
 percent_mt=config.get("percent_mt",10)
 min_coverage=config.get("min_coverage",1000)
 highly_variable_features=config.get("highly_variable_features",2000)
-doublet_filter=config.get("doublet_filter","T") #True:T or False:F
+doublet_filter= "--doublet.filter" if config.get("doublet_filter") in [True,"TRUE","True","T"] else "" #True or False
 
 #clustering and normalization paramaters
 normalization_method=config.get("normalization_method","LogNormalize")
@@ -45,14 +44,13 @@ integration_resolution=str(config.get("resolution",0.8))
 celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
 
 include: "rules/seurat.smk"
-
-print(expand(["analyses/raw/" + s + "/{params}.rds" for s in files],params=list(paramspace.instance_patterns)))
-
 if route == "minimal":
     rule all:
         input:
-            #expand("analyses/raw/{sample}/{params}.rds",sample=files,params=paramspace.instance_patterns)
-            expand(["analyses/raw/" + s + "/{params}.rds" for s in files],params=list(paramspace.instance_patterns))
+            expand(["analyses/raw/" + s + "/{params}.rds" for s in files],params=list(paramspace.instance_patterns)),
+            expand(["results/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
+            expand(["results/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns))
+
 
 elif route == "standard":
 
@@ -72,8 +70,8 @@ elif route == "standard":
 elif route == "clustree" or route == "clusteringTree":
     rule all:
         input:
-            expand("results/{sample}/clusteringTree/clusteringTree-{sample}.pdf",sample=files)
-
+            #expand("results/{sample}/clusteringTree/clusteringTree.pdf",sample=files)
+            expand(["results/" + s + "/{params}/clusteringTree/clusteringTree.pdf" for s in files],params=list(paramspace.instance_patterns))
 
 elif route == "annotate":
     rule all:

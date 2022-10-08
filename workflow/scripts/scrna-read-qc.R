@@ -10,7 +10,13 @@ option_list = list(
     optparse::make_option(c("--sampleid"), type="character", default=NULL, 
               help="Sample ID", metavar="character"),
     optparse::make_option(c("--percent.mt"), type="double", default=10, 
-              help="Mitochondria filtering percentage [default= %default]", metavar="character")
+              help="Mitochondria filtering percentage [default= %default]", metavar="character"),
+    optparse::make_option(c("--before.violin.plot"), type="character", default="before.violin.pdf", 
+              help="Violin plot name [default= %default]", metavar="character"),
+    optparse::make_option(c("--after.violin.plot"), type="character", default="after.violin.pdf", 
+              help="Violin plot name [default= %default]", metavar="character"),
+     optparse::make_option(c("--output.rds"), type="character", default=NULL, 
+              help="Output RDS file name [default= %default]", metavar="character")
 
 
 )
@@ -45,14 +51,10 @@ scrna <- CreateSeuratObject(counts = scrna.data, project = opt$sampleid, min.cel
 scrna[["percent.mt"]] <- PercentageFeatureSet(scrna, pattern = "^MT-")
 scrna[["percent.rp"]] <- PercentageFeatureSet(scrna, pattern = "^RP[SL]")
 
-
-output.dir=paste0("results/",opt$sampleid,"/technicals/")
-dir.create(output.dir,recursive = T)
-
 VlnPlot(scrna, features = c("nFeature_RNA", "nCount_RNA", "percent.mt","percent.rp"), ncol = 4)
 
 
-ggsave(paste0(output.dir,"before-qc-trimming-violinplot.pdf"), width = 10,height = 4)
+ggsave(opt$before.violin.plot, width = 10,height = 4)
 
 
 
@@ -82,10 +84,8 @@ upper_bound_nFeature_RNA <- median(scrna$nFeature_RNA) + 3 * mad(scrna$nFeature_
 scrna <- subset(scrna, subset = nFeature_RNA > lower_bound_nFeature_RNA & nFeature_RNA < upper_bound_nFeature_RNA & nCount_RNA > lower_bound_nCount_RNA  & nCount_RNA < upper_bound_nCount_RNA & percent.mt < opt$percent.mt)
 
 VlnPlot(scrna, features = c("nFeature_RNA", "nCount_RNA", "percent.mt","percent.rp"), ncol = 4)
-ggsave(paste0(output.dir,"after-qc-trimming-violinplot.pdf"), width = 10,height = 4)
+
+ggsave(opt$after.violin.plot, width = 10,height = 4)
 
 
-output.dir=paste0("analyses/raw/")
-dir.create(output.dir,recursive = T)
-
-saveRDS(scrna,file = paste0(output.dir,opt$sampleid,".rds"))
+saveRDS(scrna,file = opt$output.rds)

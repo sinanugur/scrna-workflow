@@ -19,12 +19,13 @@ rule rds_params:
         #"data/{sample}/raw_feature_bc_matrix/"
         input_function
     output:
-        "analyses/raw/{sample}/" + f"{paramspace.wildcard_pattern}.rds"
-        #"analyses/raw/{sample}/MT~{MT}/resolution~{resolution}.rds"
+        rds="analyses/raw/{sample}/" + f"{paramspace.wildcard_pattern}.rds",
+        before="results/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/before-qc-trimming-violinplot.pdf",
+        after="results/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/after-qc-trimming-violinplot.pdf"
     params:
         paramaters=paramspace.instance,
     shell:
-        """workflow/scripts/scrna-read-qc.R --data.dir {input} --sampleid {wildcards.sample} --percent.mt {params.paramaters[MT]} --min.features {min_features} --min.cells {min_cells}"""
+        """workflow/scripts/scrna-read-qc.R --data.dir {input} --output.rds {output.rds} --sampleid {wildcards.sample} --percent.mt {params.paramaters[MT]} --min.features {min_features} --min.cells {min_cells} --before.violin.plot {output.before} --after.violin.plot {output.after}"""
 
 """
 rule rds:
@@ -40,12 +41,12 @@ rule rds:
 
 rule clustree:
     input:
-        "analyses/raw/{sample}.rds"
+        "analyses/raw/{sample}/" + f"{paramspace.wildcard_pattern}.rds"
     output:
-        clustree="results/{sample}/clusteringTree/clusteringTree-{sample}.pdf",
-        heatmap="results/{sample}/technicals/DimHeatMap_plot.pdf",
-        hvfplot="results/{sample}/technicals/highly-variable-features.pdf",
-        jackandelbow="results/{sample}/technicals/JackandElbow_plot.pdf"
+        clustree="results/{sample}/" + f"{paramspace.wildcard_pattern}" + "/clusteringTree/clusteringTree.pdf",
+        heatmap="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/DimHeatMap_plot.pdf",
+        hvfplot="results/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/highly-variable-features.pdf",
+        jackandelbow="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/JackandElbow_plot.pdf"
     shell:
         "workflow/scripts/scrna-clusteringtree.R --rds {input} --output {output.clustree} --heatmap {output.heatmap} --hvfplot {output.hvfplot} --jackandelbow {output.jackandelbow}"
 
@@ -53,21 +54,28 @@ rule clustree:
 
 rule normalization_pca_rds:
     input:
-        "analyses/raw/{sample}.rds"
+        "analyses/raw/{sample}/" + f"{paramspace.wildcard_pattern}.rds"
     output:
-        "analyses/processed/{res}/{sample}.rds",
-        "results/{sample}/resolution-{res}/{sample}.number-of-cells-per-cluster.xlsx"
+        rds="analyses/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
+        xlsx="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/number-of-cells-per-cluster.xlsx",
+        pca="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/pca.plot.pdf"
+    params:
+        paramaters=paramspace.instance,
+        doublet_filter=doublet_filter
     shell:
-        "workflow/scripts/scrna-normalization-pca.R --rds {input} --sampleid {wildcards.sample} --normalization.method {normalization_method} --scale.factor {scale_factor} --nfeature {highly_variable_features} --resolution {wildcards.res}"
+        "workflow/scripts/scrna-normalization-pca.R --rds {input} {params.doublet_filter} --normalization.method {normalization_method} "
+        "--scale.factor {scale_factor} --nfeature {highly_variable_features} --resolution {params.paramaters[resolution]} --output.rds {output.rds} --output.xlsx {output.xlsx} --output.pca {output.pca}"
 
 
 rule umap_plot:
     input:
-        "analyses/processed/{res}/{sample}.rds"
+        "analyses/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        "results/{sample}/resolution-{res}/{sample}.umap.pdf"
+        umap="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/umap.plot.pdf"
+    params:
+        paramaters=paramspace.instance,
     shell:
-        "workflow/scripts/scrna-umap.R --rds {input} --sampleid {wildcards.sample} --resolution {wildcards.res}"
+        "workflow/scripts/scrna-umap.R --rds {input} --output.umap.plot {output.umap} --resolution {params.paramaters[resolution]}"
 
 
     

@@ -7,8 +7,8 @@ option_list = list(
 
     optparse::make_option(c("--rds"), type="character", default=NULL, 
               help="Processed rds file of a Seurat object", metavar="character"),
-    optparse::make_option(c("--sampleid"), type="character", default=NULL, 
-              help="Sample ID", metavar="character")
+      optparse::make_option(c("--output.umap.plot"), type="character", default="umap.pdf", 
+              help="UMAP plot file name", metavar="character")
 
 
 )
@@ -18,9 +18,9 @@ option_list = list(
 opt_parser = optparse::OptionParser(option_list=option_list)
 opt = optparse::parse_args(opt_parser)
 
-if (is.null(opt$rds) || is.null(opt$sampleid) ){
+if (is.null(opt$rds)){
   optparse::print_help(opt_parser)
-  stop("At least one argument must be supplied (rds file and sampleid)", call.=FALSE)
+  stop("At least one argument must be supplied (rds file)", call.=FALSE)
 }
 
 require(Seurat)
@@ -35,8 +35,7 @@ p1 <- DimPlot(scrna, reduction = "umap", label = TRUE,label.size = 10)
 
 
 
-output.dir=paste0("results/",opt$sampleid,"/resolution-",opt$resolution,"/")
-dir.create(output.dir,recursive = T)
 
-ggsave(plot =p1,filename=paste0(output.dir,opt$sampleid,".umap",".pdf"),width=13,height=7)
+
+ggsave(plot =p1,filename=opt$output.umap.plot,width=13,height=7)
 
