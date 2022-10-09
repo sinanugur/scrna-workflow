@@ -11,6 +11,8 @@ option_list = list(
     optparse::make_option(c("--normalization.method"), type="character", default="LogNormalize", 
               help="Normalization method[default= %default]", metavar="character"),
     optparse::make_option(c("--doublet.filter"), action = "store_true", default = FALSE),
+    optparse::make_option(c("--umap"), action = "store_true", default = FALSE),
+    optparse::make_option(c("--tsne"), action = "store_true", default = FALSE),
     optparse::make_option(c("--resolution"), type="double", default=0.8, 
               help="Resolution [default= %default]", metavar="character"),
     optparse::make_option(c("--output.rds"), type="character", default="output.rds", 
@@ -51,8 +53,10 @@ scrna <- RunPCA(scrna, features = VariableFeatures(object = scrna))
 dimensionReduction=function_pca_dimensions(scrna)
 scrna <- FindNeighbors(scrna, dims = 1:dimensionReduction)
 scrna <- FindClusters(scrna, resolution = opt$resolution)
-scrna <- RunUMAP(scrna, dims = 1:dimensionReduction)
-#scrna <- RunTSNE(scrna, dims = 1:dimensionReduction)
+
+
+if(opt$umap) {scrna <- RunUMAP(scrna, dims = 1:dimensionReduction)}
+if(opt$tsne) {scrna <- RunTSNE(scrna, dims = 1:dimensionReduction)}
 
 
 

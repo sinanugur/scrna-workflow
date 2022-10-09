@@ -20,12 +20,15 @@ min_features=config.get("min_features",200)
 percent_mt=config.get("percent_mt",10)
 min_coverage=config.get("min_coverage",1000)
 highly_variable_features=config.get("highly_variable_features",2000)
-doublet_filter= "--doublet.filter" if config.get("doublet_filter") in [True,"TRUE","True","T"] else "" #True or False
+doublet_filter= "--doublet.filter" if config.get("doublet_filter",True) in [True,"TRUE","True","T"] else ""
 
 #clustering and normalization paramaters
 normalization_method=config.get("normalization_method","LogNormalize")
 scale_factor=config.get("scale_factor",10000)
 resolution=[str(config.get("resolution",0.8))]
+umap_plot="--umap" if config.get("umap_plot",True) in [True,"TRUE","True","T"] else ""
+tsne_plot="--tsne" if config.get("tsne_plot",False) in [True,"TRUE","True","T"] else ""
+
 
 #Differential expression paramaters
 logfc_threshold=config.get("logfc_threshold",0.25)

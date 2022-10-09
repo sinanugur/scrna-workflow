@@ -61,10 +61,13 @@ rule normalization_pca_rds:
         pca="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/pca.plot.pdf"
     params:
         paramaters=paramspace.instance,
-        doublet_filter=doublet_filter
+        doublet_filter=doublet_filter,
+        umap_plot=umap_plot,
+        tsne_plot=tsne_plot
     shell:
         "workflow/scripts/scrna-normalization-pca.R --rds {input} {params.doublet_filter} --normalization.method {normalization_method} "
-        "--scale.factor {scale_factor} --nfeature {highly_variable_features} --resolution {params.paramaters[resolution]} --output.rds {output.rds} --output.xlsx {output.xlsx} --output.pca {output.pca}"
+        "--scale.factor {scale_factor} --nfeature {highly_variable_features} --resolution {params.paramaters[resolution]} "
+        "--output.rds {output.rds} --output.xlsx {output.xlsx} --output.pca {output.pca} {umap_plot} {tsne_plot}"
 
 
 rule umap_plot:
