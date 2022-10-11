@@ -96,7 +96,7 @@ p1 <- DimPlot(scrna, reduction = "pca", label = TRUE,label.size = 10)
 #output files
 saveRDS(scrna,file = opt$output.rds)
 openxlsx::write.xlsx(metrics %>% as.data.frame() %>% select(Cluster=1,everything()),file=opt$output.xlsx)
-ggsave(plot =p1,filename=opt$output.pca.plot,width=13,height=7)
+ggsave(plot =p1,filename=opt$output.pca.plot,width=9,height=7)
 
 
 

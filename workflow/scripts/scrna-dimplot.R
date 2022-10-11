@@ -4,10 +4,11 @@
 option_list = list(
   optparse::make_option(c("--resolution"), type="double", default=0.8, 
               help="Resolution [default= %default]", metavar="character"),
-
     optparse::make_option(c("--rds"), type="character", default=NULL, 
               help="Processed rds file of a Seurat object", metavar="character"),
-      optparse::make_option(c("--output.umap.plot"), type="character", default="umap.pdf", 
+        optparse::make_option(c("--reduction.type"), type="character", default="umap", 
+              help="Reduction type, umap or tsne", metavar="character"),
+      optparse::make_option(c("--output.reduction.plot"), type="character", default="reduction.pdf", 
               help="UMAP plot file name", metavar="character")
 
 
@@ -31,11 +32,11 @@ source("workflow/scripts/scrna-functions.R")
 
 scrna=readRDS(file = opt$rds)
 
-p1 <- DimPlot(scrna, reduction = "umap", label = TRUE,label.size = 10) 
+p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = TRUE,label.size = 10) 
 
 
 
 
 
-ggsave(plot =p1,filename=opt$output.umap.plot,width=13,height=7)
+ggsave(plot =p1,filename=opt$output.reduction.plot,width=9,height=7)
 

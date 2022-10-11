@@ -27,17 +27,6 @@ rule rds_params:
     shell:
         """workflow/scripts/scrna-read-qc.R --data.dir {input} --output.rds {output.rds} --sampleid {wildcards.sample} --percent.mt {params.paramaters[MT]} --min.features {min_features} --min.cells {min_cells} --before.violin.plot {output.before} --after.violin.plot {output.after}"""
 
-"""
-rule rds:
-    input:
-        #"data/{sample}/raw_feature_bc_matrix/"
-        input_function
-    output:
-        "analyses/raw/{sample}.rds"
-
-    shell:
-        "workflow/scripts/scrna-read-qc.R --data.dir {input} --sampleid {wildcards.sample} --percent.mt {percent_mt} --min.features {min_features} --min.cells {min_cells}"
-"""
 
 rule clustree:
     input:
@@ -78,39 +67,57 @@ rule umap_plot:
     params:
         paramaters=paramspace.instance,
     shell:
-        "workflow/scripts/scrna-umap.R --rds {input} --output.umap.plot {output.umap} --resolution {params.paramaters[resolution]}"
+        "workflow/scripts/scrna-reduction-plot.R --rds {input} --reduction.type umap --output.reduction.plot {output.umap} --resolution {params.paramaters[resolution]}"
+
+rule tsne_plot:
+    input:
+        "analyses/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
+    output:
+        tsne="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/tsne.plot.pdf"
+    params:
+        paramaters=paramspace.instance,
+    shell:
+        "workflow/scripts/scrna-dimplot.R --rds {input} --reduction.type tsne --output.reduction.plot {output.tsne} --resolution {params.paramaters[resolution]}"
 
 
     
-rule clustermarkers:
+rule find_all_cluster_markers:
     input:
-        "analyses/processed/{res}/{sample}.rds"
+        "analyses/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        "results/{sample}/resolution-{res}/{sample}.positive-markers-forAllClusters.xlsx",
-        "results/{sample}/resolution-{res}/{sample}.all-markers-forAllClusters.xlsx"
+        positive="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/positive-markers-forAllClusters.xlsx",
+        allmarkers="results/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/all-markers-forAllClusters.xlsx"
+    params:
+        paramaters=paramspace.instance,
     shell:
-        """
-        workflow/scripts/scrna-find-markers.R --rds {input} --resolution {wildcards.res} --sampleid {wildcards.sample} --logfc.threshold {logfc_threshold} --test.use {test_use}
-        """
+        "workflow/scripts/scrna-find-markers.R --rds {input} --resolution {params.paramaters[resolution]} --logfc.threshold {logfc_threshold} --test.use {test_use} --output.xlsx.positive {output.positive} --output.xlsx.all {output.allmarkers}"
+
+
+rule plot_top_positive_markers:
+    input:
+        rds="analyses/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
+        excel="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/positive-markers-forAllClusters.xlsx"
+    output:
+        directory("results/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/positive_marker_plots/")
+    params:
+        paramaters=paramspace.instance,
+    shell:
+        "workflow/scripts/scrna-marker-plots.R --rds {input.rds} --resolution {params.paramaters[resolution]} --xlsx {input.excel} --top_n {marker_plots_per_cluster_n} --output.plot.dir {output}"
+
 
 rule selected_markers:
     input:
-        "analyses/processed/{res}/{sample}.rds"
+        "analyses/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        "results/{sample}/resolution-{res}/selected-markers/selected-markers-dotplot.pdf",
-        directory("results/{sample}/resolution-{res}/selected-markers/plots/")
+        dotplot="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/selected-markers-dotplot.pdf",
+        sdir=directory("results/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/selected_marker_plots/")
+    params:
+        paramaters=paramspace.instance,
     shell:
-        "workflow/scripts/scrna-selected-marker-plots.R --rds {input} --resolution {wildcards.res} --sampleid {wildcards.sample}"
+        "workflow/scripts/scrna-selected-marker-plots.R --rds {input} --tsv {selected_markers_file} --resolution {params.paramaters[resolution]} --output.dotplot {output.dotplot} --output.plot.dir {output.sdir}"
 
 
-rule positive_markers:
-    input:
-        rds="analyses/processed/{res}/{sample}.rds",
-        excel="results/{sample}/resolution-{res}/{sample}.positive-markers-forAllClusters.xlsx"
-    output:
-        directory("results/{sample}/resolution-{res}/markers/")
-    shell:
-        "workflow/scripts/scrna-marker-plots.R --rds {input.rds} --resolution {wildcards.res} --sampleid {wildcards.sample} --xlsx {input.excel}"
+
 
 rule integration_with_harmony:
     input:

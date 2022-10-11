@@ -27,12 +27,16 @@ normalization_method=config.get("normalization_method","LogNormalize")
 scale_factor=config.get("scale_factor",10000)
 resolution=[str(config.get("resolution",0.8))]
 umap_plot="--umap" if config.get("umap_plot",True) in [True,"TRUE","True","T"] else ""
-tsne_plot="--tsne" if config.get("tsne_plot",False) in [True,"TRUE","True","T"] else ""
+tsne_plot="--tsne" if config.get("tsne_plot",True) in [True,"TRUE","True","T"] else ""
 
 
 #Differential expression paramaters
 logfc_threshold=config.get("logfc_threshold",0.25)
 test_use=config.get("test_use","wilcox")
+marker_plots_per_cluster_n=config.get("marker_plots_per_cluster_n",50)
+
+
+selected_markers_file=config.get("selected_markers_file","markers.tsv")
 
 #GO enrichment paramaters
 algorithm=config.get("algorithm","weight01")
@@ -47,27 +51,37 @@ integration_resolution=str(config.get("resolution",0.8))
 celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
 
 include: "rules/seurat.smk"
+
+
+def plot():
+    plots=[]
+    if umap_plot:
+        plots=plots + expand(["results/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns))
+    if tsne_plot:
+        plots=plots + expand(["results/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns))
+    return plots
+
+def selected_markers():
+    if os.path.isfile(selected_markers_file):
+        return expand(["results/" + s + "/{params}/selected-markers-dotplot.pdf" for s in files],params=list(paramspace.instance_patterns))
+
+
 if route == "minimal":
     rule all:
         input:
             expand(["analyses/raw/" + s + "/{params}.rds" for s in files],params=list(paramspace.instance_patterns)),
             expand(["results/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
-            expand(["results/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns))
+            expand(["results/" + s + "/{params}/positive-markers-forAllClusters.xlsx" for s in files],params=list(paramspace.instance_patterns)),
+            expand(["results/" + s + "/{params}/positive_marker_plots/" for s in files],params=list(paramspace.instance_patterns)),
+            plot(),
+            selected_markers()
 
 
 elif route == "standard":
-
     rule all:
         input:
-            expand("results/{sample}/clusteringTree/clusteringTree-{sample}.pdf",sample=files),
-            expand(["results/{sample}/resolution-" + x + "/{sample}.positive-markers-forAllClusters.xlsx" for x in resolution],sample=files),
-            expand(["results/{sample}/resolution-" + x + "/{sample}.number-of-cells-per-cluster.xlsx" for x in resolution],sample=files),
-            expand("analyses/raw/{sample}.rds",sample=files),
-            expand(["analyses/processed/" + x + "/{sample}.rds" for x in resolution],sample=files),
             expand(["results/{sample}/resolution-" + x + "/selected-markers/selected-markers-dotplot.pdf" for x in resolution],sample=files),
             expand(["results/{sample}/resolution-" + x + "/selected-markers/plots/" for x in resolution], sample=files),
-            expand(["results/{sample}/resolution-" + x + "/markers/" for x in resolution], sample=files),
-            expand(["results/{sample}/resolution-" + x + "/{sample}.umap.pdf" for x in resolution], sample=files),
             expand(["results/{sample}/resolution-" + x + "/enrichment/GO-enrichment-all_clusters-ontology-{ontology}.xlsx".format(ontology=ontology) for x in resolution], sample=files)
 
 elif route == "clustree" or route == "clusteringTree":
