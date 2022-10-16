@@ -14,19 +14,16 @@ def input_function(wildcards):
         return("data/" + wildcards.sample + "/outs/raw_feature_bc_matrix/")
 
 
-rule rds_params:
+rule create_initial_raw_rds_and_trimming:
     input:
         #"data/{sample}/raw_feature_bc_matrix/"
-        input_function
+        raw=input_function
     output:
         rds="analyses/raw/{sample}/" + f"{paramspace.wildcard_pattern}.rds",
         before="results/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/before-qc-trimming-violinplot.pdf",
         after="results/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/after-qc-trimming-violinplot.pdf"
-    params:
-        paramaters=paramspace.instance,
     shell:
-        """workflow/scripts/scrna-read-qc.R --data.dir {input} --output.rds {output.rds} --sampleid {wildcards.sample} --percent.mt {params.paramaters[MT]} --min.features {min_features} --min.cells {min_cells} --before.violin.plot {output.before} --after.violin.plot {output.after}"""
-
+        """workflow/scripts/scrna-read-qc.R --data.dir {input.raw} --output.rds {output.rds} --sampleid {wildcards.sample} --percent.mt {wildcards.MT} --min.features {min_features} --min.cells {min_cells} --before.violin.plot {output.before} --after.violin.plot {output.after}"""
 
 rule clustree:
     input:
@@ -67,7 +64,7 @@ rule umap_plot:
     params:
         paramaters=paramspace.instance,
     shell:
-        "workflow/scripts/scrna-reduction-plot.R --rds {input} --reduction.type umap --output.reduction.plot {output.umap} --resolution {params.paramaters[resolution]}"
+        "workflow/scripts/scrna-dimplot.R --rds {input} --reduction.type umap --output.reduction.plot {output.umap} --resolution {params.paramaters[resolution]}"
 
 rule tsne_plot:
     input:
@@ -98,23 +95,35 @@ rule plot_top_positive_markers:
         rds="analyses/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
         excel="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/positive-markers-forAllClusters.xlsx"
     output:
-        directory("results/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/positive_marker_plots/")
+        directory("results/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/positive_marker_plots_{reduction}/")
     params:
         paramaters=paramspace.instance,
     shell:
-        "workflow/scripts/scrna-marker-plots.R --rds {input.rds} --resolution {params.paramaters[resolution]} --xlsx {input.excel} --top_n {marker_plots_per_cluster_n} --output.plot.dir {output}"
+        "workflow/scripts/scrna-marker-plots.R --rds {input.rds} --resolution {params.paramaters[resolution]} --xlsx {input.excel} --top_n {marker_plots_per_cluster_n} --output.plot.dir {output} --reduction.type {wildcards.reduction}"
 
 
-rule selected_markers:
+
+rule selected_marker_dot_plot:
     input:
         "analyses/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        dotplot="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/selected-markers-dotplot.pdf",
-        sdir=directory("results/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/selected_marker_plots/")
+        dotplot="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/selected-markers-dotplot.pdf"
     params:
         paramaters=paramspace.instance,
     shell:
-        "workflow/scripts/scrna-selected-marker-plots.R --rds {input} --tsv {selected_markers_file} --resolution {params.paramaters[resolution]} --output.dotplot {output.dotplot} --output.plot.dir {output.sdir}"
+        "workflow/scripts/scrna-dotplot.R --rds {input} --tsv {selected_markers_file} --resolution {params.paramaters[resolution]} --output.dotplot {output.dotplot}"
+
+
+rule selected_marker_plots:
+    input:
+        "analyses/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
+    output:
+        sdir=directory("results/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/selected_marker_plots_{reduction}/")
+    params:
+        paramaters=paramspace.instance,
+    shell:
+        "workflow/scripts/scrna-selected-marker-plots.R --rds {input} --tsv {selected_markers_file} --resolution {params.paramaters[resolution]} --output.plot.dir {output.sdir} --reduction.type {wildcards.reduction}"
+
 
 
 

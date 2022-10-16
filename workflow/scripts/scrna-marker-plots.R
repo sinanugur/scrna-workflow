@@ -14,8 +14,6 @@ option_list = list(
               help="Output plot directory", metavar="character"),
       optparse::make_option(c("--reduction.type"), type="character", default="umap", 
               help="Reduction type, umap or tsne", metavar="character")
-
-
 )
  
 
@@ -61,6 +59,6 @@ p3 <- VlnPlot(scrna,features=gene)
 
 suppressWarnings(((p1|p2)/p3) -> wp)
 
-ggsave(paste0(opt$output.plot.dir,"/cluster",cluster,"/",gene,".",opt$reduction.type,".pdf"),wp,height=9,width=9)
+ggsave(paste0(opt$output.plot.dir,"/cluster",cluster,"/",gene,".pdf"),wp,height=9,width=9)
 
 })

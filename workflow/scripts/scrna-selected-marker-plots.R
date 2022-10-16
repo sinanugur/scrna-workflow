@@ -4,13 +4,8 @@ option_list = list(
               help="Resolution [default= %default]", metavar="character"),
     optparse::make_option(c("--rds"), type="character", default=NULL, 
               help="Processed rds file of a Seurat object", metavar="character"),
-    
     optparse::make_option(c("--tsv"), type="character", default=NULL, 
               help="A text file contains the gene list", metavar="character"),
-    
-    optparse::make_option(c("--output.dotplot"), type="character", default=NULL, 
-              help="Output dotplot name", metavar="character"),
-          
     optparse::make_option(c("--output.plot.dir"), type="character", default=NULL, 
               help="Output plot directory", metavar="character"),
             optparse::make_option(c("--reduction.type"), type="character", default="umap", 
@@ -58,13 +53,8 @@ p3 <- VlnPlot(scrna,features=i)
 
 suppressWarnings(((p1|p2)/p3) -> wp)
 
-ggsave(paste0(opt$output.plot.dir,"/",i,".",opt$reduction.type,".pdf"),wp,height=9,width=9)
+ggsave(paste0(opt$output.plot.dir,"/",i,".pdf"),wp,height=9,width=9)
 
 })
 
 })
-
-markers=sort(intersect(markers,rownames(scrna)))
-
-DotPlot(scrna, features = markers, dot.scale = 8) + RotatedAxis()
-ggsave(opt$output.dotplot,width = 13,height = 8)

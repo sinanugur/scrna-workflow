@@ -57,18 +57,6 @@ VlnPlot(scrna, features = c("nFeature_RNA", "nCount_RNA", "percent.mt","percent.
 ggsave(opt$before.violin.plot, width = 10,height = 4)
 
 
-
-
- #minCov=opt$minCov #if a sample has a good coverage (>=minCov), then don't set a lower thresold for nCount, it's already pretty good. 
- #if(min(scrna$nCount_RNA)>=minCov){
- #   countLOW=min(scrna$nCount_RNA)
- # }else{
- #   countLOW=quantile(scrna$nCount_RNA, prob=0.01)  
- #}
- #countHIGH=quantile(scrna$nCount_RNA, prob=0.99) 
- #featureLOW=quantile(scrna$nFeature_RNA, prob=0.01)
-
-
 lower_bound_nCount_RNA <- median(scrna$nCount_RNA) - 3 * mad(scrna$nCount_RNA, constant = 1)
 upper_bound_nCount_RNA <- median(scrna$nCount_RNA) + 3 * mad(scrna$nCount_RNA, constant = 1)
 
