@@ -4,6 +4,7 @@ import os
 
 from snakemake.utils import Paramspace
 import pandas as pd
+from fuzzywuzzy import fuzz
 
 configfile: "config.yaml"
 
@@ -12,13 +13,20 @@ others, = glob_wildcards("data/{sample}/outs/filtered_feature_bc_matrix/matrix.m
 h5files, = glob_wildcards("data/{sample}/filtered_feature_bc_matrix.h5")
 files=list(filter(lambda i: "/" not in i, files+others+h5files)) #do not capture subdirectories etc
 print(files)
+
+results_folder=config.get("results_folder","results")
 #basic paramaters
 min_cells=config.get("min_cells",3)
 min_features=config.get("min_features",200)
-percent_mt=config.get("percent_mt",10)
-min_coverage=config.get("min_coverage",1000)
+percent_mt=config.get("percent_mt",10) #if not automatic, this will be used for all samples
+percent_rp=config.get("percent_rp",0) #by default, no filtering on ribosomal genes percentage 
+#min_coverage=config.get("min_coverage",1000)
 highly_variable_features=config.get("highly_variable_features",2000)
 doublet_filter= "--doublet.filter" if config.get("doublet_filter",True) in [True,"TRUE","True","T"] else ""
+
+#automatic mt filtering
+auto_mt_filtering=config.get("auto_mt_filtering",False)
+
 
 #automatic cluster/resolution detection
 #detect_resolution=config.get("detect_resolution",False)
@@ -51,7 +59,7 @@ mapping=config.get("mapping","org.Hs.eg.db")
 ontology = config.get("ontology","BP")
 
 #alternative routes
-route=config.get("route","standard") # select standard route for analysis
+route=config.get("route","minimal") # select standard route for analysis
 integration_id=config.get("integration_id","combined")
 integration_resolution=str(config.get("resolution",0.8))
 celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
@@ -66,27 +74,33 @@ def initialization_of_paramspace(tsv_file,dictionary):
     
     return par_df
 
-par_df = initialization_of_paramspace("params.tsv",{"MT":[percent_mt],"resolution":[resolution]})
-paramspace=Paramspace(par_df)
-paramspace_mt=Paramspace(pd.DataFrame(par_df['MT']))
+if auto_mt_filtering:
+    par_df = initialization_of_paramspace("params.tsv",{"resolution":[resolution]})
+    del par_df["MT"]
+    paramspace=Paramspace(par_df)
+
+else:
+    par_df = initialization_of_paramspace("params.tsv",{"MT":[percent_mt],"resolution":[resolution]})
+    paramspace=Paramspace(par_df)
+    paramspace_mt=Paramspace(pd.DataFrame(par_df['MT']))
 
 
 def dim_reduction_and_marker_plots(paramspace):
     plots=[]
     if umap_markers_plot:
-        plots = plots + expand(["results/" + s + "/{params}/positive_marker_plots_umap/" for s in files],params=list(paramspace.instance_patterns))
+        plots = plots + expand([results_folder + "/" + s + "/{params}/positive_marker_plots_umap/" for s in files],params=list(paramspace.instance_patterns))
     if tsne_markers_plot:
-        plots = plots + expand(["results/" + s + "/{params}/positive_marker_plots_tsne/" for s in files],params=list(paramspace.instance_patterns))
+        plots = plots + expand([results_folder + "/" + s + "/{params}/positive_marker_plots_tsne/" for s in files],params=list(paramspace.instance_patterns))
     return plots
 
 def selected_markers(paramspace):
     plots=[]
     if os.path.isfile(selected_markers_file):
-        plots = plots + expand(["results/" + s + "/{params}/selected-markers-dotplot.pdf" for s in files],params=list(paramspace.instance_patterns))
+        plots = plots + expand([results_folder + "/" + s + "/{params}/selected-markers-dotplot.pdf" for s in files],params=list(paramspace.instance_patterns))
         if umap_markers_plot:
-            plots = plots + expand(["results/" + s + "/{params}/selected_marker_plots_umap" for s in files],params=list(paramspace.instance_patterns))
+            plots = plots + expand([results_folder + "/" + s + "/{params}/selected_marker_plots_umap" for s in files],params=list(paramspace.instance_patterns))
         if tsne_markers_plot:
-            plots = plots + expand(["results/" + s + "/{params}/selected_marker_plots_tsne" for s in files],params=list(paramspace.instance_patterns))
+            plots = plots + expand([results_folder + "/" + s + "/{params}/selected_marker_plots_tsne" for s in files],params=list(paramspace.instance_patterns))
     return plots
 
 def sample_paramater(sample):
@@ -94,13 +108,17 @@ def sample_paramater(sample):
         par_df = pd.read_table(f"analyses/resolution_detection/{sample}/params.tsv")
         print(f"Autodetected resolution file found, will use this: analyses/resolution_detection/{sample}/params.tsv")
     except:
-        par_df = initialization_of_paramspace("params.tsv",{"MT":[percent_mt],"resolution":[resolution]})
+        par_df = initialization_of_paramspace("params.tsv",{"resolution":[resolution]} if auto_mt_filtering else {"MT":[percent_mt],"resolution":[resolution]})
+
+    if auto_mt_filtering:
+        del par_df["MT"]
+
     paramspace=Paramspace(par_df)
     return [expand(["analyses/raw/" + sample + "/{params}.rds"], params=list(paramspace.instance_patterns)), 
-            expand(["results/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-            expand(["results/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-            expand(["results/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
-            expand(["results/" + s + "/{params}/positive-markers-forAllClusters.xlsx" for s in files],params=list(paramspace.instance_patterns)),
+            expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
+            expand([results_folder + "/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
+            expand([results_folder + "/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
+            expand([results_folder + "/" + s + "/{params}/positive-markers-forAllClusters.xlsx" for s in files],params=list(paramspace.instance_patterns)),
             dim_reduction_and_marker_plots(paramspace),
             selected_markers(paramspace)
             ]
@@ -118,10 +136,10 @@ elif route == "standard":
     rule all:
         input:
             expand(["analyses/raw/" + s + "/{params}.rds" for s in files],params=list(paramspace.instance_patterns)),
-            expand(["results/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
-            expand(["results/" + s + "/{params}/positive-markers-forAllClusters.xlsx" for s in files],params=list(paramspace.instance_patterns)),
-            expand(["results/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-            expand(["results/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),        
+            expand([results_folder + "/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
+            expand([results_folder + "/" + s + "/{params}/positive-markers-forAllClusters.xlsx" for s in files],params=list(paramspace.instance_patterns)),
+            expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
+            expand([results_folder + "/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),        
             dim_reduction_and_marker_plots(),
             selected_markers()
 
@@ -142,7 +160,7 @@ elif route == "clustree" or route == "clusteringTree":
     rule all:
         input:
             #expand("results/{sample}/clusteringTree/clusteringTree.pdf",sample=files)
-            expand(["results/" + s + "/{params}/clusteringTree/clusteringTree.pdf" for s in files],params=list(paramspace.instance_patterns))
+            expand([results_folder + "/" + s + "/{params}/clusteringTree/clusteringTree.pdf" for s in files],params=list(paramspace.instance_patterns))
 
 elif route == "annotate":
     rule all:

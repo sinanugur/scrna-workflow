@@ -21,9 +21,13 @@ rule create_initial_raw_rds_and_trimming:
     output:
         rds="analyses/raw/{sample}/" + f"{paramspace.wildcard_pattern}.rds",
         before="results/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/before-qc-trimming-violinplot.pdf",
-        after="results/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/after-qc-trimming-violinplot.pdf"
-    shell:
-        """workflow/scripts/scrna-read-qc.R --data.dir {input.raw} --output.rds {output.rds} --sampleid {wildcards.sample} --percent.mt {wildcards.MT} --min.features {min_features} --min.cells {min_cells} --before.violin.plot {output.before} --after.violin.plot {output.after}"""
+        after="results/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/after-qc-trimming-violinplot.pdf",
+        mtplot="results/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/model-metrics-mitochondrial-genes.pdf"
+    run:
+        if auto_mt_filtering:
+            shell("workflow/scripts/scrna-read-qc.R --data.dir {input.raw} --output.rds {output.rds} --sampleid {wildcards.sample} --min.features {min_features} --min.cells {min_cells} --auto.mt.filter --plot.mtplot {output.mtplot} --before.violin.plot {output.before} --after.violin.plot {output.after}")
+        else:
+            shell("workflow/scripts/scrna-read-qc.R --data.dir {input.raw} --output.rds {output.rds} --sampleid {wildcards.sample} --percent.mt {wildcards.MT} --min.features {min_features} --min.cells {min_cells} --before.violin.plot {output.before} --after.violin.plot {output.after}")
 
 rule clustree:
     input:
