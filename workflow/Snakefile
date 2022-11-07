@@ -4,7 +4,8 @@ import os
 
 from snakemake.utils import Paramspace
 import pandas as pd
-from fuzzywuzzy import fuzz
+
+
 
 configfile: "config.yaml"
 
@@ -108,7 +109,7 @@ def sample_paramater(sample):
         par_df = pd.read_table(f"analyses/resolution_detection/{sample}/params.tsv")
         print(f"Autodetected resolution file found, will use this: analyses/resolution_detection/{sample}/params.tsv")
     except:
-        par_df = initialization_of_paramspace("params.tsv",{"resolution":[resolution]} if auto_mt_filtering else {"MT":[percent_mt],"resolution":[resolution]})
+        par_df = initialization_of_paramspace("params.tsv",{"MT":[percent_mt],"resolution":[resolution]})
 
     if auto_mt_filtering:
         del par_df["MT"]
@@ -120,7 +121,10 @@ def sample_paramater(sample):
             expand([results_folder + "/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
             expand([results_folder + "/" + s + "/{params}/positive-markers-forAllClusters.xlsx" for s in files],params=list(paramspace.instance_patterns)),
             dim_reduction_and_marker_plots(paramspace),
-            selected_markers(paramspace)
+            selected_markers(paramspace),
+            expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.dotplot.pdf" for s in files],params=list(paramspace.instance_patterns)),
+            expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.tsne.pdf" for s in files],params=list(paramspace.instance_patterns)),
+            expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.umap.pdf" for s in files],params=list(paramspace.instance_patterns))
             ]
 
 

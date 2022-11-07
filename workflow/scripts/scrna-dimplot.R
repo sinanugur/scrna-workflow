@@ -9,7 +9,7 @@ option_list = list(
         optparse::make_option(c("--reduction.type"), type="character", default="umap", 
               help="Reduction type, umap or tsne", metavar="character"),
       optparse::make_option(c("--output.reduction.plot"), type="character", default="reduction.pdf", 
-              help="UMAP plot file name", metavar="character")
+              help="Plot file name", metavar="character")
 
 
 )

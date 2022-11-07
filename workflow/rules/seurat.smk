@@ -17,26 +17,28 @@ def input_function(wildcards):
 rule create_initial_raw_rds_and_trimming:
     input:
         #"data/{sample}/raw_feature_bc_matrix/"
-        raw=input_function
+        raw=input_function    
     output:
         rds="analyses/raw/{sample}/" + f"{paramspace.wildcard_pattern}.rds",
-        before="results/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/before-qc-trimming-violinplot.pdf",
-        after="results/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/after-qc-trimming-violinplot.pdf",
-        mtplot="results/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/model-metrics-mitochondrial-genes.pdf"
+        before=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/before-qc-trimming-violinplot.pdf",
+        after=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/after-qc-trimming-violinplot.pdf",
+        mtplot=[results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/model-metrics-mitochondrial-genes.pdf"] if auto_mt_filtering else []
     run:
-        if auto_mt_filtering:
-            shell("workflow/scripts/scrna-read-qc.R --data.dir {input.raw} --output.rds {output.rds} --sampleid {wildcards.sample} --min.features {min_features} --min.cells {min_cells} --auto.mt.filter --plot.mtplot {output.mtplot} --before.violin.plot {output.before} --after.violin.plot {output.after}")
+        if not auto_mt_filtering:
+            shell("workflow/scripts/scrna-read-qc.R --data.dir {input.raw} --output.rds {output.rds} --sampleid {wildcards.sample} --percent.rp {percent_rp} --percent.mt {wildcards.MT} --min.features {min_features} --min.cells {min_cells} --before.violin.plot {output.before} --after.violin.plot {output.after}")
+            
         else:
-            shell("workflow/scripts/scrna-read-qc.R --data.dir {input.raw} --output.rds {output.rds} --sampleid {wildcards.sample} --percent.mt {wildcards.MT} --min.features {min_features} --min.cells {min_cells} --before.violin.plot {output.before} --after.violin.plot {output.after}")
+            shell("workflow/scripts/scrna-read-qc.R --data.dir {input.raw} --output.rds {output.rds} --sampleid {wildcards.sample} --percent.rp {percent_rp} --min.features {min_features} --min.cells {min_cells} --auto.mt.filter --plot.mtplot {output.mtplot} --before.violin.plot {output.before} --after.violin.plot {output.after}")
+
 
 rule clustree:
     input:
         "analyses/raw/{sample}/" + f"{paramspace.wildcard_pattern}.rds"
     output:
-        clustree="results/{sample}/" + f"{paramspace.wildcard_pattern}" + "/clusteringTree/clusteringTree.pdf",
-        heatmap="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/DimHeatMap_plot.pdf",
-        hvfplot="results/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/highly-variable-features.pdf",
-        jackandelbow="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/JackandElbow_plot.pdf"
+        clustree=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/clusteringTree/clusteringTree.pdf",
+        heatmap=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/DimHeatMap_plot.pdf",
+        hvfplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/highly-variable-features.pdf",
+        jackandelbow=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/JackandElbow_plot.pdf"
     shell:
         "workflow/scripts/scrna-clusteringtree.R --rds {input} --output {output.clustree} --heatmap {output.heatmap} --hvfplot {output.hvfplot} --jackandelbow {output.jackandelbow}"
 
@@ -47,8 +49,8 @@ rule normalization_pca_rds:
         "analyses/raw/{sample}/" + f"{paramspace.wildcard_pattern}.rds"
     output:
         rds="analyses/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
-        xlsx="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/number-of-cells-per-cluster.xlsx",
-        pca="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/pca.plot.pdf"
+        xlsx=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/number-of-cells-per-cluster.xlsx",
+        pca=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/pca.plot.pdf"
     params:
         paramaters=paramspace.instance,
         doublet_filter=doublet_filter,
@@ -64,7 +66,7 @@ rule umap_plot:
     input:
         "analyses/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        umap="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/umap.plot.pdf"
+        umap=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/umap.plot.pdf"
     params:
         paramaters=paramspace.instance,
     shell:
@@ -74,7 +76,7 @@ rule tsne_plot:
     input:
         "analyses/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        tsne="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/tsne.plot.pdf"
+        tsne=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/tsne.plot.pdf"
     params:
         paramaters=paramspace.instance,
     shell:
@@ -86,8 +88,8 @@ rule find_all_cluster_markers:
     input:
         "analyses/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        positive="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/positive-markers-forAllClusters.xlsx",
-        allmarkers="results/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/all-markers-forAllClusters.xlsx"
+        positive=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/positive-markers-forAllClusters.xlsx",
+        allmarkers=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/all-markers-forAllClusters.xlsx"
     params:
         paramaters=paramspace.instance,
     shell:
@@ -97,9 +99,9 @@ rule find_all_cluster_markers:
 rule plot_top_positive_markers:
     input:
         rds="analyses/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
-        excel="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/positive-markers-forAllClusters.xlsx"
+        excel=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/positive-markers-forAllClusters.xlsx"
     output:
-        directory("results/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/positive_marker_plots_{reduction}/")
+        directory(results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/positive_marker_plots_{reduction}/")
     params:
         paramaters=paramspace.instance,
     shell:
@@ -111,7 +113,7 @@ rule selected_marker_dot_plot:
     input:
         "analyses/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        dotplot="results/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/selected-markers-dotplot.pdf"
+        dotplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/selected-markers-dotplot.pdf"
     params:
         paramaters=paramspace.instance,
     shell:
@@ -122,7 +124,7 @@ rule selected_marker_plots:
     input:
         "analyses/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        sdir=directory("results/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/selected_marker_plots_{reduction}/")
+        sdir=directory(results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/selected_marker_plots_{reduction}/")
     params:
         paramaters=paramspace.instance,
     shell:
@@ -157,42 +159,46 @@ rule integration_with_seurat:
 
 rule h5ad:
     input:
-        rds="analyses/processed/{res}/{sample}.rds"
+        rds="analyses/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        "analyses/h5ad/{res}/{sample}.h5ad"
+        "analyses/h5ad/" + f"{paramspace.wildcard_pattern}" + "/{sample}.h5ad"
     shell:
-        "workflow/scripts/scrna-convert-to-h5ad.R --rds {input.rds} --resolution {wildcards.res} --sampleid {wildcards.sample}"
+        "workflow/scripts/scrna-convert-to-h5ad.R --rds {input.rds} --output {output}"
 
 
 rule celltype:
     input:
-        "analyses/h5ad/{res}/{sample}.h5ad"
+        "analyses/h5ad/" + f"{paramspace.wildcard_pattern}" + "/{sample}.h5ad"
     
     output:
-        directory("analyses/celltypist/{res}/{sample}/"),
-        "analyses/celltypist/{res}/{sample}/predicted_labels.csv"
-
+        outputdir=directory("analyses/celltypist/" + f"{paramspace.wildcard_pattern}" + "/{sample}"),
+        predicted="analyses/celltypist/" + f"{paramspace.wildcard_pattern}" + "/{sample}/predicted_labels.csv",
+        dotplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltype_annotation/annotation.dotplot.pdf",
+        xlsx=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltype_annotation/cluster_annotation_table.xlsx"
+        
     shell:
         """
-        celltypist --indata {input} --model {celltypist_model} --outdir {output[0]}
+        #celltypist --indata {input} --model {celltypist_model} --majority-voting --outdir {output[0]} 
+        workflow/scripts/scrna-celltypist.py {input} {output.dotplot} {output.outputdir} {output.xlsx} {celltypist_model}
         """
 
 rule seurat_celltype:
     input:
-        csv="analyses/celltypist/{res}/{sample}/predicted_labels.csv",
-        rds="analyses/processed/{res}/{sample}.rds"
+        csv="analyses/celltypist/" + f"{paramspace.wildcard_pattern}" + "/{sample}/predicted_labels.csv",
+        rds="analyses/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        "analyses/celltypist/{res}/{sample}.rds"
+        umap=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltype_annotation/annotation.umap.pdf",
+        tsne=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltype_annotation/annotation.tsne.pdf"
     shell:
         """
-        workflow/scripts/scrna-celltypist.R --rds {input.rds} --sampleid {wildcards.sample} --csv {input.csv} --output {output}
+        workflow/scripts/scrna-celltypist.R --rds {input.rds} --csv {input.csv} --output.tsne.plot {output.tsne} --output.umap.plot {output.umap}
         """
 
 rule go_enrichment:
     input:
-        "results/{sample}/resolution-{res}/{sample}.all-markers-forAllClusters.xlsx"
+        results_folder + "/{sample}/resolution-{res}/{sample}.all-markers-forAllClusters.xlsx"
     output:
-        "results/{sample}/resolution-{res}/enrichment/GO-enrichment-all_clusters-ontology-{ontology}.xlsx"
+        results_folder + "/{sample}/resolution-{res}/enrichment/GO-enrichment-all_clusters-ontology-{ontology}.xlsx"
     shell:
         """
         workflow/scripts/scrna-go_enrichment.R --xlsx {input} --output {output} --ontology {ontology} --algorithm {algorithm} --mapping {mapping} --statistics {statistics}

@@ -32,9 +32,27 @@ if (is.null(opt$xlsx) || is.null(opt$output) ){
 require(Seurat)
 require(tidyverse)
 require(topGO)
-source("workflow/scripts/scrna-functions.R")
+#source("workflow/scripts/scrna-functions.R")
+
+function_gofunc=function(df,algorithm="weight01",statistics="ks",mapping="org.Hs.eg.db",ID="symbol",ontology = "BP") {
+  
+
+geneList <- df$p_val
+names(geneList) <- df$gene
+# Create topGOData object
+GOdata <- new("topGOdata",
+              ontology = ontology,
+              allGenes = geneList,
+              geneSelectionFun = function(x)x,
+              annot = annFUN.org, mapping = mapping,ID=ID,nodeSize = 10)
+
+resultsKS <- runTest(GOdata,algorithm = algorithm,statistic = statistics)
 
 
+tab <- GenTable(GOdata, raw.p.value = resultsKS, topNodes = length(resultsKS@score), numChar = 120)
+
+return(tab)
+}
 
 
 

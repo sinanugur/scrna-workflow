@@ -17,8 +17,7 @@ option_list = list(
     optparse::make_option(c("--before.violin.plot"), type="character", default="before.violin.pdf", 
               help="Violin plot name [default= %default]", metavar="character"),
     optparse::make_option(c("--after.violin.plot"), type="character", default="after.violin.pdf", 
-              help="Violin plot name [default= %default]", metavar="character")
-              ,
+              help="Violin plot name [default= %default]", metavar="character"),
      optparse::make_option(c("--output.rds"), type="character", default="output.rds", 
               help="Output RDS file name [default= %default]", metavar="character"),
 
@@ -43,9 +42,6 @@ require(optparse)
 require(tidyverse)
 require(Seurat)
 require(patchwork)
-require(SingleCellExperiment)
-require(miQC)
-require(scater)
 
  
 #nFeature_RNA is the number of genes detected in each cell. nCount_RNA is the total number of molecules detected within a cell. 
@@ -83,6 +79,9 @@ ggsave(opt$before.violin.plot, width = 10,height = 4)
 #scrna <- subset(scrna, subset = nFeature_RNA > lower_bound_nFeature_RNA & nFeature_RNA < upper_bound_nFeature_RNA & nCount_RNA > lower_bound_nCount_RNA  & nCount_RNA < upper_bound_nCount_RNA & percent.mt < opt$percent.mt)
 
 if (opt$auto.mt.filter) {
+require(SingleCellExperiment)
+require(miQC)
+require(scater)
 
  smObjSCE = as.SingleCellExperiment(scrna)
   mt_genes <- grepl("^MT-",  rownames(smObjSCE))
@@ -120,6 +119,8 @@ ggsave(opt$after.violin.plot, width = 10,height = 4)
 
 
 saveRDS(scrna,file = opt$output.rds)
+
+print("burdayim")
 
 
 
