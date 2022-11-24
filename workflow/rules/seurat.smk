@@ -24,11 +24,11 @@ rule create_initial_raw_rds_and_trimming:
         after=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/after-qc-trimming-violinplot.pdf",
         mtplot=[results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/model-metrics-mitochondrial-genes.pdf"] if auto_mt_filtering else []
     run:
-        if not auto_mt_filtering:
+        if auto_mt_filtering:
+            shell("workflow/scripts/scrna-read-qc.R --data.dir {input.raw} --output.rds {output.rds} --sampleid {wildcards.sample} --percent.rp {percent_rp} --min.features {min_features} --min.cells {min_cells} --auto.mt.filter --plot.mtplot {output.mtplot} --before.violin.plot {output.before} --after.violin.plot {output.after}")
+        else:
             shell("workflow/scripts/scrna-read-qc.R --data.dir {input.raw} --output.rds {output.rds} --sampleid {wildcards.sample} --percent.rp {percent_rp} --percent.mt {wildcards.MT} --min.features {min_features} --min.cells {min_cells} --before.violin.plot {output.before} --after.violin.plot {output.after}")
             
-        else:
-            shell("workflow/scripts/scrna-read-qc.R --data.dir {input.raw} --output.rds {output.rds} --sampleid {wildcards.sample} --percent.rp {percent_rp} --min.features {min_features} --min.cells {min_cells} --auto.mt.filter --plot.mtplot {output.mtplot} --before.violin.plot {output.before} --after.violin.plot {output.after}")
 
 
 rule clustree:
@@ -196,11 +196,21 @@ rule seurat_celltype:
 
 rule go_enrichment:
     input:
-        results_folder + "/{sample}/resolution-{res}/{sample}.all-markers-forAllClusters.xlsx"
+        results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/all-markers-forAllClusters.xlsx"
     output:
-        results_folder + "/{sample}/resolution-{res}/enrichment/GO-enrichment-all_clusters-ontology-{ontology}.xlsx"
+        results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "GO-enrichment-" + ontology +  "-all_clusters.xlsx"
     shell:
         """
         workflow/scripts/scrna-go_enrichment.R --xlsx {input} --output {output} --ontology {ontology} --algorithm {algorithm} --mapping {mapping} --statistics {statistics}
         """
 
+rule gsea:
+    input:
+        rds="analyses/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
+        gseafile=gsea_file
+    output:
+        directory(results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/gsea/")
+    shell:
+        """
+        workflow/scripts/scrna-gsea.R --rds {input.rds} --gseafile {input.gseafile} --output.dir {output}
+        """

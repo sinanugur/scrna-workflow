@@ -36,7 +36,5 @@ p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = TRUE,label.size = 1
 
 
 
-
-
 ggsave(plot =p1,filename=opt$output.reduction.plot,width=9,height=7)
 

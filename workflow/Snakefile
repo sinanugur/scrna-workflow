@@ -59,6 +59,10 @@ statistics=config.get("statistics","ks")
 mapping=config.get("mapping","org.Hs.eg.db")
 ontology = config.get("ontology","BP")
 
+#GSEA
+gsea_file= config.get("gsea_file","workflow/bundle/c2.cgp.v2022.1.Hs.symbols.gmt")
+gesa_group= config.get("gsea_group","seurat_clusters")
+
 #alternative routes
 route=config.get("route","minimal") # select standard route for analysis
 integration_id=config.get("integration_id","combined")
@@ -124,7 +128,9 @@ def sample_paramater(sample):
             selected_markers(paramspace),
             expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.dotplot.pdf" for s in files],params=list(paramspace.instance_patterns)),
             expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.tsne.pdf" for s in files],params=list(paramspace.instance_patterns)),
-            expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.umap.pdf" for s in files],params=list(paramspace.instance_patterns))
+            expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.umap.pdf" for s in files],params=list(paramspace.instance_patterns)),
+            expand([results_folder + "/" + s + "/{params}/gsea/" for s in files],params=list(paramspace.instance_patterns))
+            #expand([results_folder + "/" + s + "/{params}/GO-enrichment-" + ontology +  "-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
             ]
 
 
