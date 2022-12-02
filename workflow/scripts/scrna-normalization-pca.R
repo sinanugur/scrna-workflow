@@ -7,13 +7,20 @@ option_list = list(
   optparse::make_option(c("--nfeatures"), type="integer", default=2000, 
               help="Highly variable features [default= %default]", metavar="integer"),
     optparse::make_option(c("--rds"), type="character", default=NULL, 
-              help="RAW rds file of a Seurat object", metavar="character"),
-    optparse::make_option(c("--sampleid"), type="character", default=NULL, 
-              help="Sample ID", metavar="character"),
+              help="A RAW rds file of a Seurat object", metavar="character"),
     optparse::make_option(c("--normalization.method"), type="character", default="LogNormalize", 
               help="Normalization method[default= %default]", metavar="character"),
+    optparse::make_option(c("--doublet.filter"), action = "store_true", default = FALSE),
+    optparse::make_option(c("--umap"), action = "store_true", default = FALSE),
+    optparse::make_option(c("--tsne"), action = "store_true", default = FALSE),
     optparse::make_option(c("--resolution"), type="double", default=0.8, 
-              help="Resolution [default= %default]", metavar="character")
+              help="Resolution [default= %default]", metavar="character"),
+    optparse::make_option(c("--output.rds"), type="character", default="output.rds", 
+              help="Output RDS file name [default= %default]", metavar="character"),
+    optparse::make_option(c("--output.xlsx"), type="character", default=NULL, 
+              help="Excel table of markers", metavar="character"),
+    optparse::make_option(c("--output.pca.plot"), type="character", default="pca.pdf", 
+              help="PCA plot file name", metavar="character")
 
 
 )
@@ -21,9 +28,9 @@ option_list = list(
 opt_parser = optparse::OptionParser(option_list=option_list)
 opt = optparse::parse_args(opt_parser)
 
-if (is.null(opt$rds) || is.null(opt$sampleid) ){
+if (is.null(opt$rds) ){
   optparse::print_help(opt_parser)
-  stop("At least one argument must be supplied (rds file and sampleid)", call.=FALSE)
+  stop("At least one argument must be supplied (rds file)", call.=FALSE)
 }
 
 require(optparse)
@@ -46,7 +53,11 @@ scrna <- RunPCA(scrna, features = VariableFeatures(object = scrna))
 dimensionReduction=function_pca_dimensions(scrna)
 scrna <- FindNeighbors(scrna, dims = 1:dimensionReduction)
 scrna <- FindClusters(scrna, resolution = opt$resolution)
-scrna <- RunUMAP(scrna, dims = 1:dimensionReduction)
+
+
+if(opt$umap) {scrna <- RunUMAP(scrna, dims = 1:dimensionReduction)}
+if(opt$tsne) {scrna <- RunTSNE(scrna, dims = 1:dimensionReduction)}
+
 
 
 
@@ -66,21 +77,26 @@ scrna@meta.data <- scrna@meta.data %>% select(!starts_with("DF")) %>% select(!st
   dplyr::left_join(Doublet_Df, by = "barcodes") %>%
   tibble::column_to_rownames("barcodes")
 
+if(opt$doublet.filter) {
+subset(scrna, subset=DoubletFinder == "Singlet") -> scrna
+#scrna$DoubletFinder <- NULL
 
-output.dir=paste0("analyses/processed/",opt$resolution,"/")
-dir.create(output.dir,recursive = T)
+}
 
-saveRDS(scrna,file = paste0(output.dir,opt$sampleid,".rds"))
+
 
 
 RNA_=paste0("RNA_snn_res.",opt$resolution)
 
 metrics=table(scrna@meta.data[[RNA_]], scrna@meta.data$orig.ident)
 
-output.dir=paste0("results/",opt$sampleid,"/resolution-",opt$resolution,"/")
-dir.create(output.dir,recursive = T)
+p1 <- DimPlot(scrna, reduction = "pca", label = TRUE,label.size = 10) 
 
-openxlsx::write.xlsx(metrics %>% as.data.frame() %>% select(Cluster=1,everything()),file=paste0(output.dir,opt$sampleid,".number-of-cells-per-cluster",".xlsx"))
+
+#output files
+saveRDS(scrna,file = opt$output.rds)
+openxlsx::write.xlsx(metrics %>% as.data.frame() %>% select(Cluster=1,everything()),file=opt$output.xlsx)
+ggsave(plot =p1,filename=opt$output.pca.plot,width=9,height=7)
 
 
 

@@ -2,3 +2,5 @@ data/
 results/
 analyses/
 .snakemake/
+.DS_Store
+tmp/

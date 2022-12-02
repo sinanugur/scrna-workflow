@@ -1,12 +1,10 @@
 #!/usr/bin/env Rscript
 
 option_list = list(
-    optparse::make_option(c("--sampleid"), type="character", default=NULL, 
-              help="Sample ID", metavar="character"),
-    optparse::make_option(c("-r","--rds"), type="character", default=NULL, 
+    optparse::make_option(c("--rds"), type="character", default=NULL, 
               help="A list of RDS files of Seurat objects", metavar="character"),
-    optparse::make_option(c("--resolution"), type="double", default=0.8, 
-              help="Resolution [default= %default]", metavar="character")
+    optparse::make_option(c("--output"), type="character", default="output.h5ad", 
+              help="Output h5ad file name", metavar="character")
 
 
 )
@@ -14,7 +12,7 @@ option_list = list(
 opt_parser = optparse::OptionParser(option_list=option_list)
 opt = optparse::parse_args(opt_parser)
 
-if (is.null(opt$rds) || is.null(opt$sampleid) ){
+if (is.null(opt$rds) ){
   optparse::print_help(opt_parser)
   stop("At least one argument must be supplied (rds file and sampleid)", call.=FALSE)
 }
@@ -34,9 +32,7 @@ DietSeurat(scrna) -> scrna
 scrna@meta.data %>% dplyr::mutate(dplyr::across(where(is.factor), as.character)) -> scrna@meta.data
 
 
+output_file_name=str_remove_all(opt$output,".h5ad$")
 
-output.dir=paste0("analyses/h5ad/",opt$resolution,"/")
-dir.create(output.dir,recursive = T)
-
-SaveH5Seurat(scrna,paste0(output.dir,opt$sampleid,".h5Seurat"))
-SeuratDisk::Convert(paste0(output.dir,opt$sampleid,".h5Seurat"), dest = "h5ad")
+SaveH5Seurat(scrna,filename=paste0(output_file_name,".h5Seurat"),overwrite = TRUE)
+SeuratDisk::Convert(paste0(output_file_name,".h5Seurat"), dest = "h5ad",overwrite = TRUE)
