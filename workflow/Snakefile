@@ -63,7 +63,7 @@ mapping=config.get("mapping","org.Hs.eg.db")
 ontology = config.get("ontology","BP")
 
 #GSEA
-gsea_file= config.get("gsea_file","workflow/bundle/c2.cgp.v2022.1.Hs.symbols.gmt")
+gsea_file= config.get("gsea_file",cellsnake_path + "workflow/bundle/c2.cgp.v2022.1.Hs.symbols.gmt")
 gesa_group= config.get("gsea_group","seurat_clusters")
 
 #alternative routes
