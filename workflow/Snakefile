@@ -7,6 +7,9 @@ import pandas as pd
 
 
 
+cellsnake_path=config.get('cellsnake_path','./')
+
+
 configfile: "config.yaml"
 
 files, = glob_wildcards("data/{sample}/raw_feature_bc_matrix/matrix.mtx.gz")    
