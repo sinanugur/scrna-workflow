@@ -29,7 +29,7 @@ highly_variable_features=config.get("highly_variable_features",2000)
 doublet_filter= "--doublet.filter" if config.get("doublet_filter",True) in [True,"TRUE","True","T"] else ""
 
 #automatic mt filtering
-auto_mt_filtering=config.get("auto_mt_filtering",False)
+auto_mt_filtering=config.get("auto_mt_filtering",True)
 
 
 #automatic cluster/resolution detection

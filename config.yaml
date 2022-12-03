@@ -2,7 +2,8 @@
 #basic paramaters
 min_cells: 3
 min_features: 200 
-percent_mt: 10
+auto_mt_filtering: T #Mitachondiral gene filtering is auto
+percent_mt: 10 #if auto filtering is False for MT genes
 min_coverage: 1000
 highly_variable_features: 2000
 
