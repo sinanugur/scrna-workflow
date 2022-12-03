@@ -120,7 +120,6 @@ ggsave(opt$after.violin.plot, width = 10,height = 4)
 
 saveRDS(scrna,file = opt$output.rds)
 
-print("burdayim")
 
 
 

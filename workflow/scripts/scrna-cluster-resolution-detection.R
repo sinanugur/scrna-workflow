@@ -44,8 +44,9 @@ require(patchwork)
 require(DoubletFinder)
 require(MultiKParallel)
 require(tidyverse)
+try({source("workflow/scripts/scrna-functions.R")})
+try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE),"/scrna/workflow/scripts/scrna-functions.R"))})
 
-source("workflow/scripts/scrna-functions.R")
 
 try({scrna.data <- Read10X(data.dir = opt$data.dir)})
 try({scrna.data <- Read10X_h5(filename = paste0(opt$data.dir,"/filtered_feature_bc_matrix.h5"))})
