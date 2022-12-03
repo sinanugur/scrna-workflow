@@ -29,9 +29,9 @@ if (is.null(opt$rds)){
 
 require(Seurat)
 require(tidyverse)
+#try({source("workflow/scripts/scrna-functions.R")})
+#try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE),"/scrna/workflow/scripts/scrna-functions.R"))})
 
-
-source("workflow/scripts/scrna-functions.R")
 
 scrna=readRDS(file = opt$rds)
 
