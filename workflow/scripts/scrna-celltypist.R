@@ -24,7 +24,7 @@ if (is.null(opt$rds) || is.null(opt$csv)) {
 
 require(tidyverse)
 require(Seurat)
-source("workflow/scripts/scrna-functions.R")
+
 
 
 scrna=readRDS(file = opt$rds)
