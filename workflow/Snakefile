@@ -10,7 +10,7 @@ import pandas as pd
 cellsnake_path=config.get('cellsnake_path','./')
 
 
-configfile: "config.yaml"
+#configfile: "config.yaml"
 
 files, = glob_wildcards("data/{sample}/raw_feature_bc_matrix/matrix.mtx.gz")    
 others, = glob_wildcards("data/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx.gz")
@@ -84,7 +84,10 @@ def initialization_of_paramspace(tsv_file,dictionary):
 
 if auto_mt_filtering:
     par_df = initialization_of_paramspace("params.tsv",{"resolution":[resolution]})
-    del par_df["MT"]
+    try:
+        del par_df["MT"]
+    except:
+        pass
     paramspace=Paramspace(par_df)
 
 else:
