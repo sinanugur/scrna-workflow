@@ -7,14 +7,15 @@ import pandas as pd
 
 
 
-cellsnake_path=config.get('cellsnake_path','./')
+cellsnake_path=config.get('cellsnake_path','') #if called by cellsnake
+datafolder=config.get("datafolder","data")
 
 
 #configfile: "config.yaml"
 
-files, = glob_wildcards("data/{sample}/raw_feature_bc_matrix/matrix.mtx.gz")    
-others, = glob_wildcards("data/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx.gz")
-h5files, = glob_wildcards("data/{sample}/filtered_feature_bc_matrix.h5")
+files, = glob_wildcards(datafolder +  "/{sample}/raw_feature_bc_matrix/matrix.mtx.gz")    
+others, = glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx.gz")
+h5files, = glob_wildcards(datafolder + "/{sample}/filtered_feature_bc_matrix.h5")
 files=list(filter(lambda i: "/" not in i, files+others+h5files)) #do not capture subdirectories etc
 print(files)
 

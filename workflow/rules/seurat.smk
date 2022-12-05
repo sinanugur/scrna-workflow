@@ -4,14 +4,14 @@ import os
 
 
 def input_function(wildcards):
-    if os.path.isfile("data/" + wildcards.sample + "/filtered_feature_bc_matrix/matrix.mtx.gz"):
-        return("data/" + wildcards.sample + "/filtered_feature_bc_matrix/")
-    elif os.path.isfile("data/" + wildcards.sample + "/filtered_feature_bc_matrix.h5"):
-        return("data/" + wildcards.sample + "/")
-    elif os.path.isfile("data/" + wildcards.sample + "/raw_feature_bc_matrix/matrix.mtx.gz"):
-        return("data/" + wildcards.sample + "/raw_feature_bc_matrix/")
+    if os.path.isfile(datafolder + "/" + wildcards.sample + "/filtered_feature_bc_matrix/matrix.mtx.gz"):
+        return(datafolder +  "/" + wildcards.sample + "/filtered_feature_bc_matrix/")
+    elif os.path.isfile(datafolder + "/" + wildcards.sample + "/filtered_feature_bc_matrix.h5"):
+        return(datafolder + "/" + wildcards.sample + "/")
+    elif os.path.isfile(datafolder + "/" + wildcards.sample + "/raw_feature_bc_matrix/matrix.mtx.gz"):
+        return(datafolder + "/" + wildcards.sample + "/raw_feature_bc_matrix/")
     else:
-        return("data/" + wildcards.sample + "/outs/raw_feature_bc_matrix/")
+        return(datafolder + "/" + wildcards.sample + "/outs/raw_feature_bc_matrix/")
 
 
 rule create_initial_raw_rds_and_trimming:
