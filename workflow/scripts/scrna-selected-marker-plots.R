@@ -1,7 +1,5 @@
 #!/usr/bin/env Rscript
 option_list = list(
-  optparse::make_option(c("--resolution"), type="double", default=0.8, 
-              help="Resolution [default= %default]", metavar="character"),
     optparse::make_option(c("--rds"), type="character", default=NULL, 
               help="Processed rds file of a Seurat object", metavar="character"),
     optparse::make_option(c("--tsv"), type="character", default=NULL, 
@@ -9,7 +7,9 @@ option_list = list(
     optparse::make_option(c("--output.plot.dir"), type="character", default=NULL, 
               help="Output plot directory", metavar="character"),
             optparse::make_option(c("--reduction.type"), type="character", default="umap", 
-              help="Reduction type, umap or tsne", metavar="character")
+              help="Reduction type, umap or tsne", metavar="character"),
+    optparse::make_option(c("--idents"), type="character", default="seurat_clusters", 
+              help="Meta data column name for marker analysis", metavar="character")
 
 
 )
@@ -33,10 +33,10 @@ markers=read_tsv(opt$tsv,col_names=FALSE) %>% pull()
 
 scrna=readRDS(file = opt$rds)
 
-RNA_=paste0("RNA_snn_res.",opt$resolution)
+#RNA_=paste0("RNA_snn_res.",opt$resolution)
 
 
-Idents(object = scrna) <- scrna@meta.data[[RNA_]]
+Idents(object = scrna) <- scrna@meta.data[[opt$idents]]
 
 
 

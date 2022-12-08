@@ -31,15 +31,16 @@ doublet_filter= "--doublet.filter" if config.get("doublet_filter",True) in [True
 
 #automatic mt filtering
 auto_mt_filtering=config.get("auto_mt_filtering",True)
+grid_search=config.get("grid_search",False) #requires params file in tsv format
 
 
 #automatic cluster/resolution detection
-#detect_resolution=config.get("detect_resolution",False)
+#detect_resolution=config.get("detect_resolution",True)
 
 #clustering and normalization paramaters
 normalization_method=config.get("normalization_method","LogNormalize")
 scale_factor=config.get("scale_factor",10000)
-resolution=config.get("resolution",0.8)
+resolution=config.get("resolution","0.8") #a double or "auto", default is 0.8
 
 #dimension reduction options: by default both UMAP and TSNE will be plotted with predicted clusters
 umap_plot="--umap" if config.get("umap_plot",True) in [True,"TRUE","True","T"] else ""
@@ -76,12 +77,14 @@ celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
 
 #initialization of paramspace object using defaults
 def initialization_of_paramspace(tsv_file,dictionary):
-    if os.path.isfile(tsv_file):
+    if os.path.isfile(tsv_file) and grid_search is True:
         par_df = pd.read_table(tsv_file) # if available and use for all samples
     else:
         par_df =  pd.DataFrame(dictionary) # if not available, create using default numbers and use for all samples
     
     return par_df
+
+
 
 if auto_mt_filtering:
     par_df = initialization_of_paramspace("params.tsv",{"resolution":[resolution]})
@@ -116,6 +119,7 @@ def selected_markers(paramspace):
     return plots
 
 def sample_paramater(sample):
+    """
     try:
         par_df = pd.read_table(f"analyses/resolution_detection/{sample}/params.tsv")
         print(f"Autodetected resolution file found, will use this: analyses/resolution_detection/{sample}/params.tsv")
@@ -126,6 +130,7 @@ def sample_paramater(sample):
         del par_df["MT"]
 
     paramspace=Paramspace(par_df)
+    """
     return [expand(["analyses/raw/" + sample + "/{params}.rds"], params=list(paramspace.instance_patterns)), 
             expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
             expand([results_folder + "/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),

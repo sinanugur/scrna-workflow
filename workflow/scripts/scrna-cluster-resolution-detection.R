@@ -66,10 +66,7 @@ scrna <- FindClusters(scrna, resolution = seq(0.2,2.5,0.15))
 
 
 multik <- MultiKParallel(scrna, reps=10,seed = 255,resolution = seq(0.2,2.5,0.15),numCores = opt$cpu,nPC = dimensionReduction)
-
-
 multik$k %>% tibble::as_tibble() %>% count(value) %>% filter(n == max(n)) %>% slice(1) %>% pull(value) -> K
-
 
 
 

@@ -13,8 +13,10 @@ option_list = list(
         optparse::make_option(c("--output.xlsx.positive"), type="character", default=NULL, 
               help="Excel table of positive markers", metavar="character"),
     optparse::make_option(c("--output.xlsx.all"), type="character", default=NULL, 
-              help="Excel table of all markers", metavar="character")
+              help="Excel table of all markers", metavar="character"),
 
+    optparse::make_option(c("--idents"), type="character", default="seurat_clusters", 
+              help="Meta data column name for marker analysis", metavar="character")
 
 )
  
@@ -38,10 +40,9 @@ scrna=readRDS(file = opt$rds)
 
 
 
-RNA_=paste0("RNA_snn_res.",opt$resolution)
-
-
-Idents(object = scrna) <- scrna@meta.data[[RNA_]]
+#RNA_=paste0("RNA_snn_res.",opt$resolution)
+#Idents(object = scrna) <- scrna@meta.data[[RNA_]]
+Idents(object = scrna) <- scrna@meta.data[[opt$idents]]
 
 
 all_markers=FindAllMarkers(scrna, logfc.threshold = opt$logfc.threshold,test.use = opt$test.use )

@@ -105,7 +105,7 @@ rule plot_top_positive_markers:
     params:
         paramaters=paramspace.instance,
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-marker-plots.R --rds {input.rds} --resolution {params.paramaters[resolution]} --xlsx {input.excel} --top_n {marker_plots_per_cluster_n} --output.plot.dir {output} --reduction.type {wildcards.reduction}"
+        "{cellsnake_path}workflow/scripts/scrna-marker-plots.R --rds {input.rds} --xlsx {input.excel} --top_n {marker_plots_per_cluster_n} --output.plot.dir {output} --reduction.type {wildcards.reduction}"
 
 
 
@@ -128,7 +128,7 @@ rule selected_marker_plots:
     params:
         paramaters=paramspace.instance,
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-selected-marker-plots.R --rds {input} --tsv {selected_markers_file} --resolution {params.paramaters[resolution]} --output.plot.dir {output.sdir} --reduction.type {wildcards.reduction}"
+        "{cellsnake_path}workflow/scripts/scrna-selected-marker-plots.R --rds {input} --tsv {selected_markers_file} --output.plot.dir {output.sdir} --reduction.type {wildcards.reduction}"
 
 
 

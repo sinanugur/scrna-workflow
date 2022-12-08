@@ -1,11 +1,7 @@
 #!/usr/bin/env Rscript
 option_list = list(
-  optparse::make_option(c("--resolution"), type="double", default=0.8, 
-              help="Resolution [default= %default]", metavar="character"),
-
     optparse::make_option(c("--rds"), type="character", default=NULL, 
               help="Processed rds file of a Seurat object", metavar="character"),
-
       optparse::make_option(c("--top_n"), type="integer", default=50, 
               help="How many features to plot per cluster [default= %default]", metavar="integer"),
     optparse::make_option(c("--xlsx"), type="character", default=NULL, 
@@ -13,7 +9,9 @@ option_list = list(
         optparse::make_option(c("--output.plot.dir"), type="character", default=NULL, 
               help="Output plot directory", metavar="character"),
       optparse::make_option(c("--reduction.type"), type="character", default="umap", 
-              help="Reduction type, umap or tsne", metavar="character")
+              help="Reduction type, umap or tsne", metavar="character"),
+       optparse::make_option(c("--idents"), type="character", default="seurat_clusters", 
+              help="Meta data column name for marker analysis", metavar="character")
 )
  
 
@@ -35,8 +33,6 @@ require(patchwork)
 
 
 scrna=readRDS(file = opt$rds)
-
-RNA_=paste0("RNA_snn_res.",opt$resolution)
 
 
 Positive_Features=openxlsx::read.xlsx(opt$xlsx) %>% group_by(cluster) %>% slice_min(order_by = p_val_adj,n = opt$top_n) %>% select(cluster,gene) 

@@ -13,14 +13,16 @@ option_list = list(
     optparse::make_option(c("--doublet.filter"), action = "store_true", default = FALSE),
     optparse::make_option(c("--umap"), action = "store_true", default = FALSE),
     optparse::make_option(c("--tsne"), action = "store_true", default = FALSE),
-    optparse::make_option(c("--resolution"), type="double", default=0.8, 
+    optparse::make_option(c("--resolution"), type="character", default="0.8", 
               help="Resolution [default= %default]", metavar="character"),
     optparse::make_option(c("--output.rds"), type="character", default="output.rds", 
               help="Output RDS file name [default= %default]", metavar="character"),
     optparse::make_option(c("--output.xlsx"), type="character", default=NULL, 
               help="Excel table of markers", metavar="character"),
     optparse::make_option(c("--output.pca.plot"), type="character", default="pca.pdf", 
-              help="PCA plot file name", metavar="character")
+              help="PCA plot file name", metavar="character"),
+    optparse::make_option(c("--cpu"), type="integer", default=5, 
+              help="Number of CPU for parallel run [default= %default]", metavar="character")
 
 
 )
@@ -53,7 +55,22 @@ scrna <- ScaleData(scrna, features = all.genes)
 scrna <- RunPCA(scrna, features = VariableFeatures(object = scrna))
 dimensionReduction=function_pca_dimensions(scrna)
 scrna <- FindNeighbors(scrna, dims = 1:dimensionReduction)
-scrna <- FindClusters(scrna, resolution = opt$resolution)
+
+if(opt$resolution != "auto") {
+scrna <- FindClusters(scrna, resolution = as.numeric(opt$resolution))
+} else {
+require(MultiKParallel)
+scrna_tmp <- FindClusters(scrna, resolution = seq(0.2,2.5,0.15))
+multik <- MultiKParallel(scrna_tmp, reps=10,seed = 255,resolution = seq(0.2,2.5,0.15),numCores = opt$cpu,nPC = dimensionReduction)
+multik$k %>% tibble::as_tibble() %>% count(value) %>% filter(n == max(n)) %>% slice(1) %>% pull(value) -> K
+
+scrna_tmp[[]] %>% as.data.frame() %>% select(starts_with("RNA")) %>% rownames_to_column("barcode") %>% mutate(across(where(is.factor),as.character)) %>% as_tibble() %>%
+ gather(res,clu,contains("RNA")) %>% distinct(res,clu) %>% count(res) %>% mutate(res=str_remove(res,"RNA_snn_res.")) %>% mutate(diff= abs(n - K)) %>% slice_min(order_by = diff) %>% pull(res) %>% as.numeric() -> optimal_resolution
+
+
+scrna <- FindClusters(scrna, resolution = optimal_resolution)
+
+}
 
 
 if(opt$umap) {scrna <- RunUMAP(scrna, dims = 1:dimensionReduction)}
@@ -87,11 +104,11 @@ subset(scrna, subset=DoubletFinder == "Singlet") -> scrna
 
 
 
-RNA_=paste0("RNA_snn_res.",opt$resolution)
+#RNA_=paste0("RNA_snn_res.",opt$resolution)
 
-metrics=table(scrna@meta.data[[RNA_]], scrna@meta.data$orig.ident)
+metrics=table(scrna@meta.data[["seurat_clusters"]], scrna@meta.data$orig.ident)
 
-p1 <- DimPlot(scrna, reduction = "pca", label = TRUE,label.size = 10) 
+p1 <- DimPlot(scrna, reduction = "pca", label = TRUE, label.size = 10) 
 
 
 #output files
