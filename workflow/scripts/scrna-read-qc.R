@@ -9,10 +9,10 @@ option_list = list(
               help="Data directory", metavar="character"),
     optparse::make_option(c("--sampleid"), type="character", default=NULL, 
               help="Sample ID", metavar="character"),
-    optparse::make_option(c("--percent.mt"), type="double", default=10, 
-              help="Mitochondria filtering percentage, smaller than [default= %default]", metavar="character"),
+    optparse::make_option(c("--percent.mt"), type="character", default="10", 
+              help="Max mitochondrial gene percentage, smaller than [default= %default]", metavar="character"),
     optparse::make_option(c("--percent.rp"), type="double", default=0, 
-              help="Ribosomal filtering percentage, greater than [default= %default]", metavar="character"),
+              help="Min ribosomal gene percentage, greater than [default= %default]", metavar="character"),
 
     optparse::make_option(c("--before.violin.plot"), type="character", default="before.violin.pdf", 
               help="Violin plot name [default= %default]", metavar="character"),
@@ -20,9 +20,6 @@ option_list = list(
               help="Violin plot name [default= %default]", metavar="character"),
      optparse::make_option(c("--output.rds"), type="character", default="output.rds", 
               help="Output RDS file name [default= %default]", metavar="character"),
-
-    optparse::make_option(c("--auto.mt.filter"), action="store_true", default=FALSE,
-              help="Should the program do auto mitochondria filtering [default %default]"),
 
     optparse::make_option(c("--plot.mtplot"), type="character", default="plot.mtplot.pdf", 
               help="Violin plot name [default= %default]", metavar="character")
@@ -78,7 +75,7 @@ ggsave(opt$before.violin.plot, width = 10,height = 4)
 
 #scrna <- subset(scrna, subset = nFeature_RNA > lower_bound_nFeature_RNA & nFeature_RNA < upper_bound_nFeature_RNA & nCount_RNA > lower_bound_nCount_RNA  & nCount_RNA < upper_bound_nCount_RNA & percent.mt < opt$percent.mt)
 
-if (opt$auto.mt.filter) {
+if (opt$percent.mt %in% c("auto","Auto","AUTO")) {
 require(SingleCellExperiment)
 require(miQC)
 require(scater)
@@ -106,7 +103,7 @@ scrna <- subset(scrna, subset = percent.rp > opt$percent.rp)
 } else {
 
 
-scrna <- subset(scrna, subset = percent.mt < opt$percent.mt & percent.rp > opt$percent.rp)
+scrna <- subset(scrna, subset = percent.mt < as.numeric(opt$percent.mt) & percent.rp > opt$percent.rp)
 
 
 }

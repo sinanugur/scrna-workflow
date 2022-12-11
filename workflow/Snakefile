@@ -23,14 +23,12 @@ results_folder=config.get("results_folder","results")
 #basic paramaters
 min_cells=config.get("min_cells",3)
 min_features=config.get("min_features",200)
-percent_mt=config.get("percent_mt",10) #if not automatic, this will be used for all samples
+percent_mt=config.get("percent_mt","10") #if not automatic, this will be used for all samples
 percent_rp=config.get("percent_rp",0) #by default, no filtering on ribosomal genes percentage 
-#min_coverage=config.get("min_coverage",1000)
 highly_variable_features=config.get("highly_variable_features",2000)
 doublet_filter= "--doublet.filter" if config.get("doublet_filter",True) in [True,"TRUE","True","T"] else ""
 
 #automatic mt filtering
-auto_mt_filtering=config.get("auto_mt_filtering",True)
 grid_search=config.get("grid_search",False) #requires params file in tsv format
 
 
@@ -86,18 +84,9 @@ def initialization_of_paramspace(tsv_file,dictionary):
 
 
 
-if auto_mt_filtering:
-    par_df = initialization_of_paramspace("params.tsv",{"resolution":[resolution]})
-    try:
-        del par_df["MT"]
-    except:
-        pass
-    paramspace=Paramspace(par_df)
+par_df = initialization_of_paramspace("params.tsv",{"percent_mt":[percent_mt],"resolution":[resolution]})
+paramspace=Paramspace(par_df)
 
-else:
-    par_df = initialization_of_paramspace("params.tsv",{"MT":[percent_mt],"resolution":[resolution]})
-    paramspace=Paramspace(par_df)
-    paramspace_mt=Paramspace(pd.DataFrame(par_df['MT']))
 
 
 def dim_reduction_and_marker_plots(paramspace):
