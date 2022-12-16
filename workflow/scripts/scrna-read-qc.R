@@ -48,6 +48,7 @@ require(patchwork)
 
 try({scrna.data <- Read10X(data.dir = opt$data.dir)})
 try({scrna.data <- Read10X_h5(filename = paste0(opt$data.dir,"/filtered_feature_bc_matrix.h5"))})
+try({scrna.data <- Read10X_h5(filename = opt$data.dir)})
 
 
 
@@ -75,7 +76,7 @@ ggsave(opt$before.violin.plot, width = 10,height = 4)
 
 #scrna <- subset(scrna, subset = nFeature_RNA > lower_bound_nFeature_RNA & nFeature_RNA < upper_bound_nFeature_RNA & nCount_RNA > lower_bound_nCount_RNA  & nCount_RNA < upper_bound_nCount_RNA & percent.mt < opt$percent.mt)
 
-if (opt$percent.mt %in% c("auto","Auto","AUTO")) {
+if (opt$percent.mt %in% c("auto","Auto","AUTO") & isFALSE(all(scrna@meta.data$percent.mt == 0))) {
 require(SingleCellExperiment)
 require(miQC)
 require(scater)
@@ -103,7 +104,7 @@ scrna <- subset(scrna, subset = percent.rp > opt$percent.rp)
 } else {
 
 
-scrna <- subset(scrna, subset = percent.mt < as.numeric(opt$percent.mt) & percent.rp > opt$percent.rp)
+scrna <- subset(scrna, subset = percent.mt <= as.numeric(opt$percent.mt) & percent.rp >= opt$percent.rp)
 
 
 }

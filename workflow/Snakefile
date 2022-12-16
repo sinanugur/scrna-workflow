@@ -4,20 +4,34 @@ import os
 
 from snakemake.utils import Paramspace
 import pandas as pd
+import pathlib
 
 
 
 cellsnake_path=config.get('cellsnake_path','') #if called by cellsnake
-datafolder=config.get("datafolder","data")
+datafolder=config.get("datafolder","data") #this can be a directory with samples or a single file to process
 
 
 #configfile: "config.yaml"
 
-files, = glob_wildcards(datafolder +  "/{sample}/raw_feature_bc_matrix/matrix.mtx.gz")    
-others, = glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx.gz")
-h5files, = glob_wildcards(datafolder + "/{sample}/filtered_feature_bc_matrix.h5")
-files=list(filter(lambda i: "/" not in i, files+others+h5files)) #do not capture subdirectories etc
-print(files)
+try:
+
+    if os.path.isdir(datafolder):
+        files, = glob_wildcards(datafolder +  "/{sample}/raw_feature_bc_matrix/matrix.mtx.gz")    
+        others, = glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx.gz")
+        h5files, = glob_wildcards(datafolder + "/{sample}/filtered_feature_bc_matrix.h5")
+        files=list(filter(lambda i: "/" not in i, files + others + h5files)) #do not capture subdirectories etc
+        print(files)
+    
+    if os.path.isfile(datafolder):
+        file_extension = pathlib.Path(datafolder)
+        files = [file_extension.stem]
+        print(files)
+        
+
+except:
+    print("No samples detected")
+
 
 results_folder=config.get("results_folder","results")
 #basic paramaters
