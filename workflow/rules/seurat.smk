@@ -22,12 +22,12 @@ rule create_initial_raw_rds_and_trimming:
         #"data/{sample}/raw_feature_bc_matrix/"
         raw=input_function    
     output:
-        rds="analyses/raw/{sample}/" + f"{paramspace.wildcard_pattern}.rds",
+        rds="analyses/raw/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
         before=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/before-qc-trimming-violinplot.pdf",
         after=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/after-qc-trimming-violinplot.pdf",
         mtplot=[results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/model-metrics-mitochondrial-genes.pdf"] if percent_mt == "auto" else []
     params:
-        mt_param=" --plot.mtplot {output.mtplot}" if percent_mt == "auto" else " "
+        mt_param=" --plot.mtplot " + results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/model-metrics-mitochondrial-genes.pdf" if percent_mt == "auto" else " "
 
     shell:
         "{cellsnake_path}workflow/scripts/scrna-read-qc.R --data.dir {input.raw} --output.rds {output.rds} --sampleid {wildcards.sample} --percent.rp {percent_rp} --percent.mt {wildcards.percent_mt} --min.features {min_features} --min.cells {min_cells} --before.violin.plot {output.before} --after.violin.plot {output.after} {params.mt_param}"
@@ -36,7 +36,7 @@ rule create_initial_raw_rds_and_trimming:
 
 rule clustree:
     input:
-        "analyses/raw/{sample}/" + f"{paramspace.wildcard_pattern}.rds"
+        "analyses/raw/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
         clustree=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/clusteringTree/clusteringTree.pdf",
         heatmap=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/DimHeatMap_plot.pdf",
@@ -49,7 +49,7 @@ rule clustree:
 
 rule normalization_pca_rds:
     input:
-        "analyses/raw/{sample}/" + f"{paramspace.wildcard_pattern}.rds"
+        "analyses/raw/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
         rds="analyses/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
         xlsx=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/number-of-cells-per-cluster.xlsx",
