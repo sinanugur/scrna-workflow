@@ -55,6 +55,8 @@ require(optparse)
 require(tidyverse)
 require(Seurat)
 require(patchwork)
+require(tools)
+require(data.table)
 
 
 # nFeature_RNA is the number of genes detected in each cell. nCount_RNA is the total number of molecules detected within a cell.
@@ -72,9 +74,40 @@ try({
   scrna.data <- Read10X_h5(filename = opt$data.dir)
 })
 
+try({
+
+x=tolower(file_ext(opt$data.dir)) 
+
+if (x %in% c("h5")) {
+
+scrna.data <- Read10X_h5(filename = opt$data.dir)
+
+} else if (x %in% c("gz")) {
+
+  scrna.data <- fread(cmd=paste('gunzip -dc',opt$data.dir))
+
+  scrna.data <- scrna.data %>% column_to_rownames("V1")
+
+} else if (x %in% c("zip")) {
+
+  scrna.data <- fread(cmd=paste('unzip -p',opt$data.dir))
+
+  scrna.data <- scrna.data %>% column_to_rownames("V1")
+
+} else if (x %in% c("csv","tsv")) {
+
+  scrna.data <- fread(paste(opt$data.dir))
+
+  scrna.data <- scrna.data %>% column_to_rownames("V1")
+
+
+}
+})
+
 
 
 scrna <- CreateSeuratObject(counts = scrna.data, project = opt$sampleid, min.cells = opt$min.cells, min.features = opt$min.features)
+rm(scrna.data)
 
 
 scrna[["percent.mt"]] <- PercentageFeatureSet(scrna, pattern = "^MT-")
