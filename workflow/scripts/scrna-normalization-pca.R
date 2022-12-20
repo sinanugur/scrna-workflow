@@ -19,6 +19,7 @@ option_list <- list(
     help = "Normalization method[default= %default]", metavar = "character"
   ),
   optparse::make_option(c("--doublet.filter"), action = "store_true", default = FALSE),
+  optparse::make_option(c("--integration"), action = "store_true", default = FALSE),
   optparse::make_option(c("--umap"), action = "store_true", default = FALSE),
   optparse::make_option(c("--tsne"), action = "store_true", default = FALSE),
   optparse::make_option(c("--resolution"),
@@ -55,7 +56,7 @@ require(optparse)
 require(tidyverse)
 require(Seurat)
 require(patchwork)
-require(DoubletFinder)
+
 try({
   source("workflow/scripts/scrna-functions.R")
 })
@@ -66,9 +67,13 @@ try({
 
 scrna <- readRDS(file = opt$rds)
 
+if(isFALSE(opt$integration)) {
+
 
 scrna <- NormalizeData(scrna, normalization.method = opt$normalization.method, scale.factor = opt$scale.factor)
 scrna <- FindVariableFeatures(scrna, selection.method = "vst", nfeatures = opt$nfeatures)
+}
+
 
 all.genes <- rownames(scrna)
 scrna <- ScaleData(scrna, features = all.genes)
@@ -118,6 +123,9 @@ if (opt$tsne) {
 
 
 
+if (opt$doublet.filter) {
+
+require(DoubletFinder)
 
 homotypic.prop <- modelHomotypic(scrna$seurat_clusters)
 nExp_poi <- round(0.075 * nrow(scrna@meta.data)) ## Assuming 7.5% doublet formation rate - tailor for your dataset
@@ -140,7 +148,7 @@ scrna@meta.data <- scrna@meta.data %>%
   dplyr::left_join(Doublet_Df, by = "barcodes") %>%
   tibble::column_to_rownames("barcodes")
 
-if (opt$doublet.filter) {
+
   subset(scrna, subset = DoubletFinder == "Singlet") -> scrna
   # scrna$DoubletFinder <- NULL
 }

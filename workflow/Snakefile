@@ -10,6 +10,9 @@ import pathlib
 
 cellsnake_path=config.get('cellsnake_path','') #if called by cellsnake
 datafolder=config.get("datafolder","data") #this can be a directory with samples or a single file to process
+analyses_folder=config.get("analyses_folder","analyses")
+results_folder=config.get("results_folder","results")
+is_integrated_sample=config.get("is_integrated_sample",False)
 
 
 #configfile: "config.yaml"
@@ -25,22 +28,32 @@ try:
     
     if os.path.isfile(datafolder):
         file_extension = pathlib.Path(datafolder)
-        files = [file_extension.stem]
-        print(files)
+        if (file_extension.suffix).lower() not in [".rds"]:
+            files = [file_extension.stem]
+            print(files)
+        elif is_integrated_sample:
+            analyses_folder="analyses_integrated"
+            files = [file_extension.stem]
+
+
+        
+
+
+        
         
 
 except:
     print("No samples detected")
 
 
-results_folder=config.get("results_folder","results")
+
 #basic paramaters
 min_cells=config.get("min_cells",3)
 min_features=config.get("min_features",200)
 percent_mt=config.get("percent_mt","10") #if not automatic, this will be used for all samples
 percent_rp=config.get("percent_rp",0) #by default, no filtering on ribosomal genes percentage 
 highly_variable_features=config.get("highly_variable_features",2000)
-doublet_filter= "--doublet.filter" if config.get("doublet_filter",True) in [True,"TRUE","True","T"] else ""
+doublet_filter= "--doublet.filter" if config.get("doublet_filter",True) in [True,"TRUE","True","T"] and is_integrated_sample is False else ""
 
 #automatic mt filtering
 grid_search=config.get("grid_search",False) #requires params file in tsv format
@@ -151,9 +164,10 @@ def sample_paramater(sample):
 
 
 
-include: "rules/seurat.smk"
+
 
 if route == "minimal":
+    include: "rules/seurat.smk"
     rule all:
         input:
             [sample_paramater(sample) for sample in files]
@@ -169,38 +183,27 @@ elif route == "standard":
             dim_reduction_and_marker_plots(),
             selected_markers()
 
-elif route == "detection":
-    include: "rules/params_detect.smk"
-    rule all:
-        input:
-            expand("analyses/resolution_detection/{sample}/params.tsv",sample=files)
-
-    print("Now you may launch the standard analysis, which will use the predicted resolution...")
-
 elif route == "others":
     rule all:
         input:
             expand(["results/{sample}/resolution-" + x + "/enrichment/GO-enrichment-all_clusters-ontology-{ontology}.xlsx".format(ontology=ontology) for x in resolution], sample=files)
 
 elif route == "clustree" or route == "clusteringTree":
+    include: "rules/seurat.smk"
     rule all:
         input:
             #expand("results/{sample}/clusteringTree/clusteringTree.pdf",sample=files)
             expand([results_folder + "/" + s + "/{params}/clusteringTree/clusteringTree.pdf" for s in files],params=list(paramspace.instance_patterns))
 
-elif route == "annotate":
-    rule all:
-        input:
-            expand(["analyses/celltypist/" + x + "/{sample}.rds" for x in resolution],sample=files)
-
-
 
 elif route == "integration":
-    files, = glob_wildcards("analyses/processed/" + integration_resolution + "/{sample}.rds")
+    integration_files = list(Path("analyses/processed/").rglob("*.rds"))
+    include: "rules/integration.smk"
+    print(integration_files)
     rule all:
         input:
-            "analyses/integration/harmony/" + integration_id + "_harmony.rds",
-            "analyses/integration/seurat/" + integration_id + "_seurat.rds"
+            #"analyses/integration/harmony/" + integration_id + "_harmony.rds",
+            "analyses_integrated/seurat/" + integration_id + ".rds"
 
 else:
     pass
