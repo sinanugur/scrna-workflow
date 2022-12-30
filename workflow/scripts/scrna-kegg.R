@@ -8,10 +8,6 @@ option_list <- list(
     type = "character", default = NULL,
     help = "Output excel file name", metavar = "character"
   ),
-  optparse::make_option(c("--ontology"),
-    type = "character", default = "BP",
-    help = "GO ontology, possible values BP, CC or MF", metavar = "character"
-  ),
   optparse::make_option(c("--algorithm"),
     type = "character", default = "weight01",
     help = "Algorithm", metavar = "character"
