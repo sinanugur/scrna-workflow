@@ -57,12 +57,9 @@ require(tidyverse)
 require(Seurat)
 require(patchwork)
 
-try({
-  source("workflow/scripts/scrna-functions.R")
-})
-try({
-  source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE), "/scrna/workflow/scripts/scrna-functions.R"))
-})
+
+try({source("workflow/scripts/scrna-functions.R")},silent=TRUE)
+try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE),"/scrna/workflow/scripts/scrna-functions.R"))},silent=TRUE)
 
 
 scrna <- readRDS(file = opt$rds)
@@ -75,13 +72,15 @@ scrna <- FindVariableFeatures(scrna, selection.method = "vst", nfeatures = opt$n
 }
 
 
-all.genes <- rownames(scrna)
-scrna <- ScaleData(scrna, features = all.genes)
+#all.genes <- rownames(scrna) memory requirements can be large if using all genes
+not.all.genes <- VariableFeatures(scrna) #only variable features
+
+scrna <- ScaleData(scrna, features = not.all.genes)
 scrna <- RunPCA(scrna, features = VariableFeatures(object = scrna))
 dimensionReduction <- function_pca_dimensions(scrna)
 scrna <- FindNeighbors(scrna, dims = 1:dimensionReduction)
 
-if (opt$resolution != "auto") {
+if (!opt$resolution %in% c("auto","AUTO","Auto")) {
   scrna <- FindClusters(scrna, resolution = as.numeric(opt$resolution))
 } else {
   require(MultiKParallel)
@@ -114,11 +113,15 @@ if (opt$resolution != "auto") {
 }
 
 
+print("here")
+
 if (opt$umap) {
   scrna <- RunUMAP(scrna, dims = 1:dimensionReduction)
 }
+
+
 if (opt$tsne) {
-  scrna <- RunTSNE(scrna, dims = 1:dimensionReduction)
+  scrna <- RunTSNE(scrna, dims = 1:dimensionReduction,check_duplicates = FALSE)
 }
 
 
@@ -139,13 +142,13 @@ scrna <- doubletFinder_v3(scrna, PCs = 1:10, pN = 0.25, pK = 0.09, nExp = nExp_p
 scrna@meta.data %>%
   tibble::rownames_to_column("barcodes") %>%
   select(barcodes, starts_with("DF")) %>%
-  select(barcodes, DoubletFinder = 2) -> Doublet_Df
+  select(barcodes, DoubletFinder = 2) -> doublet_df
 
 scrna@meta.data <- scrna@meta.data %>%
   select(!starts_with("DF")) %>%
   select(!starts_with("pANN")) %>%
   tibble::rownames_to_column("barcodes") %>%
-  dplyr::left_join(Doublet_Df, by = "barcodes") %>%
+  dplyr::left_join(doublet_df, by = "barcodes") %>%
   tibble::column_to_rownames("barcodes")
 
 

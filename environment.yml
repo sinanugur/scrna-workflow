@@ -10,3 +10,4 @@ dependencies:
  - geos
  - hdf5
  - numba
+ - r-xml
