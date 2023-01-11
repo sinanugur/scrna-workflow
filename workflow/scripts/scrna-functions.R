@@ -37,3 +37,16 @@ tab <- GenTable(GOdata, raw.p.value = resultsKS, topNodes = length(resultsKS@sco
 
 return(tab)
 }
+
+
+theme_cellsnake_classic <- function (base_size = 12, base_family = "Ubuntu") {
+    theme_bw() %+replace% 
+    theme(
+      panel.grid.major  = element_line(color = "white"),
+      #panel.background = element_rect(fill = "lightblue"),
+      #panel.border = element_rect(color = "lightblue", fill = NA),
+      #axis.line = element_line(color = "lightblue"),
+      #axis.ticks = element_line(color = "lightblue"),
+      #axis.text = element_text(color = "steelblue")
+      )
+}

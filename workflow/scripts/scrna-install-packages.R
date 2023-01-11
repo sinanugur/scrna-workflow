@@ -32,6 +32,8 @@ librarian::shelf('chris-mcginnis-ucsf/DoubletFinder')
 librarian::shelf('viridis')
 librarian::shelf('topGO')
 librarian::shelf('org.Hs.eg.db')
+librarian::shelf('randomcoloR')
+
 
 if (!requireNamespace("cerebroApp", quietly = TRUE)) {
 ibrarian::shelf('romanhaa/cerebroApp') #will check later
