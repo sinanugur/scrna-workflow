@@ -47,5 +47,6 @@ scrna_anchors <- FindIntegrationAnchors(object.list = scrna_list, dims = 1:30)
 
 scrna <- IntegrateData(anchorset = scrna_anchors, dims = 1:30)
 
+DefaultAssay(scrna) <- "RNA"
 
 saveRDS(scrna, file = opt$output.rds)
