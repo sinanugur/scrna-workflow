@@ -19,12 +19,8 @@ option_list = list(
 opt_parser = optparse::OptionParser(option_list=option_list)
 opt = optparse::parse_args(opt_parser)
 
-try({
-  source("workflow/scripts/scrna-functions.R")
-})
-try({
-  source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE), "/scrna/workflow/scripts/scrna-functions.R"))
-})
+try({source("workflow/scripts/scrna-functions.R")},silent=TRUE)
+try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE),"/scrna/workflow/scripts/scrna-functions.R"))},silent=TRUE)
 
 if (is.null(opt$rds)){
   optparse::print_help(opt_parser)
