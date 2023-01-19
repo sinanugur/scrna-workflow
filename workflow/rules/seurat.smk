@@ -70,7 +70,7 @@ rule normalization_pca_rds:
     shell:
         "{cellsnake_path}workflow/scripts/scrna-normalization-pca.R --rds {input} {params.doublet_filter} --normalization.method {normalization_method} "
         "--scale.factor {scale_factor} --nfeature {highly_variable_features} --resolution {params.paramaters[resolution]} "
-        "--output.rds {output.rds} --output.xlsx {output.xlsx} --output.pca {output.pca} {umap_plot} {tsne_plot} {params.integration}"
+        "--output.rds {output.rds} --output.xlsx {output.xlsx} {umap_plot} {tsne_plot} {params.integration}"
 
 
 rule pca_plot:
