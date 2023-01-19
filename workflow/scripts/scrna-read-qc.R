@@ -151,7 +151,7 @@ if (opt$percent.mt %in% c("auto", "Auto", "AUTO")) {
     smObjSCE <- filterCells(smObjSCE, model)
     scrna <- scrna[, colnames(smObjSCE)]
     return(scrna)
-    }, error= function(scrna) {
+    }, error= function(a) {
 
       upper_bound_MT <- median(scrna$percent.mt) + 1 * mad(scrna$percent.mt, constant = 1) #miQC failed, use median absolute deviation
 
