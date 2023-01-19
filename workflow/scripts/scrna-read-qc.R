@@ -150,18 +150,19 @@ if (opt$percent.mt %in% c("auto", "Auto", "AUTO")) {
     ggsave(filename = opt$plot.mtplot, p1 + p2, width = 10, height = 4)
     smObjSCE <- filterCells(smObjSCE, model)
     scrna <- scrna[, colnames(smObjSCE)]
-    }, error= {
+    return(scrna)
+    }, error= function(scrna) {
 
-      upper_bound_MT <- median(scrna$nFeature_RNA) + 1 * mad(scrna$nFeature_RNA, constant = 1) #miQC failed, use median absolute deviation
+      upper_bound_MT <- median(scrna$percent.mt) + 1 * mad(scrna$percent.mt, constant = 1) #miQC failed, use median absolute deviation
 
       scrna <- subset(scrna, subset = percent.mt <= upper_bound_MT)
       p1 <- plot.new()
       p2 <- plotMetrics(smObjSCE)
 
       ggsave(filename = opt$plot.mtplot, p1 + p2, width = 10, height = 4)
+      return(scrna)
 
-
-    })
+    }) -> scrna
 
   }
 } else {
