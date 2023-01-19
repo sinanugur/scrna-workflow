@@ -34,10 +34,6 @@ option_list <- list(
     type = "character", default = NULL,
     help = "Excel table of markers", metavar = "character"
   ),
-  optparse::make_option(c("--output.pca.plot"),
-    type = "character", default = "pca.pdf",
-    help = "PCA plot file name", metavar = "character"
-  ),
   optparse::make_option(c("--cpu"),
     type = "integer", default = 5,
     help = "Number of CPU for parallel run [default= %default]", metavar = "character"
@@ -163,10 +159,10 @@ scrna@meta.data <- scrna@meta.data %>%
 
 metrics <- table(scrna@meta.data[["seurat_clusters"]], scrna@meta.data$orig.ident)
 
-p1 <- DimPlot(scrna, reduction = "pca", label = TRUE, label.size = 10)
+#p1 <- DimPlot(scrna, reduction = "pca", label = TRUE, label.size = 10)
 
 
 # output files
 saveRDS(scrna, file = opt$output.rds)
 openxlsx::write.xlsx(metrics %>% as.data.frame() %>% select(Cluster = 1, everything()), file = opt$output.xlsx)
-ggsave(plot = p1, filename = opt$output.pca.plot, width = 9, height = 7)
+#ggsave(plot = p1, filename = opt$output.pca.plot, width = 9, height = 7)

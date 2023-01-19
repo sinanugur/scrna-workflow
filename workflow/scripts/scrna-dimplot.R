@@ -26,13 +26,23 @@ if (is.null(opt$rds)){
 
 require(Seurat)
 require(tidyverse)
-#try({source("workflow/scripts/scrna-functions.R")})
-#try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE),"/scrna/workflow/scripts/scrna-functions.R"))})
+require(randomcoloR)
 
+try({source("workflow/scripts/scrna-functions.R")},silent=TRUE)
+try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE),"/scrna/workflow/scripts/scrna-functions.R"))},silent=TRUE)
 
 scrna=readRDS(file = opt$rds)
 
-p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = TRUE,label.size = 10) 
+n<-length(Idents(scrna) %>% unique())
+set.seed(149)
+palette <- sort(distinctColorPalette(n))
+
+
+names(palette)=Idents(scrna) %>% unique() %>% sort() %>% as.character()
+print(palette)
+
+p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = TRUE) & theme_cellsnake_classic() & scale_color_manual(values = palette) 
+
 
 
 

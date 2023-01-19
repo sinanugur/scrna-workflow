@@ -143,17 +143,26 @@ if (opt$percent.mt %in% c("auto", "Auto", "AUTO")) {
     feature_ctrls <- list(mito = rownames(smObjSCE)[mt_genes])
     smObjSCE <- addPerCellQC(smObjSCE, subsets = feature_ctrls)
 
-
+    tryCatch({
     model <- mixtureModel(smObjSCE)
-
     p1 <- plotModel(smObjSCE, model)
     p2 <- plotMetrics(smObjSCE)
     ggsave(filename = opt$plot.mtplot, p1 + p2, width = 10, height = 4)
-
-
     smObjSCE <- filterCells(smObjSCE, model)
-
     scrna <- scrna[, colnames(smObjSCE)]
+    }, error= {
+
+      upper_bound_MT <- median(scrna$nFeature_RNA) + 1 * mad(scrna$nFeature_RNA, constant = 1) #miQC failed, use median absolute deviation
+
+      scrna <- subset(scrna, subset = percent.mt <= upper_bound_MT)
+      p1 <- plot.new()
+      p2 <- plotMetrics(smObjSCE)
+
+      ggsave(filename = opt$plot.mtplot, p1 + p2, width = 10, height = 4)
+
+
+    })
+
   }
 } else {
   scrna <- subset(scrna, subset = percent.mt <= as.numeric(opt$percent.mt))

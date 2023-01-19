@@ -17,9 +17,10 @@ def input_function(wildcards):
             return(datafolder + "/" + wildcards.sample + "/")
         elif os.path.isfile(datafolder + "/" + wildcards.sample + "/matrix.mtx"):
             return(datafolder + "/" + wildcards.sample + "/")
+        elif os.path.isfile(datafolder + "/" + wildcards.sample + "/outs/filtered_feature_bc_matrix/matrix.mtx.gz"):
+            return(datafolder + "/" + wildcards.sample + "/outs/filtered_feature_bc_matrix/")
         else:
             return(datafolder + "/" + wildcards.sample + "/outs/raw_feature_bc_matrix/")
-
 
 rule create_initial_raw_rds_and_trimming:
     input:
@@ -59,8 +60,7 @@ rule normalization_pca_rds:
         analyses_folder + "/raw/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
-        xlsx=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/number-of-cells-per-cluster.xlsx",
-        pca=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/pca.plot.pdf"
+        xlsx=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/number-of-cells-per-cluster.xlsx"
     params:
         paramaters=paramspace.instance,
         doublet_filter=doublet_filter,
@@ -71,6 +71,17 @@ rule normalization_pca_rds:
         "{cellsnake_path}workflow/scripts/scrna-normalization-pca.R --rds {input} {params.doublet_filter} --normalization.method {normalization_method} "
         "--scale.factor {scale_factor} --nfeature {highly_variable_features} --resolution {params.paramaters[resolution]} "
         "--output.rds {output.rds} --output.xlsx {output.xlsx} --output.pca {output.pca} {umap_plot} {tsne_plot} {params.integration}"
+
+
+rule pca_plot:
+    input:
+        analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
+    output:
+        umap=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/pca.plot.pdf"
+    params:
+        paramaters=paramspace.instance,
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-dimplot.R --rds {input} --reduction.type pca --output.reduction.plot {output.umap} --resolution {params.paramaters[resolution]}"
 
 
 rule umap_plot:
