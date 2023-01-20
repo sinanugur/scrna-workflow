@@ -94,7 +94,7 @@ gsea_file= config.get("gsea_file",cellsnake_path + "workflow/bundle/c2.cgp.v2022
 gesa_group= config.get("gsea_group","seurat_clusters")
 
 #alternative routes
-route=config.get("route","minimal") # select standard route for analysis
+route=config.get("route","standard") # select standard route for analysis
 integration_id=config.get("integration_id","combined")
 integration_resolution=str(config.get("resolution",0.8))
 celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
@@ -147,42 +147,40 @@ def sample_paramater(sample):
 
     paramspace=Paramspace(par_df)
     """
-    return [
-            #expand(["analyses/raw/" + sample + "/{params}.rds"], params=list(paramspace.instance_patterns)), 
-            expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-            expand([results_folder + "/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-            expand([results_folder + "/" + s + "/{params}/pca.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-            expand([results_folder + "/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
-            expand([results_folder + "/" + s + "/{params}/positive-markers-forAllClusters.xlsx" for s in files],params=list(paramspace.instance_patterns)),
-            dim_reduction_and_marker_plots(paramspace),
-            selected_markers(paramspace),
-            expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.dotplot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-            expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.tsne.pdf" for s in files],params=list(paramspace.instance_patterns)),
-            expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.umap.pdf" for s in files],params=list(paramspace.instance_patterns)),
-            expand([results_folder + "/" + s + "/{params}/gsea/" for s in files],params=list(paramspace.instance_patterns))
-            #expand([results_folder + "/" + s + "/{params}/GO-enrichment-" + ontology +  "-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
-            ]
+    if route == "standard"
+        return [
+                #expand(["analyses/raw/" + sample + "/{params}.rds"], params=list(paramspace.instance_patterns)), 
+                expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/pca.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/positive-markers-forAllClusters.xlsx" for s in files],params=list(paramspace.instance_patterns)),
+                dim_reduction_and_marker_plots(paramspace),
+                selected_markers(paramspace),
+                expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.dotplot.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.tsne.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.umap.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/gsea/" for s in files],params=list(paramspace.instance_patterns))
+                #expand([results_folder + "/" + s + "/{params}/GO-enrichment-" + ontology +  "-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
+                ]
+    else:
+        return [
+                expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/pca.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
+        ]
 
 
 
 
 
-if route == "minimal":
+if route in ["standard","minimal"]:
     include: "rules/seurat.smk"
     rule all:
         input:
             [sample_paramater(sample) for sample in files]
-    
-elif route == "standard":
-    rule all:
-        input:
-            expand(["analyses/raw/" + s + "/{params}.rds" for s in files],params=list(paramspace.instance_patterns)),
-            expand([results_folder + "/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
-            expand([results_folder + "/" + s + "/{params}/positive-markers-forAllClusters.xlsx" for s in files],params=list(paramspace.instance_patterns)),
-            expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-            expand([results_folder + "/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),        
-            dim_reduction_and_marker_plots(),
-            selected_markers()
+
 
 elif route == "others":
     rule all:
