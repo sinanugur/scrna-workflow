@@ -5,7 +5,7 @@ r["CRAN"] = "http://cran.us.r-project.org"
 options(repos = r)
 
 
-packages <- c("tidyverse","optparse","librarian","Seurat","SeuratDisk","patchwork","harmony","DoubletFinder","viridis","clustree","openxlsx","topGO","org.Hs.eg.db","cerebroApp","miQC","scater")
+packages <- c("tidyverse","optparse","librarian","Seurat","SeuratDisk","patchwork","harmony","DoubletFinder","viridis","clustree","openxlsx","topGO","org.Hs.eg.db","cerebroApp","miQC","scater","MultiKParallel","limma")
 
 
 installed_packages <- packages %in% rownames(installed.packages())
@@ -35,6 +35,8 @@ librarian::shelf('org.Hs.eg.db')
 librarian::shelf('randomcoloR')
 librarian::shelf('miQC')
 librarian::shelf('scater')
+librarian::shelf('sinanugur/MultiKParallel')
+librarian::shelf('limma')
 
 
 if (!requireNamespace("cerebroApp", quietly = TRUE)) {

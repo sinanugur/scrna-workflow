@@ -20,9 +20,9 @@ is_integrated_sample=config.get("is_integrated_sample",False)
 try:
 
     if os.path.isdir(datafolder):
-        cellranger_new = glob_wildcards(datafolder +  "/{sample}/raw_feature_bc_matrix/matrix.mtx.gz").sample + glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx.gz").sample + glob_wildcards(datafolder +  "/{sample}/matrix.mtx.gz").sample
-        cellranger_old = glob_wildcards(datafolder +  "/{sample}/raw_feature_bc_matrix/matrix.mtx").sample + glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx").sample + glob_wildcards(datafolder +  "/{sample}/matrix.mtx").sample
-        h5files, = glob_wildcards(datafolder + "/{sample}/filtered_feature_bc_matrix.h5")
+        cellranger_new = glob_wildcards(datafolder +  "/{sample}/raw_feature_bc_matrix/matrix.mtx.gz",followlinks=True).sample + glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx.gz",followlinks=True).sample + glob_wildcards(datafolder +  "/{sample}/matrix.mtx.gz",followlinks=True).sample
+        cellranger_old = glob_wildcards(datafolder +  "/{sample}/raw_feature_bc_matrix/matrix.mtx",followlinks=True).sample + glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx",followlinks=True).sample + glob_wildcards(datafolder +  "/{sample}/matrix.mtx",followlinks=True).sample
+        h5files, = glob_wildcards(datafolder + "/{sample}/filtered_feature_bc_matrix.h5",followlinks=True)
         files=list(filter(lambda i: "/" not in i, cellranger_new + cellranger_old + h5files)) #do not capture subdirectories etc
         print(files)
     
