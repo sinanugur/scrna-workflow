@@ -147,7 +147,7 @@ def sample_paramater(sample):
 
     paramspace=Paramspace(par_df)
     """
-    if route == "standard"
+    if route == "standard":
         return [
                 #expand(["analyses/raw/" + sample + "/{params}.rds"], params=list(paramspace.instance_patterns)), 
                 expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
