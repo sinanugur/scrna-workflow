@@ -46,7 +46,7 @@ rule clustree:
     input:
         analyses_folder + "/raw/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        clustree=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/clusteringTree/clusteringTree.pdf",
+        clustree=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/ClustTree.pdf",
         heatmap=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/DimHeatMap_plot.pdf",
         hvfplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/highly-variable-features.pdf",
         jackandelbow=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/JackandElbow_plot.pdf"
