@@ -18,6 +18,7 @@ option_list <- list(
     type = "character", default = "LogNormalize",
     help = "Normalization method[default= %default]", metavar = "character"
   ),
+  optparse::make_option(c("--integration"), action = "store_true", default = FALSE),
   optparse::make_option(c("--output"),
     type = "character", default = "clustree.pdf",
     help = "Output clustree file name", metavar = "character"
@@ -53,11 +54,22 @@ try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path
 
 scrna <- readRDS(file = opt$rds)
 
+if(isFALSE(opt$integration)) {
+
+
 scrna <- NormalizeData(scrna, normalization.method = opt$normalization.method, scale.factor = opt$scale.factor)
 scrna <- FindVariableFeatures(scrna, selection.method = "vst", nfeatures = opt$nfeatures)
+} else {
 
-all.genes <- rownames(scrna)
-scrna <- ScaleData(scrna, features = all.genes)
+try({DefaultAssay(scrna) <- "integrated"}) #for now only for Seurat, Harmony will come
+
+}
+
+
+#all.genes <- rownames(scrna) memory requirements can be large if using all genes
+not.all.genes <- VariableFeatures(scrna) #only variable features
+
+scrna <- ScaleData(scrna, features = not.all.genes)
 scrna <- RunPCA(scrna, features = VariableFeatures(object = scrna))
 
 

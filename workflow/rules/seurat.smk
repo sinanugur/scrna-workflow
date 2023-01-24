@@ -50,8 +50,10 @@ rule clustree:
         heatmap=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/DimHeatMap_plot.pdf",
         hvfplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/highly-variable-features.pdf",
         jackandelbow=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/JackandElbow_plot.pdf"
+    params:
+        integration="--integration" if is_integrated_sample is True else " "
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-clusteringtree.R --rds {input} --output {output.clustree} --heatmap {output.heatmap} --hvfplot {output.hvfplot} --jackandelbow {output.jackandelbow}"
+        "{cellsnake_path}workflow/scripts/scrna-clusteringtree.R --rds {input} --output {output.clustree} --heatmap {output.heatmap} --hvfplot {output.hvfplot} --jackandelbow {output.jackandelbow} {params.integration}"
 
 
 
