@@ -65,6 +65,10 @@ if(isFALSE(opt$integration)) {
 
 scrna <- NormalizeData(scrna, normalization.method = opt$normalization.method, scale.factor = opt$scale.factor)
 scrna <- FindVariableFeatures(scrna, selection.method = "vst", nfeatures = opt$nfeatures)
+} else {
+
+try({DefaultAssay(scrna) <- "integrated"}) #for now only for Seurat, Harmony will come
+
 }
 
 

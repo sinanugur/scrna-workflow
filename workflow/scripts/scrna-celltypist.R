@@ -37,6 +37,7 @@ require(Seurat)
 
 
 scrna <- readRDS(file = opt$rds)
+DefaultAssay(scrna) <- "RNA"
 
 celltypist <- read.csv(
       opt$csv,

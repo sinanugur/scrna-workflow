@@ -35,13 +35,6 @@ try:
             analyses_folder="analyses_integrated"
             files = [file_extension.stem]
 
-
-        
-
-
-        
-        
-
 except:
     print("No samples detected")
 
@@ -78,7 +71,7 @@ tsne_markers_plot="--umap" if config.get("tsne_markers_plot",True) in [False,"TR
 #Differential expression paramaters
 logfc_threshold=config.get("logfc_threshold",0.25)
 test_use=config.get("test_use","wilcox")
-marker_plots_per_cluster_n=config.get("marker_plots_per_cluster_n",50)
+marker_plots_per_cluster_n=config.get("marker_plots_per_cluster_n",10) #only print top 10 by default
 
 
 selected_markers_file=config.get("selected_markers_file","markers.tsv")

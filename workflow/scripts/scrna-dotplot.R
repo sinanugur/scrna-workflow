@@ -34,6 +34,7 @@ require(tidyverse)
 
 
 scrna=readRDS(file = opt$rds)
+DefaultAssay(scrna) <- "RNA"
 
 markers=read_tsv(opt$tsv,col_names=FALSE) %>% pull()
 

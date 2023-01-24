@@ -36,6 +36,7 @@ markers=read_tsv(opt$tsv,col_names=FALSE) %>% pull()
 
 
 scrna=readRDS(file = opt$rds)
+DefaultAssay(scrna) <- "RNA"
 
 #RNA_=paste0("RNA_snn_res.",opt$resolution)
 

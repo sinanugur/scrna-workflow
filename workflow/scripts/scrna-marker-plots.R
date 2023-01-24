@@ -48,6 +48,7 @@ require(randomcoloR)
 
 
 scrna <- readRDS(file = opt$rds)
+DefaultAssay(scrna) <- "RNA"
 
 n<-length(Idents(scrna) %>% unique())
 set.seed(149)
