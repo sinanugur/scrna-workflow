@@ -49,6 +49,7 @@ require(randomcoloR)
 
 scrna <- readRDS(file = opt$rds)
 DefaultAssay(scrna) <- "RNA"
+Idents(object = scrna) <- scrna@meta.data[[opt$idents]]
 
 n<-length(Idents(scrna) %>% unique())
 set.seed(149)
@@ -80,5 +81,5 @@ suppressMessages(for (i in 1:nrow(Positive_Features)) {
 
     suppressWarnings(((p1 | p2) / p3) -> wp)
 
-    ggsave(paste0(opt$output.plot.dir, "/cluster", cluster, "/", gene, ".pdf"), wp,height=6+(n*0.15),width=7+(n*0.15),useDingbats = TRUE)
+    ggsave(paste0(opt$output.plot.dir, "/cluster", cluster, "/", gene, ".pdf"), wp,height=5+(n*0.15),width=6+(n*0.15),useDingbats = TRUE)
 })

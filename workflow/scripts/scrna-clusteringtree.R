@@ -73,7 +73,7 @@ scrna <- ScaleData(scrna, features = not.all.genes)
 scrna <- RunPCA(scrna, features = VariableFeatures(object = scrna))
 
 
-
+if(isFALSE(opt$integration)) {
 # output.dir=paste0("results/",opt$sampleid,"/technicals/")
 # dir.create(output.dir,recursive = T)
 
@@ -101,9 +101,23 @@ plot2 <- ElbowPlot(scrna, ndims = 50)
 # ggsave(paste0(output.dir,"JackandElbow_plot.pdf"), plot1 + plot2,width = 13,height = 5)
 ggsave(opt$jackandelbow, plot1 + plot2, width = 13, height = 5)
 
+}
+
+if(isFALSE(opt$integration)) {
+
+ resolution=seq(0.1, 2.5, 0.1)
+
+} else {
+
+resolution=seq(0.05, 1.5, 0.05)
+
+  }
+  
+
+
 dimensionReduction <- function_pca_dimensions(scrna)
 scrna <- FindNeighbors(scrna, dims = 1:dimensionReduction)
-scrna <- FindClusters(scrna, resolution = seq(0.1, 2.5, 0.1))
+scrna <- FindClusters(scrna, resolution = resolution)
 
 clustree(scrna) -> p1
 

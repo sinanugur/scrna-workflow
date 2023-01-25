@@ -11,7 +11,9 @@ option_list = list(
         optparse::make_option(c("--tsv"), type="character", default=NULL, 
               help="A text file contains the gene list", metavar="character"),
   optparse::make_option(c("--output.dotplot"), type="character", default=NULL, 
-              help="Output dotplot name", metavar="character")
+              help="Output dotplot name", metavar="character"),
+  optparse::make_option(c("--idents"), type="character", default="seurat_clusters", 
+              help="Meta data column name for marker analysis", metavar="character")
 
 
 
@@ -35,6 +37,8 @@ require(tidyverse)
 
 scrna=readRDS(file = opt$rds)
 DefaultAssay(scrna) <- "RNA"
+
+Idents(object = scrna) <- scrna@meta.data[[opt$idents]]
 
 markers=read_tsv(opt$tsv,col_names=FALSE) %>% pull()
 

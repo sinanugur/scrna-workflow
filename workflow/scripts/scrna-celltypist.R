@@ -33,6 +33,7 @@ if (is.null(opt$rds) || is.null(opt$csv)) {
 
 require(tidyverse)
 require(Seurat)
+require(randomcoloR)
 
 try({source("workflow/scripts/scrna-functions.R")},silent=TRUE)
 try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE),"/scrna/workflow/scripts/scrna-functions.R"))},silent=TRUE)

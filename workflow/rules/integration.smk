@@ -8,4 +8,3 @@ rule integration_with_seurat:
         {cellsnake_path}workflow/scripts/scrna-seurat-integration.R --rds "{input}" --sampleid {integration_id} --output.rds {output}
         """
 
-

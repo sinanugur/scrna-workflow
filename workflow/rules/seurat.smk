@@ -47,13 +47,14 @@ rule clustree:
         analyses_folder + "/raw/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
         clustree=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/ClustTree.pdf",
-        heatmap=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/DimHeatMap_plot.pdf",
-        hvfplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/highly-variable-features.pdf",
-        jackandelbow=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/JackandElbow_plot.pdf"
-    params:
-        integration="--integration" if is_integrated_sample is True else " "
-    shell:
-        "{cellsnake_path}workflow/scripts/scrna-clusteringtree.R --rds {input} --output {output.clustree} --heatmap {output.heatmap} --hvfplot {output.hvfplot} --jackandelbow {output.jackandelbow} {params.integration}"
+        heatmap=[results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/DimHeatMap_plot.pdf"] if is_integrated_sample is False else [],
+        hvfplot=[results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/highly-variable-features.pdf"] if is_integrated_sample is False else [],
+        jackandelbow=[results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/JackandElbow_plot.pdf"] if is_integrated_sample is False else []
+    run:
+        if is_integrated_sample is True:
+            shell("{cellsnake_path}workflow/scripts/scrna-clusteringtree.R --rds {input} --output {output.clustree} --integration")
+        else:
+            shell("{cellsnake_path}workflow/scripts/scrna-clusteringtree.R --rds {input} --output {output.clustree} --heatmap {output.heatmap} --hvfplot {output.hvfplot} --jackandelbow {output.jackandelbow}")
 
 
 
@@ -74,39 +75,17 @@ rule normalization_pca_rds:
         "--scale.factor {scale_factor} --nfeature {highly_variable_features} --resolution {params.paramaters[resolution]} "
         "--output.rds {output.rds} --output.xlsx {output.xlsx} {umap_plot} {tsne_plot} {params.integration}"
 
-
-rule pca_plot:
+rule dim_plots:
     input:
         analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        umap=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/pca.plot.pdf"
+        pl=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/{reduction}-{i}.plot.pdf"
     params:
         paramaters=paramspace.instance,
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-dimplot.R --rds {input} --reduction.type pca --output.reduction.plot {output.umap} --resolution {params.paramaters[resolution]}"
+        "{cellsnake_path}workflow/scripts/scrna-dimplot.R --rds {input} --reduction.type {wildcards.reduction} --output.reduction.plot {output.pl} --idents {wildcards.i}"
 
-
-rule umap_plot:
-    input:
-        analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
-    output:
-        umap=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/umap.plot.pdf"
-    params:
-        paramaters=paramspace.instance,
-    shell:
-        "{cellsnake_path}workflow/scripts/scrna-dimplot.R --rds {input} --reduction.type umap --output.reduction.plot {output.umap} --resolution {params.paramaters[resolution]}"
-
-rule tsne_plot:
-    input:
-        analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
-    output:
-        tsne=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/tsne.plot.pdf"
-    params:
-        paramaters=paramspace.instance,
-    shell:
-        "{cellsnake_path}workflow/scripts/scrna-dimplot.R --rds {input} --reduction.type tsne --output.reduction.plot {output.tsne} --resolution {params.paramaters[resolution]}"
-
-
+    
     
 rule find_all_cluster_markers:
     input:

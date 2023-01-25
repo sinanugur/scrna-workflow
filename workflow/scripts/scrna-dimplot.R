@@ -7,7 +7,10 @@ option_list = list(
         optparse::make_option(c("--reduction.type"), type="character", default="umap", 
               help="Reduction type, umap or tsne", metavar="character"),
       optparse::make_option(c("--output.reduction.plot"), type="character", default="reduction.pdf", 
-              help="Plot file name", metavar="character")
+              help="Plot file name", metavar="character"),
+optparse::make_option(c("--idents"), type="character", default="seurat_clusters", 
+              help="Meta data column name for marker analysis", metavar="character")
+
 
 
 )
@@ -31,6 +34,8 @@ try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path
 
 scrna=readRDS(file = opt$rds)
 DefaultAssay(scrna) <- "RNA"
+
+Idents(object = scrna) <- scrna@meta.data[[opt$idents]]
 
 n<-length(Idents(scrna) %>% unique())
 set.seed(149)

@@ -33,6 +33,7 @@ try:
             print(files)
         elif is_integrated_sample:
             analyses_folder="analyses_integrated"
+            results_folder="results_integrated"
             files = [file_extension.stem]
 
 except:
@@ -74,6 +75,8 @@ test_use=config.get("test_use","wilcox")
 marker_plots_per_cluster_n=config.get("marker_plots_per_cluster_n",10) #only print top 10 by default
 
 
+identity_to_plot=[config.get("identity_to_plot","seurat_clusters")]
+
 selected_markers_file=config.get("selected_markers_file","markers.tsv")
 
 #GO enrichment paramaters
@@ -107,7 +110,8 @@ def initialization_of_paramspace(tsv_file,dictionary):
 par_df = initialization_of_paramspace("params.tsv",{"percent_mt":[percent_mt],"resolution":[resolution]})
 paramspace=Paramspace(par_df)
 
-
+if is_integrated_sample:
+    identity_to_plot.append("orig.ident")
 
 def dim_reduction_and_marker_plots(paramspace):
     plots=[]
@@ -127,6 +131,14 @@ def selected_markers(paramspace):
             plots = plots + expand([results_folder + "/" + s + "/{params}/selected_marker_plots_tsne" for s in files],params=list(paramspace.instance_patterns))
     return plots
 
+def identity_dependent_dimplot(paramspace,identity):
+    plots=[]
+    if len(identity_to_plot) > 0:
+        plots = plots + expand([results_folder + "/" + s + "/{params}/umap-" + x + ".plot.pdf" for x in identity for s in files],params=list(paramspace.instance_patterns))
+    return plots
+
+
+
 def sample_paramater(sample):
     """
     try:
@@ -143,25 +155,27 @@ def sample_paramater(sample):
     if route == "standard":
         return [
                 #expand(["analyses/raw/" + sample + "/{params}.rds"], params=list(paramspace.instance_patterns)), 
-                expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                expand([results_folder + "/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                expand([results_folder + "/" + s + "/{params}/pca.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                #expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                #expand([results_folder + "/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                #expand([results_folder + "/" + s + "/{params}/pca.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/positive-markers-forAllClusters.xlsx" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 dim_reduction_and_marker_plots(paramspace),
                 selected_markers(paramspace),
+                identity_dependent_dimplot(paramspace,identity_to_plot),
                 expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.dotplot.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.tsne.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.umap.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                expand([results_folder + "/" + s + "/{params}/gsea/" for s in files],params=list(paramspace.instance_patterns))
+                expand([results_folder + "/" + s + "/{params}/gsea/" for s in files],params=list(paramspace.instance_patterns)),
+
                 #expand([results_folder + "/" + s + "/{params}/GO-enrichment-" + ontology +  "-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
                 ]
     else:
         return [
-                expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                expand([results_folder + "/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                expand([results_folder + "/" + s + "/{params}/pca.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                #expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                #expand([results_folder + "/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                #expand([results_folder + "/" + s + "/{params}/pca.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns))
         ]
