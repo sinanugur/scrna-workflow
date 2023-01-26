@@ -213,5 +213,9 @@ elif route == "integration":
             #"analyses/integration/harmony/" + integration_id + "_harmony.rds",
             "analyses_integrated/seurat/" + integration_id + ".rds"
 
+
+elif route == "kraken":
+    
+
 else:
     pass

@@ -7,3 +7,7 @@ def kraken2_input_function(wildcards):
             return(datafolder +  "/" + wildcards.sample + "/")
         elif os.path.isfile(datafolder + "/" + wildcards.sample + "/outs/possorted_genome_bam.bam"):
             return(datafolder + "/" + wildcards.sample + "/outs")
+
+
+
+
