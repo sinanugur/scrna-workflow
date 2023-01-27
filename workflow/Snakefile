@@ -208,7 +208,8 @@ def identity_dependent_dimplot(paramspace,identity):
         plots = plots + expand([results_folder + "/" + s + "/{params}/umap-" + x + ".plot.pdf" for x in identity for s in files],params=list(paramspace.instance_patterns))
     return plots
 
-
+def kraken_predictions(paramspace,bamfiles):
+    
 
 def sample_paramater(sample):
     """
@@ -287,6 +288,7 @@ elif route == "integration":
 
 
 elif route == "kraken":
+    bamfiles=cellsnake_glob_wildcards(datafolder + "/{sample}/outs/possorted_genome_bam.bam").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/possorted_genome_bam.bam").sample 
     pass
 
 
