@@ -109,7 +109,7 @@ if(isFALSE(opt$integration)) {
 
 } else {
 
-resolution=seq(0.05, 1.5, 0.05)
+resolution=seq(0.1, 1.5, 0.1)
 
   }
   
