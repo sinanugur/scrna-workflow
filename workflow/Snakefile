@@ -256,6 +256,7 @@ def sample_paramater(sample):
 
 if route in ["standard","minimal"]:
     include: "rules/seurat.smk"
+    include: "rules/microbiome.smk"
     rule all:
         input:
             [sample_paramater(sample) for sample in files]
