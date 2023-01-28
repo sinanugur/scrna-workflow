@@ -11,7 +11,8 @@ rule run_kraken:
         bam=kraken2_input_function
     output:
         analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/matrix.mtx",
-        analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/hierarchy.txt"
+        analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/hierarchy.txt",
+        directory(analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/")
     threads: 5
     params:
         outdir=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/"
