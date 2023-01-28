@@ -216,7 +216,8 @@ def kraken_predictions(paramspace,taxa):
     outs=[]
     if kraken_db_folder is not None:
         #outs = outs + expand([results_folder + "/" + s + "/{params}/kraken/" for s in files],params=list(paramspace.instance_patterns))
-        outs =  outs + expand([analyses_folder + "/kraken/{params}/" + s + "/" + taxa + ".h5seurat" for s in files],params=params=list(paramspace.instance_patterns))
+        outs =  outs + expand([analyses_folder + "/kraken/{params}/" + s + "/" + taxa + ".h5seurat" for s in bamfiles],params=params=list(paramspace.instance_patterns))
+    return outs
 
 def sample_paramater(sample):
     if route == "standard":
@@ -235,7 +236,7 @@ def sample_paramater(sample):
                 expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.tsne.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.umap.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/gsea/" for s in files],params=list(paramspace.instance_patterns)),
-
+                kraken_predictions(paramspace,taxa)
                 #expand([results_folder + "/" + s + "/{params}/GO-enrichment-" + ontology +  "-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
                 ]
     else:
