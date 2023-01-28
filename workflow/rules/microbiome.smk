@@ -13,7 +13,7 @@ rule run_kraken:
         analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/matrix.mtx",
     threads: 5
     params:
-        outdir=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/
+        outdir=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/"
     shell:
         "workflow/mg2sc/src/scMeG-kraken.py --input {input.bam} --outdir {params.outdir} --DBpath {kraken_db_folder} --threads {threads} --prefix {wildcards.sample}"
 
