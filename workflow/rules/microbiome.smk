@@ -8,15 +8,14 @@ def kraken2_input_function(wildcards):
 
 rule run_kraken:
     input:
-        bam=kraken2_input_function,
-        krakendb=kraken_db_folder
+        bam=kraken2_input_function
     output:
         analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/matrix.mtx",
     threads: 5
     params:
         outdir=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/
     shell:
-        "workflow/mg2sc/src/scMeG-kraken.py --input {input.bam} --outdir {params.outdir} --DBpath {input.krakendb} --threads {threads} --prefix {wildcards.sample}"
+        "workflow/mg2sc/src/scMeG-kraken.py --input {input.bam} --outdir {params.outdir} --DBpath {kraken_db_folder} --threads {threads} --prefix {wildcards.sample}"
 
 
 rule collapse_kraken:
