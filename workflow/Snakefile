@@ -166,6 +166,9 @@ integration_id=config.get("integration_id","combined")
 integration_resolution=str(config.get("resolution",0.8))
 celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
 
+#Kraken DB
+kraken_db_folder=config.get("kraken_db_folder",None)
+taxa=config.get("taxa","genus")
 
 #initialization of paramspace object using defaults
 def initialization_of_paramspace(tsv_file,dictionary):
@@ -208,22 +211,14 @@ def identity_dependent_dimplot(paramspace,identity):
         plots = plots + expand([results_folder + "/" + s + "/{params}/umap-" + x + ".plot.pdf" for x in identity for s in files],params=list(paramspace.instance_patterns))
     return plots
 
-def kraken_predictions(paramspace,bamfiles):
-    
+def kraken_predictions(paramspace,taxa):
+    bamfiles=cellsnake_glob_wildcards(datafolder + "/{sample}/outs/possorted_genome_bam.bam").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/possorted_genome_bam.bam").sample 
+    outs=[]
+    if kraken_db_folder is not None:
+        #outs = outs + expand([results_folder + "/" + s + "/{params}/kraken/" for s in files],params=list(paramspace.instance_patterns))
+        outs =  outs + expand([analyses_folder + "/kraken/{params}/" + s + "/" + taxa + ".h5seurat" for s in files],params=params=list(paramspace.instance_patterns))
 
 def sample_paramater(sample):
-    """
-    try:
-        par_df = pd.read_table(f"analyses/resolution_detection/{sample}/params.tsv")
-        print(f"Autodetected resolution file found, will use this: analyses/resolution_detection/{sample}/params.tsv")
-    except:
-        par_df = initialization_of_paramspace("params.tsv",{"MT":[percent_mt],"resolution":[resolution]})
-
-    if auto_mt_filtering:
-        del par_df["MT"]
-
-    paramspace=Paramspace(par_df)
-    """
     if route == "standard":
         return [
                 #expand(["analyses/raw/" + sample + "/{params}.rds"], params=list(paramspace.instance_patterns)), 
@@ -250,6 +245,7 @@ def sample_paramater(sample):
                 #expand([results_folder + "/" + s + "/{params}/pca.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 identity_dependent_dimplot(paramspace,identity_to_plot),
                 expand([results_folder + "/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
+                kraken_predictions(paramspace,taxa)
                 #expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns))
         ]
 
