@@ -3,7 +3,6 @@ def kraken2_input_function(wildcards):
     if os.path.isfile(datafolder + "/" + wildcards.sample + "/possorted_genome_bam.bam"):
         return(datafolder +  "/" + wildcards.sample + "/possorted_genome_bam.bam")
     elif os.path.isfile(datafolder + "/" + wildcards.sample + "/outs/possorted_genome_bam.bam"):
-        print("burdayim")
         return(datafolder + "/" + wildcards.sample + "/outs/possorted_genome_bam.bam")
     else:
         return(datafolder + "/" + wildcards.sample + "/outs/possorted_genome_bam.bam")
@@ -16,7 +15,7 @@ rule run_kraken:
         matrix=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/matrix.mtx",
         hierarchy=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/hierarchy.txt",
         outdir=directory(analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/")
-    threads: 5
+    threads: 10
  
     shell:
         """
@@ -33,7 +32,7 @@ rule collapse_kraken:
         analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{taxa}.h5ad"
 
     shell:
-        "workflow/scripts/scrna-kraken2-collapse.py {input.outdir} {input.hierarchy} {wilcards.taxa} {output}"
+        "workflow/scripts/scrna-kraken2-collapse.py {input.outdir} {input.hierarchy} {wildcards.taxa} {output}"
 
 rule convert_to_seurat:
     input:
