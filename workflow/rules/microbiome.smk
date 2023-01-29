@@ -26,13 +26,13 @@ rule run_kraken:
 
 rule collapse_kraken:
     input:
-        outdir=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/",
+        outdir=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}",
         hierarchy=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/hierarchy.txt"
     output:
         analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{taxa}.h5ad"
 
     shell:
-        "workflow/scripts/scrna-kraken2-collapse.py {input.outdir} {input.hierarchy} {wildcards.taxa} {output}"
+        "workflow/scripts/scrna-kraken2-collapse.py {input.outdir}/counts {input.hierarchy} {wildcards.taxa} {output}"
 
 rule convert_to_seurat:
     input:
