@@ -6,8 +6,7 @@ def kraken2_input_function(wildcards):
         print("burdayim")
         return(datafolder + "/" + wildcards.sample + "/outs/possorted_genome_bam.bam")
     else:
-        print("ordayim")
-        return
+        return(datafolder + "/" + wildcards.sample + "/outs/possorted_genome_bam.bam")
 
 
 rule run_kraken:
