@@ -13,13 +13,13 @@ rule run_kraken:
     input:
         bam=kraken2_input_function
     output:
-        analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/matrix.mtx",
-        analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/hierarchy.txt",
-        directory(analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/")
+        matrix=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/matrix.mtx",
+        hierarchy=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/hierarchy.txt",
+        outdir=directory(analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/")
     threads: 5
  
     shell:
-        "workflow/mg2sc/src/scMeG-kraken.py --input {input.bam} --outdir {ouput[2]} --DBpath {kraken_db_folder} --threads {threads} --prefix {wildcards.sample}"
+        "workflow/mg2sc/src/scMeG-kraken.py --input {input.bam} --outdir {output.outdir} --DBpath {kraken_db_folder} --threads {threads} --prefix {wildcards.sample}"
 
 
 rule collapse_kraken:
