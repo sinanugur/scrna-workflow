@@ -14,10 +14,9 @@ rule run_kraken:
         analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/hierarchy.txt",
         directory(analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/")
     threads: 5
-    params:
-        outdir=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/"
+ 
     shell:
-        "workflow/mg2sc/src/scMeG-kraken.py --input {input.bam} --outdir {params.outdir} --DBpath {kraken_db_folder} --threads {threads} --prefix {wildcards.sample}"
+        "workflow/mg2sc/src/scMeG-kraken.py --input {input.bam} --outdir {ouput[2]} --DBpath {kraken_db_folder} --threads {threads} --prefix {wildcards.sample}"
 
 
 rule collapse_kraken:
