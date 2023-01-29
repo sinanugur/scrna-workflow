@@ -19,7 +19,10 @@ rule run_kraken:
     threads: 5
  
     shell:
-        "workflow/mg2sc/src/scMeG-kraken.py --input {input.bam} --outdir {output.outdir} --DBpath {kraken_db_folder} --threads {threads} --prefix {wildcards.sample}"
+        """
+        rm -r {output.outdir}/counts
+        workflow/mg2sc/src/scMeG-kraken.py --input {input.bam} --outdir {output.outdir} --DBpath {kraken_db_folder} --threads {threads} --prefix {wildcards.sample}
+        """
 
 
 rule collapse_kraken:
