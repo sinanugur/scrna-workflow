@@ -40,4 +40,4 @@ rule convert_to_seurat:
     output:
         analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{taxa}.h5seurat"
     shell:
-        """Rscript -e 'SeuratDisk::Convert({input},dest = "h5seurat", overwrite = TRUE)'"""
+        """Rscript -e 'SeuratDisk::Convert("{input}",dest = "h5seurat", overwrite = TRUE)'"""
