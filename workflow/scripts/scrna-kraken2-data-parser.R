@@ -59,7 +59,7 @@ require(SeuratDisk)
 CreateSeuratObject(LoadH5Seurat(opt$h5seurat)[["RNA"]]@counts,min.cells = opt$min.cells,min.features = opt$min.features)[["RNA"]]@counts %>% as.matrix() %>% 
 t() %>% as.data.frame() %>% select(-starts_with("Homo")) -> df
 
-df %>% rownames_to_column("barcode") %>% gather(group,umi,-barcode) %>% group_by(genus) %>%
+df %>% rownames_to_column("barcode") %>% gather(group,umi,-barcode) %>% group_by(group) %>%
  summarise(sum=log(sum(umi))) %>% arrange(desc(sum)) %>% slice_max(n = 50,order_by = sum) %>% ggplot(aes(reorder(group,sum),sum)) + geom_col() + coord_flip() + theme_cellsnake_classic() + 
  ylab("log-total UMI") + xlab(opt$taxa) + ggtitle(opt$sampleid) + theme(axis.title = element_text(size = 12)) -> p1
 
