@@ -66,4 +66,4 @@ df %>% rownames_to_column("barcode") %>% gather(group,umi,-barcode) %>% group_by
 
 ggsave(plot =p1,filename=opt$output.plot,width=6,height=9)
 
-saveRDS(scrna,file = opt$output.rds)
+saveRDS(df,file = opt$output.rds)
