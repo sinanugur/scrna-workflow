@@ -14,9 +14,11 @@ rule run_kraken:
     output:
         matrix=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/matrix.mtx",
         hierarchy=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/hierarchy.txt",
-        outdir=directory(analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/")
+        outdir=directory(analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/"),
+        unmapped=temp(analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_unmapped.bam"),
+        fq=temp(analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_unmapped.fq"),
+        kr=temp(analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_output.kraken")
     threads: 10
- 
     shell:
         """
         rm -r {output.outdir}/counts
@@ -46,6 +48,7 @@ rule parse_h5seurat:
     input:
         analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{taxa}.h5seurat"
     output:
-        analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{taxa}.rds"
+        rds=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{taxa}.rds",
+        plot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/{taxa}.pdf"
     shell:
-        "workflow/scripts/scrna-kraken2-data-parser.R --h5seurat {input} --output.rds {output}"
+        "workflow/scripts/scrna-kraken2-data-parser.R --h5seurat {input} --output.rds {output.rds} --output.plot {output.plot} --sampleid {wildcards.sample} --taxa {wildcards.taxa}"

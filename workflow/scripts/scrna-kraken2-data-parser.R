@@ -24,7 +24,15 @@ option_list <- list(
   optparse::make_option(c("--output.rds"),
     type = "character", default = "output.rds",
     help = "Output RDS file name [default= %default]", metavar = "character"
-  )
+  ),
+    optparse::make_option(c("--output.plot"),
+    type = "character", default = "output.pdf",
+    help = "Output barplot file name [default= %default]", metavar = "character"
+  ),
+    optparse::make_option(c("--taxa"),
+    type = "character", default = "genus",
+    help = "Taxonomic level", metavar = "character"
+  ),
 
 )
 
@@ -49,7 +57,12 @@ require(SeuratDisk)
 #CreateSeuratObject(scrna.data,min.cells = 1,min.features = 5) -> scrna
 
 CreateSeuratObject(LoadH5Seurat(opt$h5seurat)[["RNA"]]@counts,min.cells = opt$min.cells,min.features = opt$min.features)[["RNA"]]@counts %>% as.matrix() %>% 
-t() %>% as.data.frame() %>% select(-starts_with("Homo")) -> scrna
+t() %>% as.data.frame() %>% select(-starts_with("Homo")) -> df
 
+df %>% rownames_to_column("barcode") %>% gather(group,umi,-barcode) %>% group_by(genus) %>%
+ summarise(sum=log(sum(umi))) %>% arrange(desc(sum)) %>% slice_max(n = 50,order_by = sum) %>% ggplot(aes(reorder(group,sum),sum)) + geom_col() + coord_flip() + theme_cellsnake_classic() + 
+ ylab("log-total UMI") + xlab(opt$taxa) + ggtitle(opt$sampleid) + theme(axis.title = element_text(size = 12)) -> p1
+
+ggsave(plot =p1,filename=opt$output.plot,width=6,height=9)
 
 saveRDS(scrna,file = opt$output.rds)

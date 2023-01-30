@@ -36,6 +36,7 @@ librarian::shelf('randomcoloR')
 librarian::shelf('miQC')
 librarian::shelf('scater')
 librarian::shelf('sinanugur/MultiKParallel')
+librarian::shelf('stemangiola/tidyseurat')
 librarian::shelf('limma')
 
 
