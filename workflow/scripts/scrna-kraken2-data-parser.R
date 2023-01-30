@@ -49,4 +49,7 @@ require(SeuratDisk)
 #CreateSeuratObject(scrna.data,min.cells = 1,min.features = 5) -> scrna
 
 CreateSeuratObject(LoadH5Seurat(opt$h5seurat)[["RNA"]]@counts,min.cells = opt$min.cells,min.features = opt$min.features)[["RNA"]]@counts %>% as.matrix() %>% 
-t() %>% as.data.frame() %>% select(-starts_with("Homo")) %>% saveRDS(.x, file = opt$output.rds)
+t() %>% as.data.frame() %>% select(-starts_with("Homo")) -> scrna
+
+
+saveRDS(scrna,file = opt$output.rds)
