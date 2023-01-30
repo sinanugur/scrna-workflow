@@ -48,7 +48,8 @@ require(optparse)
 require(tidyverse)
 require(Seurat)
 require(SeuratDisk)
-
+try({source("workflow/scripts/scrna-functions.R")},silent = TRUE)
+try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE),"/scrna/workflow/scripts/scrna-functions.R"))},silent = TRUE)
 
 
 # nFeature_RNA is the number of genes detected in each cell. nCount_RNA is the total number of molecules detected within a cell.
