@@ -13,6 +13,10 @@ option_list <- list(
     type = "character", default = NULL,
     help = "Data directory", metavar = "character"
   ),
+  optparse::make_option(c("--h5seurat"),
+    type = "character", default = NULL,
+    help = "Data directory", metavar = "character"
+  ),
   optparse::make_option(c("--sampleid"),
     type = "character", default = NULL,
     help = "Sample ID", metavar = "character"
@@ -27,7 +31,7 @@ option_list <- list(
 opt_parser <- optparse::OptionParser(option_list = option_list)
 opt <- optparse::parse_args(opt_parser)
 
-if (is.null(opt$data.dir) || is.null(opt$sampleid)) {
+if (is.null(opt$sampleid)) {
   optparse::print_help(opt_parser)
   stop("At least one argument must be supplied (data.dir and sampleid)", call. = FALSE)
 }
@@ -35,28 +39,13 @@ if (is.null(opt$data.dir) || is.null(opt$sampleid)) {
 require(optparse)
 require(tidyverse)
 require(Seurat)
-require(patchwork)
+
 
 
 # nFeature_RNA is the number of genes detected in each cell. nCount_RNA is the total number of molecules detected within a cell.
 
 
+#CreateSeuratObject(scrna.data,min.cells = 1,min.features = 5) -> scrna
 
-
-try({
-  scrna.data <- Read10X(data.dir = opt$data.dir)
-},silent = TRUE)
-try({
-  scrna.data <- Read10X_h5(filename = paste0(opt$data.dir, "/filtered_feature_bc_matrix.h5"))
-},silent = TRUE)
-try({
-  scrna.data <- Read10X_h5(filename = opt$data.dir)
-},silent = TRUE)
-
-
-
-
-CreateSeuratObject(scrna.data,min.cells = 1,min.features = 5) -> scrna
-
-
-saveRDS(scrna, file = opt$output.rds)
+CreateSeuratObject(LoadH5Seurat(opt$h5seurat)[["RNA"]]@counts,min.cells = opt$min.cells,min.features = opt$min.features)[["RNA"]]@counts %>% as.matrix() %>% 
+t() %>% as.data.frame() %>% select(-starts_with("Homo")) %>% saveRDS(.x, file = opt$output.rds)

@@ -41,3 +41,11 @@ rule convert_to_seurat:
         analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{taxa}.h5seurat"
     shell:
         """Rscript -e 'SeuratDisk::Convert("{input}",dest = "h5seurat", overwrite = TRUE)'"""
+
+rule parse_h5seurat:
+    input:
+        analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{taxa}.h5seurat"
+    output:
+        analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{taxa}.rds"
+    shell:
+        "workflow/scripts/kraken2-data-parser.R --h5seurat {input} --output.rds {output}"
