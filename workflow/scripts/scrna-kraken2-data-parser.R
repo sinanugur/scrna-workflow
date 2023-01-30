@@ -32,7 +32,7 @@ option_list <- list(
     optparse::make_option(c("--taxa"),
     type = "character", default = "genus",
     help = "Taxonomic level", metavar = "character"
-  ),
+  )
 
 )
 
