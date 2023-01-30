@@ -39,6 +39,7 @@ if (is.null(opt$h5seurat)) {
 require(optparse)
 require(tidyverse)
 require(Seurat)
+require(SeuratDisk)
 
 
 
