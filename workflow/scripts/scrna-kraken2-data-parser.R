@@ -31,7 +31,7 @@ option_list <- list(
 opt_parser <- optparse::OptionParser(option_list = option_list)
 opt <- optparse::parse_args(opt_parser)
 
-if (is.null(opt$sampleid)) {
+if (is.null(opt$h5seurat)) {
   optparse::print_help(opt_parser)
   stop("At least one argument must be supplied (data.dir and sampleid)", call. = FALSE)
 }
