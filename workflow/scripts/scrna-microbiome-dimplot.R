@@ -46,14 +46,14 @@ microbiome=readRDS(file = opt$microbiome.rds)
 
 
 AddMetaData(scrna,microbiome %>% rownames_to_column("barcodes") %>% gather(taxa,umi,-barcodes)  %>% group_by(taxa) %>% mutate(sum=sum(umi,na.rm = T)) %>% ungroup() %>% 
-mutate(taxa=ifelse(sum >= min(sort(unique(sum),decreasing = T)[1:10]),paste0(opt$taxa,"_",taxa),paste0(taxa,"_","others"))) %>% 
+mutate(taxa=ifelse(sum >= min(sort(unique(sum),decreasing = T)[1:10]),paste0(opt$taxa,"_",taxa),paste0(opt$taxa,"_","others"))) %>% 
 select(-sum) %>% group_by(barcodes,taxa) %>% summarise(sum=sum(umi,na.rm = T)) %>% ungroup() %>% spread(taxa,sum) %>% column_to_rownames("barcodes")) -> scrna
 
 
 #p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = TRUE) & theme_cellsnake_classic() & scale_color_manual(values = palette) 
 
  scrna  %>% select(barcodes=.cell,orig.ident,contains(opt$taxa),starts_with(opt$reduction.type)) %>% gather(taxa,umi,starts_with(opt$taxa)) %>% select(barcodes,orig.ident,x=3,y=4,taxa,umi) %>% ggplot(aes(x=x,y=y,color=log(umi+1))) + geom_point(size=0.2)  +
-  labs(color="Log- UMI") + theme(axis.text = element_text(size=12)) + scale_color_viridis(option = "magma",direction = -1,alpha=0.8,na.value="white") + theme_cellsnake_classic() + facet_wrap(~taxa) -> p1
+  labs(color="Log-UMI") + theme(axis.text = element_text(size=12)) + scale_color_viridis(option = "magma",direction = -1,alpha=0.8,na.value="white") + theme_cellsnake_classic() + facet_wrap(~taxa) -> p1
 
 
 
