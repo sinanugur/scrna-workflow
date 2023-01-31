@@ -217,8 +217,8 @@ def kraken_predictions(paramspace,taxa):
     #bamfiles=cellsnake_glob_wildcards(datafolder + "/{sample}/outs/possorted_genome_bam.bam").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/possorted_genome_bam.bam").sample 
     outs=[]
     if kraken_db_folder is not None:
-        outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/" + taxa + ".pdf" for s in files],params=list(paramspace.instance_patterns))
-        outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/" + taxa + "-" + "umap.pdf" for s in files],params=list(paramspace.instance_patterns))
+        outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/microbiome-full-" + taxa + "-level.pdf" for s in files],params=list(paramspace.instance_patterns))
+        outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/dimplot-" + taxa + "-" + "umap.pdf" for s in files],params=list(paramspace.instance_patterns))
     return outs
 
 def sample_paramater(sample):
