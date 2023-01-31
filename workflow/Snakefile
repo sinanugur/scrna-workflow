@@ -218,7 +218,7 @@ def kraken_predictions(paramspace,taxa):
     outs=[]
     if kraken_db_folder is not None:
         outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/" + taxa + ".pdf" for s in files],params=list(paramspace.instance_patterns))
-        outs =  outs + expand([analyses_folder + "/kraken/{params}/" + s + "/" + taxa + ".rds" for s in files],params=list(paramspace.instance_patterns))
+        outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/" + taxa + "-" + "umap.pdf" for s in files],params=list(paramspace.instance_patterns))
     return outs
 
 def sample_paramater(sample):

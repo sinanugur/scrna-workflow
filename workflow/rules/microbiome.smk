@@ -48,7 +48,19 @@ rule parse_h5seurat:
     input:
         analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{taxa}.h5seurat"
     output:
-        rds=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{taxa}.rds",
+        microbiome_rds=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{taxa}.rds",
         plot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/{taxa}.pdf"
     shell:
-        "workflow/scripts/scrna-kraken2-data-parser.R --h5seurat {input} --output.rds {output.rds} --output.plot {output.plot} --sampleid {wildcards.sample} --taxa {wildcards.taxa}"
+        "workflow/scripts/scrna-kraken2-data-parser.R --h5seurat {input} --output.rds {output.microbiome_rds} --output.plot {output.plot} --sampleid {wildcards.sample} --taxa {wildcards.taxa}"
+
+
+rule dimplot_for_microbiome:
+    input:
+        rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
+        microbiome_rds=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{taxa}.rds"
+    output:
+        results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/{taxa}-{reduction}.pdf"
+    shell:
+        "workflow/scripts/scrna-microbiome-dimplot.R --rds {input.rds} --input.microbiome_rds {input.microbiome.rds} ----output.plot {output} --reduction.type {wildcards.reduction} --taxa {wildcards.taxa}"
+
+
