@@ -32,6 +32,7 @@ require(Seurat)
 require(tidyverse)
 #require(randomcoloR)
 require(tidyseurat)
+require(viridis)
 
 try({source("workflow/scripts/scrna-functions.R")},silent=TRUE)
 try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE),"/scrna/workflow/scripts/scrna-functions.R"))},silent=TRUE)
