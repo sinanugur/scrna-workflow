@@ -180,12 +180,14 @@ def initialization_of_paramspace(tsv_file,dictionary):
     return par_df
 
 
+if is_integrated_sample:
+    identity_to_plot.append("orig.ident")
+    percent_mt="auto" #if integrated auto
 
 par_df = initialization_of_paramspace("params.tsv",{"percent_mt":[percent_mt],"resolution":[resolution]})
 paramspace=Paramspace(par_df)
 
-if is_integrated_sample:
-    identity_to_plot.append("orig.ident")
+
 
 def dim_reduction_and_marker_plots(paramspace):
     plots=[]
@@ -283,11 +285,6 @@ elif route == "integration":
         input:
             #"analyses/integration/harmony/" + integration_id + "_harmony.rds",
             "analyses_integrated/seurat/" + integration_id + ".rds"
-
-
-elif route == "kraken":
-    bamfiles=cellsnake_glob_wildcards(datafolder + "/{sample}/outs/possorted_genome_bam.bam").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/possorted_genome_bam.bam").sample 
-    pass
 
 
 else:
