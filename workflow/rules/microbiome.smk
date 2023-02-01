@@ -64,3 +64,12 @@ rule dimplot_for_microbiome:
         "workflow/scripts/scrna-microbiome-dimplot.R --rds {input.rds} --microbiome.rds {input.microbiome_rds} --output.plot {output} --reduction.type {wildcards.reduction} --taxa {wildcards.taxa}"
 
 
+rule combine_microbiome_files_for_later:
+    input:
+        lambda wildcards : ["analyses/statistics/txt_tables_per_file/" + wildcards.gene + "/" + s + "." + wildcards.gene + ".txt" for s in files]
+        lambda wildcards : [analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/" + s + "/microbiome-full-" + wildarcads.taxa "-level.rds" for s in files]
+
+    output:
+        results_folder + "/" + integration_id + "-{taxa}.rds"
+    shell:
+        

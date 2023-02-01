@@ -106,8 +106,10 @@ scrna.data <- Read10X_h5(filename = opt$data.dir)
 
 
 
-scrna <- CreateSeuratObject(counts = scrna.data, project = opt$sampleid, min.cells = opt$min.cells, min.features = opt$min.features)
+scrna <- CreateSeuratObject(counts = scrna.data, project = make.names(opt$sampleid), min.cells = opt$min.cells, min.features = opt$min.features)
 rm(scrna.data)
+
+scrna <- RenameCells(object = scrna, add.cell.id = make.names(opt$sampleid)) #add cell.id to cell name
 
 
 scrna[["percent.mt"]] <- PercentageFeatureSet(scrna, pattern = "^MT-")
