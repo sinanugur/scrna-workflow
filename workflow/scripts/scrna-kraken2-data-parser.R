@@ -6,7 +6,7 @@ option_list <- list(
     help = "Min cells [default= %default]", metavar = "integer"
   ),
   optparse::make_option(c("--min.features"),
-    type = "integer", default = 5,
+    type = "integer", default = 3,
     help = "Min features [default= %default]", metavar = "character"
   ),
   optparse::make_option(c("--data.dir"),
