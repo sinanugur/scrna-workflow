@@ -68,6 +68,6 @@ rule combine_microbiome_files_for_later:
     input:
         lambda wildcards : expand([analyses_folder + "/kraken/" + "{params}" + "/" + s + "/microbiome-full-" + wildcards.taxa + "-level.rds" for s in files],params=list(paramspace.instance_patterns))
     output:
-        results_folder + "/" + integration_id + "-{taxa}.rds"
+        "analyses_integrated/seurat/" + integration_id + "-{taxa}.rds"
     shell:
         """{cellsnake_path}workflow/scripts/scrna-combine-microbiome-rds.R --rds "{input}" --sampleid {integration_id} --output.rds {output}"""
