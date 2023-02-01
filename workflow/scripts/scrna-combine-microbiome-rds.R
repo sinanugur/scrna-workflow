@@ -33,15 +33,12 @@ try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path
 files <- unlist(strsplit(opt$rds, " "))
 print(files)
 for (i in files) {
-    if (!exists("scrna_list")) {
-        scrna_list <- list(readRDS(file = i))
+    if (!exists("scrna")) {
+        scrna <- readRDS(file = i)
     } else {
-        scrna_list <- append(scrna_list, readRDS(file = i))
+        scrna <- bind_rows(scrna, readRDS(file = i))
     }
 }
-
-
-scrna <- scrna_list %>% bind_rows()
 
 
 saveRDS(scrna, file = opt$output.rds)
