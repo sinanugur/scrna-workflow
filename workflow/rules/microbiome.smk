@@ -51,7 +51,7 @@ rule parse_h5seurat:
         microbiome_rds=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/microbiome-full-{taxa}-level.rds",
         plot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/microbiome-full-{taxa}-level.pdf"
     shell:
-        "workflow/scripts/scrna-kraken2-data-parser.R --h5seurat {input} --output.rds {output.microbiome_rds} --output.plot {output.plot} --sampleid {wildcards.sample} --taxa {wildcards.taxa}"
+        "workflow/scripts/scrna-kraken2-data-parser.R --h5seurat {input} --output.rds {output.microbiome_rds} --output.plot {output.plot} --sampleid {wildcards.sample} --taxa {wildcards.taxa} --min.features {microbiome_min_features} --min.cells {microbiome_min_cells}"
 
 
 rule dimplot_for_microbiome:
@@ -61,6 +61,6 @@ rule dimplot_for_microbiome:
     output:
         results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/dimplot-{taxa}-{reduction}.pdf"
     shell:
-        "workflow/scripts/scrna-microbiome-dimplot.R --rds {input.rds} --microbiome.rds {input.microbiome_rds} --output.plot {output} --reduction.type {wildcards.reduction} --taxa {wildcards.taxa} --min.features {microbiome_min_features} --min.cells {microbiome_min_cells}"
+        "workflow/scripts/scrna-microbiome-dimplot.R --rds {input.rds} --microbiome.rds {input.microbiome_rds} --output.plot {output} --reduction.type {wildcards.reduction} --taxa {wildcards.taxa}"
 
 
