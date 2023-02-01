@@ -1,9 +1,9 @@
-
+#These are also default settings of a Cellsnake run without any configfile
 #basic paramaters
 min_cells: 3
 min_features: 200 
-percent_mt: 10
-min_coverage: 1000
+percent_mt: "auto" #Mitochondrial genes maximum percentage, default automatic, you use 10 or 5
+percent_rp: 0 #Ribosomal genes minimum percentage, default no filtering
 highly_variable_features: 2000
 
 #doublet filtering, True:T or False:F
@@ -13,11 +13,14 @@ doublet_filter: T
 #clustering and normalization paramaters
 normalization_method: "LogNormalize"
 scale_factor: 10000
-resolution: "0.8"
+resolution: "0.8" #default is 0.8, you can write "auto" for automatic detection
 
 #Differential expression paramaters
 logfc_threshold: 0.25
 test_use: "wilcox"
+
+#plotting paramaters
+marker_plots_per_cluster_n: 50
 
 #GO enrichment paramaters
 algorithm: "weight01"

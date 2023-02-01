@@ -2,14 +2,15 @@
 
 
 option_list = list(
-  optparse::make_option(c("--resolution"), type="double", default=0.8, 
-              help="Resolution [default= %default]", metavar="character"),
-    optparse::make_option(c("--rds"), type="character", default=NULL, 
+        optparse::make_option(c("--rds"), type="character", default=NULL, 
               help="Processed rds file of a Seurat object", metavar="character"),
         optparse::make_option(c("--reduction.type"), type="character", default="umap", 
               help="Reduction type, umap or tsne", metavar="character"),
       optparse::make_option(c("--output.reduction.plot"), type="character", default="reduction.pdf", 
-              help="Plot file name", metavar="character")
+              help="Plot file name", metavar="character"),
+optparse::make_option(c("--idents"), type="character", default="seurat_clusters", 
+              help="Meta data column name for marker analysis", metavar="character")
+
 
 
 )
@@ -26,13 +27,26 @@ if (is.null(opt$rds)){
 
 require(Seurat)
 require(tidyverse)
+require(randomcoloR)
 
-
-source("workflow/scripts/scrna-functions.R")
+try({source("workflow/scripts/scrna-functions.R")},silent=TRUE)
+try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE),"/scrna/workflow/scripts/scrna-functions.R"))},silent=TRUE)
 
 scrna=readRDS(file = opt$rds)
+DefaultAssay(scrna) <- "RNA"
 
-p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = TRUE,label.size = 10) 
+Idents(object = scrna) <- scrna@meta.data[[opt$idents]]
+
+n<-length(Idents(scrna) %>% unique())
+set.seed(149)
+palette <- sort(distinctColorPalette(n))
+
+
+names(palette)=Idents(scrna) %>% unique() %>% sort() %>% as.character()
+print(palette)
+
+p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = TRUE) & theme_cellsnake_classic() & scale_color_manual(values = palette) 
+
 
 
 

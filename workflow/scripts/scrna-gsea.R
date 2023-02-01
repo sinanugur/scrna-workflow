@@ -6,7 +6,7 @@ option_list = list(
     optparse::make_option(c("--gseafile"), type="character", default="c2.all.v2022.1.Hs.symbols.gmt", 
               help="GeneSetEnrichmentAnalysis file downloaded from http://www.gsea-msigdb.org/ ", metavar="character"),
     optparse::make_option(c("--group"), type="character", default="seurat_clusters", 
-              help="GeneSetEnrichmentAnalysis file downloaded from http://www.gsea-msigdb.org/ ", metavar="character"),
+              help="Groups for analysis", metavar="character"),
         optparse::make_option(c("--output.dir"), type="character", default=NULL, 
               help="Output excel file name", metavar="character")
 )
@@ -23,7 +23,9 @@ require(cerebroApp)
 require(openxlsx)
 require(Seurat)
 require(tidyverse)
-source("workflow/scripts/scrna-functions.R")
+try({source("workflow/scripts/scrna-functions.R")},silent=TRUE)
+try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE),"/scrna/workflow/scripts/scrna-functions.R"))},silent=TRUE)
+
 
 scrna=readRDS(file = opt$rds)
 

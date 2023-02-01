@@ -11,8 +11,6 @@ option_list = list(
 
 
 )
- 
-
 
 opt_parser = optparse::OptionParser(option_list=option_list)
 opt = optparse::parse_args(opt_parser)
@@ -24,10 +22,9 @@ if (is.null(opt$rds) || is.null(opt$sampleid) ){
 
 require(Seurat)
 require(tidyverse)
+#try({source("workflow/scripts/scrna-functions.R")})
+#try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE),"/scrna/workflow/scripts/scrna-functions.R"))})
 
-
-
-source("workflow/scripts/scrna-functions.R")
 
 
 scrna=readRDS(file = opt$rds)

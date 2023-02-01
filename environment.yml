@@ -1,4 +1,4 @@
-name: scrna_clean
+name: cellsnake
 channels:
  - conda-forge
  - bioconda
@@ -6,7 +6,16 @@ channels:
 dependencies:
  - r-base
  - snakemake-minimal
- - celltypist
  - geos
  - hdf5
  - numba
+ - r-xml
+ - bedtools
+ - samtools
+ - kraken2
+ - pip
+ - pip:
+  - scipy
+  - regex
+  - pysam
+  - celltypist

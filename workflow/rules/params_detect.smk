@@ -8,7 +8,7 @@ rule auto_detect_resolution:
     threads:5
 
     shell:
-        "workflow/scripts/scrna-cluster-resolution-detection.R --data.dir {input} --sampleid {wildcards.sample} --percent.mt {params.paramaters[MT]} --min.features {min_features} --min.cells {min_cells} --output.tsv {output.tsv} --cpu {threads}"
+        "{cellsnake_path}workflow/scripts/scrna-cluster-resolution-detection.R --data.dir {input} --sampleid {wildcards.sample} --percent.mt {params.paramaters[MT]} --min.features {min_features} --min.cells {min_cells} --output.tsv {output.tsv} --cpu {threads}"
 
 
 rule create_param_table:

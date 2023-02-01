@@ -13,8 +13,10 @@ option_list = list(
         optparse::make_option(c("--output.xlsx.positive"), type="character", default=NULL, 
               help="Excel table of positive markers", metavar="character"),
     optparse::make_option(c("--output.xlsx.all"), type="character", default=NULL, 
-              help="Excel table of all markers", metavar="character")
+              help="Excel table of all markers", metavar="character"),
 
+    optparse::make_option(c("--idents"), type="character", default="seurat_clusters", 
+              help="Meta data column name for marker analysis", metavar="character")
 
 )
  
@@ -30,19 +32,18 @@ if (is.null(opt$rds)){
 
 require(Seurat)
 require(tidyverse)
+#try({source("workflow/scripts/scrna-functions.R")})
+#try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE),"/scrna/workflow/scripts/scrna-functions.R"))})
 
-
-
-source("workflow/scripts/scrna-functions.R")
 
 scrna=readRDS(file = opt$rds)
+DefaultAssay(scrna) <- "RNA"
 
 
 
-RNA_=paste0("RNA_snn_res.",opt$resolution)
-
-
-Idents(object = scrna) <- scrna@meta.data[[RNA_]]
+#RNA_=paste0("RNA_snn_res.",opt$resolution)
+#Idents(object = scrna) <- scrna@meta.data[[RNA_]]
+Idents(object = scrna) <- scrna@meta.data[[opt$idents]]
 
 
 all_markers=FindAllMarkers(scrna, logfc.threshold = opt$logfc.threshold,test.use = opt$test.use )
