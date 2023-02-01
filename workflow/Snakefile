@@ -155,7 +155,7 @@ def kraken_predictions(paramspace,taxa):
     if kraken_db_folder is not None:
         outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/microbiome-full-" + taxa + "-level.pdf" for s in files],params=list(paramspace.instance_patterns))
         outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/dimplot-" + taxa + "-" + "umap.pdf" for s in files],params=list(paramspace.instance_patterns))
-        outs = outs + [results_folder + "/" + integration_id + "-{taxa}.rds"]
+        outs = outs + [results_folder + "/" + integration_id + "-" + taxa + ".rds"]
     return outs
 
 def sample_paramater(sample):
