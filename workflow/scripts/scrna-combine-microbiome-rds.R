@@ -41,7 +41,7 @@ for (i in files) {
 }
 
 
-scrna <- bind_rows(scrna_list)
+scrna <- scrna_list %>% bind_rows()
 
 
 saveRDS(scrna, file = opt$output.rds)
