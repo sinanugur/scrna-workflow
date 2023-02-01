@@ -41,11 +41,7 @@ for (i in files) {
 }
 
 
-
-scrna_anchors <- FindIntegrationAnchors(object.list = scrna_list, dims = 1:30)
-
-
-scrna <- IntegrateData(anchorset = scrna_anchors, dims = 1:30)
+scrna <- bind_rows(scrna_list)
 
 
 saveRDS(scrna, file = opt$output.rds)
