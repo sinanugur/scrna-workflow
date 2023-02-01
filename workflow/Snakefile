@@ -169,6 +169,8 @@ celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
 #Kraken DB
 kraken_db_folder=config.get("kraken_db_folder",None)
 taxa=config.get("taxa","genus")
+microbiome_min_cells=config.get("microbiome_min_cells",1)
+microbiome_min_features=config.get("microbiome_min_features",3)
 
 #initialization of paramspace object using defaults
 def initialization_of_paramspace(tsv_file,dictionary):

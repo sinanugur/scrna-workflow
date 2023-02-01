@@ -61,6 +61,6 @@ rule dimplot_for_microbiome:
     output:
         results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/dimplot-{taxa}-{reduction}.pdf"
     shell:
-        "workflow/scripts/scrna-microbiome-dimplot.R --rds {input.rds} --microbiome.rds {input.microbiome_rds} --output.plot {output} --reduction.type {wildcards.reduction} --taxa {wildcards.taxa}"
+        "workflow/scripts/scrna-microbiome-dimplot.R --rds {input.rds} --microbiome.rds {input.microbiome_rds} --output.plot {output} --reduction.type {wildcards.reduction} --taxa {wildcards.taxa} --min.features {microbiome_min_features} --min.cells {microbiome_min_cells}"
 
 
