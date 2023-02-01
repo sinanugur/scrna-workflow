@@ -57,7 +57,12 @@ try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path
 
 #CreateSeuratObject(scrna.data,min.cells = 1,min.features = 5) -> scrna
 
-CreateSeuratObject(LoadH5Seurat(opt$h5seurat)[["RNA"]]@counts,min.cells = opt$min.cells,min.features = opt$min.features)[["RNA"]]@counts %>% as.matrix() %>% 
+CreateSeuratObject(LoadH5Seurat(opt$h5seurat)[["RNA"]]@counts,min.cells = opt$min.cells,min.features = opt$min.features) -> scrna
+
+scrna <- RenameCells(object = scrna, add.cell.id = make.names(opt$sampleid)) #add cell.id to cell name
+
+
+scrna[["RNA"]]@counts %>% as.matrix() %>% 
 t() %>% as.data.frame() %>% select(-starts_with("Homo")) -> df
 
 df %>% rownames_to_column("barcode") %>% gather(group,umi,-barcode) %>% group_by(group) %>%
