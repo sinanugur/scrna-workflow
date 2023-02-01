@@ -71,3 +71,14 @@ rule combine_microbiome_files_for_later:
         "analyses_integrated/seurat/" + integration_id + "-{taxa}.rds"
     shell:
         """{cellsnake_path}workflow/scripts/scrna-combine-microbiome-rds.R --rds "{input}" --sampleid {integration_id} --output.rds {output}"""
+
+
+rule dimplot_for_combined_microbiome:
+    input:
+        rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
+        microbiome_rds="analyses_integrated/seurat/" + integration_id + "-{taxa}.rds"
+    output:
+        results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/dimplot-integrated-{taxa}-{reduction}.pdf"
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-microbiome-dimplot.R --rds {input.rds} --microbiome.rds {input.microbiome_rds} --output.plot {output} --reduction.type {wildcards.reduction} --taxa {wildcards.taxa}"
+
