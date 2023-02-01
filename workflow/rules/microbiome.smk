@@ -66,7 +66,7 @@ rule dimplot_for_microbiome:
 
 rule combine_microbiome_files_for_later:
     input:
-        lambda wildcards : [analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/" + s + "/microbiome-full-" + wildcards.taxa + "-level.rds" for s in files]
+        lambda wildcards : expand([analyses_folder + "/kraken/" + "{params}" + "/" + s + "/microbiome-full-" + wildcards.taxa + "-level.rds" for s in files],params=list(paramspace.instance_patterns))
     output:
         results_folder + "/" + integration_id + "-{taxa}.rds"
     shell:
