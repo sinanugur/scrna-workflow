@@ -7,11 +7,18 @@ import pandas as pd
 import pathlib
 
 from snakemake.io import chain, expand, regex
+import sys
 import os
 import re
 import collections
+import random
+import datetime
+from itertools import repeat
+
 
 include: "rules/extra_functions.smk"
+runid="".join(random.choices("abcdefghisz",k=3) + random.choices("123456789",k=5))
+logname = config.get("logname","_".join(["cellsnake",runid, datetime.datetime.now().strftime("%y%m%d_%H%M%S"),"workflowlog"]))
 
 cellsnake_path=config.get('cellsnake_path','') #if called by cellsnake
 datafolder=config.get("datafolder","data") #this can be a directory with samples or a single file to process
@@ -21,6 +28,7 @@ is_integrated_sample=config.get("is_integrated_sample",False)
 
 
 #configfile: "config.yaml"
+
 
 try:
 
@@ -97,7 +105,7 @@ gesa_group= config.get("gsea_group","seurat_clusters")
 #alternative routes
 route=config.get("route","standard") # select standard route for analysis
 integration_id=config.get("integration_id","combined")
-integration_resolution=str(config.get("resolution",0.8))
+integration_resolution=str(config.get("resolution",0.3))
 celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
 
 #Kraken DB
@@ -122,8 +130,6 @@ if is_integrated_sample:
 
 par_df = initialization_of_paramspace("params.tsv",{"percent_mt":[percent_mt],"resolution":[resolution]})
 paramspace=Paramspace(par_df)
-
-
 
 def dim_reduction_and_marker_plots(paramspace):
     plots=[]
@@ -160,16 +166,51 @@ def kraken_predictions(paramspace,taxa):
         outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/dimplot-integrated-" + taxa + "-" + "umap.pdf" for s in files],params=list(paramspace.instance_patterns))
     return outs
 
-def sample_paramater(sample):
+def write_main_log(paramspace,files,config):
+
+    pathlib.Path("logs/").mkdir(parents=True, exist_ok=True)
+    with open("logs/" + logname,"w") as f:
+        f.write("Total number of samples processed : " + str(len(files)) + "\n")
+        f.write("Sample names in this run : " + " ".join(files) + "\n")
+        f.write("Run ID : " + str(runid) + "\n")
+
+
+def write_sample_log(sample,paramspace):
+    l=results_folder + "/" + sample + "/logs/"
+    pathlib.Path(l).mkdir(parents=True, exist_ok=True)
+    with open(l + runid + ".txt","w") as f:
+        f.write("Sample name : " + sample + "\n")
+        f.write("Run ID : " + str(runid) + "\n")
+        f.write("Main directory and params : " + "".join(list(paramspace.instance_patterns)) + "\n")
+        f.write("Minimum cells : " + str(min_cells) + "\n")
+        f.write("Minimum features : " + str(min_features) + "\n")
+        f.write("Percent mitochondrial gene treshold (smaller than) : " + str(percent_mt) + "\n")
+        f.write("Percent ribosomal gene treshold (larger than) : " + str(percent_rp) + "\n")
+        f.write("Resolution : " + str(resolution) + "\n")
+        f.write("Highly variable genes : " + str(highly_variable_features) + "\n")
+        f.write("Doublet filter : " + str(config.get("doublet_filter",True)) + "\n")
+        f.write("Normalization method : " + str(normalization_method) + "\n")
+        f.write("Scale factor : " + str(scale_factor) + "\n")
+        f.write("LogFC treshold : " + str(logfc_threshold) + "\n")
+        f.write("DE test use : " + str(test_use) + "\n")
+        f.write("Algorithm (GO enrichment) : " + str(algorithm) + "\n")
+        f.write("Statistics (GO enrichment) : " + str(statistics) + "\n")
+        f.write("Mapping (GO enrichment) : " + str(mapping) + "\n")
+        f.write("Ontology (GO enrichment) : " + str(ontology) + "\n")
+        f.write("Celltypist model : " + str(celltypist_model) + "\n")
+
+
+def sample_paramater(paramspace,files):
+    outs=[]
     if route == "standard":
-        return [
+        outs = outs + [
                 #expand(["analyses/raw/" + sample + "/{params}.rds"], params=list(paramspace.instance_patterns)), 
                 #expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 #expand([results_folder + "/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 #expand([results_folder + "/" + s + "/{params}/pca.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/positive-markers-forAllClusters.xlsx" for s in files],params=list(paramspace.instance_patterns)),
-                #expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 dim_reduction_and_marker_plots(paramspace),
                 selected_markers(paramspace),
                 identity_dependent_dimplot(paramspace,identity_to_plot),
@@ -181,7 +222,7 @@ def sample_paramater(sample):
                 #expand([results_folder + "/" + s + "/{params}/GO-enrichment-" + ontology +  "-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
                 ]
     else:
-        return [
+        outs = outs + [
                 #expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 #expand([results_folder + "/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 #expand([results_folder + "/" + s + "/{params}/pca.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
@@ -190,8 +231,10 @@ def sample_paramater(sample):
                 kraken_predictions(paramspace,taxa)
                 #expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns))
         ]
-
-
+    if not any(b in ["--dry-run", "--dryrun", "-n"] for b in sys.argv):
+        write_main_log(paramspace,files,config)
+        list(map(write_sample_log, files,repeat(paramspace)))
+    return outs
 
 
 
@@ -200,7 +243,7 @@ if route in ["standard","minimal"]:
     include: "rules/microbiome.smk"
     rule all:
         input:
-            [sample_paramater(sample) for sample in files]
+            sample_paramater(paramspace,files)
 
 
 elif route == "others":
