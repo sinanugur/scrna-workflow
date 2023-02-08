@@ -17,8 +17,8 @@ from itertools import repeat
 
 
 include: "rules/extra_functions.smk"
-runid="".join(random.choices("abcdefghisz",k=3) + random.choices("123456789",k=5))
-logname = config.get("logname","_".join(["cellsnake",runid, datetime.datetime.now().strftime("%y%m%d_%H%M%S"),"workflowlog"]))
+runid=config.get("runid","".join(random.choices("abcdefghisz",k=3) + random.choices("123456789",k=5)))
+logname = "_".join(["cellsnake",runid, datetime.datetime.now().strftime("%y%m%d_%H%M%S"),"workflowlog"])
 
 cellsnake_path=config.get('cellsnake_path','') #if called by cellsnake
 datafolder=config.get("datafolder","data") #this can be a directory with samples or a single file to process
