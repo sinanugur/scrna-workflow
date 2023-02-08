@@ -100,6 +100,15 @@ rule find_all_cluster_markers:
         "{cellsnake_path}workflow/scripts/scrna-find-markers.R --rds {input} --resolution {params.paramaters[resolution]} --logfc.threshold {logfc_threshold} --test.use {test_use} --output.xlsx.positive {output.positive} --output.xlsx.all {output.allmarkers}"
 
 
+rule plot_top_markers:
+    input:
+        results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/positive-markers-forAllClusters.xlsx"
+    output:
+        results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/summarized-cluster-markers-plot.pdf"
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-top-marker-plot.R --xlsx {input} --output.plot {output}" 
+
+
 rule plot_top_positive_markers:
     input:
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
