@@ -38,4 +38,4 @@ geom_text(angle=75,size=3) + facet_wrap(~cluster,ncol=4) + theme_bw() + theme(st
 
 Positive_Features %>% distinct(cluster) %>% pull %>% length() -> n
 
-ggsave(opt$output.plot,p1,height=5.5+(n*0.15),width=9.5,useDingbats = TRUE)
+ggsave(opt$output.plot,p1,height=(2.1+ceiling(n/4)*2.1),width=9.5,useDingbats = TRUE)
