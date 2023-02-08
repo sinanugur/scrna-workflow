@@ -63,9 +63,9 @@ palette <- distinctColorPalette(n)
 
 try({
 
-p1 <- FeaturePlot(scrna, reduction = opt$reduction.type, features=i) & theme_cellsnake_classic() & scale_color_continuous(type = "viridis") & labs(color="Expression") & theme(axis.text = element_text(size=10))
-p2 <- DotPlot(scrna, features=i) & theme_cellsnake_classic() & scale_color_continuous(type = "viridis") & labs(color="Average Expression",size="Percent Expressed") & ylab("Identity") &  theme(axis.title.x = element_blank(),axis.text = element_text(size=10)) & theme(legend.position = "right")
-p3 <- VlnPlot(scrna,features=i) & theme_cellsnake_classic() & scale_fill_manual(values = palette) & theme(legend.position = "right",axis.text = element_text(size = 10)) & labs(fill="") & xlab("Identity") & ylab("Expression Level")
+p1 <- FeaturePlot(scrna, reduction = opt$reduction.type, features=i) & ggthemes::theme_few() & scale_color_continuous(type = "viridis") & labs(color="Expression") & theme(axis.text = element_text(size=10))
+p2 <- DotPlot(scrna, features=i) & ggthemes::theme_few() & scale_color_continuous(type = "viridis") & labs(color="Average Expression",size="Percent Expressed") & ylab("Identity") &  theme(axis.title.x = element_blank(),axis.text = element_text(size=10)) & theme(legend.position = "right")
+p3 <- VlnPlot(scrna,features=i) & ggthemes::theme_hc() & scale_fill_manual(values = palette) & theme(legend.position = "right",axis.text = element_text(size = 10)) & labs(fill="") & xlab("Identity") & ylab("Expression Level")
 
 #p1 <- plot_df %>% filter(gene == i) %>%       ggplot(aes(x=UMAP_1,y=UMAP_2,color=expr)) + geom_point(size=0.3) + theme_cellsnake_classic() + scale_color_continuous(type = "viridis") + labs(color="Expression") + theme(axis.text = element_text(size=12))
 #p2 <- plot_df %>% group_by(gene,clusters)  %>% summarise(percent=100*(length(expr[expr>0])/n()),average=mean(expr)) %>% filter(gene == i) %>%       ggplot(aes(x=gene,y=clusters,size=percent,color=average)) + geom_point() + theme_cellsnake_classic() +       scale_color_continuous(type = "viridis") + labs(color="Average Expression",size="Percent Expressed")+ ylab("Identity") + theme(axis.title.x = element_blank(),axis.text = element_text(size=12)) + theme(legend.position = "right")

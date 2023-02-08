@@ -102,8 +102,8 @@ ontology = config.get("ontology","BP")
 gsea_file= config.get("gsea_file",cellsnake_path + "workflow/bundle/c2.cgp.v2022.1.Hs.symbols.gmt")
 gesa_group= config.get("gsea_group","seurat_clusters")
 
-#alternative routes
-route=config.get("route","standard") # select standard route for analysis
+#alternative options
+option=config.get("option","standard") # select standard option for full analysis
 integration_id=config.get("integration_id","combined")
 integration_resolution=str(config.get("resolution",0.3))
 celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
@@ -204,7 +204,7 @@ def write_sample_log(sample,paramspace):
 
 def sample_paramater(paramspace,files):
     outs=[]
-    if route == "standard":
+    if option == "standard":
         outs = outs + [
                 #expand(["analyses/raw/" + sample + "/{params}.rds"], params=list(paramspace.instance_patterns)), 
                 #expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
@@ -224,53 +224,38 @@ def sample_paramater(paramspace,files):
                 kraken_predictions(paramspace,taxa)
                 #expand([results_folder + "/" + s + "/{params}/GO-enrichment-" + ontology +  "-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
                 ]
-    else:
+    elif option == "minimal":
         outs = outs + [
                 #expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 #expand([results_folder + "/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 #expand([results_folder + "/" + s + "/{params}/pca.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 identity_dependent_dimplot(paramspace,identity_to_plot),
                 expand([results_folder + "/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
-                kraken_predictions(paramspace,taxa)
-                #expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns))
+                kraken_predictions(paramspace,taxa),
+                expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns))
         ]
+    elif option == "integration":
+        integration_files = list(Path("analyses/processed/").rglob("*.rds"))
+        include: "rules/integration.smk"
+        outs = outs + ["analyses_integrated/seurat/" + integration_id + ".rds"]
+    
+    elif option in ["clustree","clusteringTree"]:
+        outs = outs + expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns))
+
+    else:
+        print("Please select a correct option...")
+
+
+
     if not any(b in ["--dry-run", "--dryrun", "-n"] for b in sys.argv):
         write_main_log(paramspace,files,config)
         list(map(write_sample_log, files,repeat(paramspace)))
     return outs
 
+include: "rules/seurat.smk"
+include: "rules/microbiome.smk"
 
 
-if route in ["standard","minimal"]:
-    include: "rules/seurat.smk"
-    include: "rules/microbiome.smk"
-    rule all:
-        input:
-            sample_paramater(paramspace,files)
-
-
-elif route == "others":
-    rule all:
-        input:
-            expand(["results/{sample}/resolution-" + x + "/enrichment/GO-enrichment-all_clusters-ontology-{ontology}.xlsx".format(ontology=ontology) for x in resolution], sample=files)
-
-elif route == "clustree" or route == "clusteringTree":
-    include: "rules/seurat.smk"
-    rule all:
-        input:
-            #expand("results/{sample}/clusteringTree/clusteringTree.pdf",sample=files)
-            expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns))
-
-
-elif route == "integration":
-    integration_files = list(Path("analyses/processed/").rglob("*.rds"))
-    include: "rules/integration.smk"
-    print(integration_files)
-    rule all:
-        input:
-            #"analyses/integration/harmony/" + integration_id + "_harmony.rds",
-            "analyses_integrated/seurat/" + integration_id + ".rds"
-
-
-else:
-    pass
+rule all:
+    input:
+        sample_paramater(paramspace,files)

@@ -26,6 +26,7 @@ if (is.null(opt$xlsx)) {
 require(tidyverse)
 
 
+
 Positive_Features <- openxlsx::read.xlsx(opt$xlsx)
 
 
@@ -34,7 +35,7 @@ Positive_Features %>% group_by(cluster) %>% slice_max(n=20,order_by = avg_log2FC
 maxFC=(df %>% pull(avg_log2FC) %>% max()) + 1
 
 df %>% dplyr::mutate(n=dense_rank(desc(avg_log2FC))) %>% ggplot(aes(x=n,y=avg_log2FC,label=gene)) + 
-geom_text(angle=75,size=3) + facet_wrap(~cluster,ncol=4) + theme_bw() + theme(strip.text = element_text(size=12)) + ylim(c(0,maxFC)) + coord_cartesian(clip = "off",expand = TRUE) + ggtitle("Top markers") -> p1
+geom_text(angle=75,size=3) + facet_wrap(~cluster,ncol=4) + ggthemes::theme_few()  + theme(strip.text = element_text(size=12)) + ylim(c(0,maxFC)) + coord_cartesian(clip = "off",expand = TRUE) + ggtitle("Top markers") -> p1
 
 Positive_Features %>% distinct(cluster) %>% pull %>% length() -> n
 
