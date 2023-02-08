@@ -181,6 +181,7 @@ def write_sample_log(sample,paramspace):
     with open(l + runid + ".txt","w") as f:
         f.write("Sample name : " + sample + "\n")
         f.write("Run ID : " + str(runid) + "\n")
+        f.write("Option selected : " + str(option) + "\n")
         f.write("Main directory and params : " + "".join(list(paramspace.instance_patterns)) + "\n")
         f.write("Minimum cells : " + str(min_cells) + "\n")
         f.write("Minimum features : " + str(min_features) + "\n")
