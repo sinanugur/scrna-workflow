@@ -255,11 +255,14 @@ if option in ["integration"]:
     rule all:
         input:
             ["analyses_integrated/seurat/" + integration_id + ".rds"]
-    
 
-else:
+elif option in ["minimal","standard","clustree","clusteringTree"]:
     include: "rules/seurat.smk"
     include: "rules/microbiome.smk"
     rule all:
         input:
             sample_paramater(paramspace,files)
+
+else:
+    print("Please select a correct option...")
+    pass
