@@ -205,7 +205,7 @@ def write_sample_log(sample,paramspace):
 
 def sample_paramater(paramspace,files):
     outs=[]
-    if option == "standard":
+    if option in ["standard"]:
         outs = outs + [
                 #expand(["analyses/raw/" + sample + "/{params}.rds"], params=list(paramspace.instance_patterns)), 
                 #expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
@@ -225,7 +225,7 @@ def sample_paramater(paramspace,files):
                 kraken_predictions(paramspace,taxa)
                 #expand([results_folder + "/" + s + "/{params}/GO-enrichment-" + ontology +  "-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
                 ]
-    elif option == "minimal":
+    elif option in ["minimal"]:
         outs = outs + [
                 #expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 #expand([results_folder + "/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
@@ -235,9 +235,7 @@ def sample_paramater(paramspace,files):
                 kraken_predictions(paramspace,taxa),
                 expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns))
         ]
-    elif option == "integration":
-        integration_files = list(Path("analyses/processed/").rglob("*.rds"))
-        include: "rules/integration.smk"
+    elif option in ["integration"]:
         outs = outs + ["analyses_integrated/seurat/" + integration_id + ".rds"]
     
     elif option in ["clustree","clusteringTree"]:
@@ -246,8 +244,6 @@ def sample_paramater(paramspace,files):
     else:
         print("Please select a correct option...")
 
-
-
     if not any(b in ["--dry-run", "--dryrun", "-n"] for b in sys.argv):
         write_main_log(paramspace,files,config)
         list(map(write_sample_log, files,repeat(paramspace)))
@@ -255,6 +251,10 @@ def sample_paramater(paramspace,files):
 
 include: "rules/seurat.smk"
 include: "rules/microbiome.smk"
+
+if option in ["integration"]:
+    integration_files = list(Path("analyses/processed/").rglob("*.rds"))
+    include: "rules/integration.smk"
 
 
 rule all:
