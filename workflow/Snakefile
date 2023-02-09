@@ -235,8 +235,6 @@ def sample_paramater(paramspace,files):
                 kraken_predictions(paramspace,taxa),
                 expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns))
         ]
-    elif option in ["integration"]:
-        outs = outs + ["analyses_integrated/seurat/" + integration_id + ".rds"]
     
     elif option in ["clustree","clusteringTree"]:
         outs = outs + expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns))
@@ -249,14 +247,19 @@ def sample_paramater(paramspace,files):
         list(map(write_sample_log, files,repeat(paramspace)))
     return outs
 
-include: "rules/seurat.smk"
-include: "rules/microbiome.smk"
+
 
 if option in ["integration"]:
     integration_files = list(Path("analyses/processed/").rglob("*.rds"))
     include: "rules/integration.smk"
+    rule all:
+        input:
+            ["analyses_integrated/seurat/" + integration_id + ".rds"]
+    
 
-
-rule all:
-    input:
-        sample_paramater(paramspace,files)
+else:
+    include: "rules/seurat.smk"
+    include: "rules/microbiome.smk"
+    rule all:
+        input:
+            sample_paramater(paramspace,files)
