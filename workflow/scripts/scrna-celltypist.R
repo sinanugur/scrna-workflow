@@ -57,8 +57,8 @@ n<-length(scrna@meta.data %>% pull(majority_voting) %>% unique())
 set.seed(149)
 palette <- sort(distinctColorPalette(n))
 
-p1 <- DimPlot(scrna, reduction = "tsne", label = TRUE, group.by = "majority_voting") & theme_cellsnake_classic() & scale_color_manual(values = palette) 
-p2 <- DimPlot(scrna, reduction = "umap", label = TRUE, group.by = "majority_voting") & theme_cellsnake_classic() & scale_color_manual(values = palette) 
+p1 <- DimPlot(scrna, reduction = "tsne", label = TRUE, group.by = "majority_voting",repel=TRUE) & ggthemes::theme_few() & scale_color_manual(values = palette) 
+p2 <- DimPlot(scrna, reduction = "umap", label = TRUE, group.by = "majority_voting",repel=TRUE) & ggthemes::theme_few() & scale_color_manual(values = palette) 
 
 
 

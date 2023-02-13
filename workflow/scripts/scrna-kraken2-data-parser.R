@@ -66,7 +66,7 @@ scrna[["RNA"]]@counts %>% as.matrix() %>%
 t() %>% as.data.frame() %>% select(-starts_with("Homo")) -> df
 
 df %>% rownames_to_column("barcode") %>% gather(group,umi,-barcode) %>% group_by(group) %>%
- summarise(sum=log(sum(umi))) %>% arrange(desc(sum)) %>% slice_max(n = 50,order_by = sum) %>% ggplot(aes(reorder(group,sum),sum)) + geom_col() + coord_flip() + theme_cellsnake_classic() + 
+ summarise(sum=log(sum(umi))) %>% arrange(desc(sum)) %>% slice_max(n = 50,order_by = sum) %>% ggplot(aes(reorder(group,sum),sum)) + geom_col() + coord_flip() + ggthemes::theme_few()  + 
  ylab("log-total UMI") + xlab(opt$taxa) + ggtitle(opt$sampleid) + theme(axis.title = element_text(size = 12)) -> p1
 
 ggsave(plot =p1,filename=opt$output.plot,width=6,height=9)

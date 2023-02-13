@@ -206,7 +206,7 @@ def write_sample_log(sample,paramspace):
 
 
 
-def sample_paramater(paramspace,files):
+def sample_parameter(paramspace,files):
     outs=[]
     if option in ["standard"]:
         outs = outs + [
@@ -267,7 +267,7 @@ elif option in ["minimal","standard","clustree","clusteringTree"]:
     include: "rules/microbiome.smk"
     rule all:
         input:
-            sample_paramater(paramspace,files)
+            sample_parameter(paramspace,files)
 
 else:
     print("Please select a correct option...")

@@ -45,7 +45,7 @@ palette <- sort(distinctColorPalette(n))
 names(palette)=Idents(scrna) %>% unique() %>% sort() %>% as.character()
 print(palette)
 
-p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = TRUE) & theme_cellsnake_classic() & scale_color_manual(values = palette) 
+p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = TRUE,repel=TRUE) & ggthemes::theme_few() & scale_color_manual(values = palette) 
 
 
 
