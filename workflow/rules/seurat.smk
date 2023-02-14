@@ -203,3 +203,12 @@ rule gsea:
         """
         {cellsnake_path}workflow/scripts/scrna-gsea.R --rds {input.rds} --gseafile {input.gseafile} --output.dir {output}
         """
+
+
+rule cellchat:
+    input:
+        rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
+    output:
+        interactions=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/cellchat/interactions-{i}.pdf"
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-cellchat.R --rds {input.rds} --output.interactions.plot {output.interactions} --idents {wildcards.i}"

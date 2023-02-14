@@ -7,7 +7,7 @@ options(repos = r)
 
 packages <- c("tidyverse","optparse","librarian","Seurat","SeuratDisk","patchwork","harmony",
 "DoubletFinder","viridis","clustree","openxlsx","topGO","org.Hs.eg.db",
-"cerebroApp","miQC","scater","MultiKParallel","limma","ggthemes")
+"cerebroApp","miQC","scater","MultiKParallel","limma","ggthemes","ComplexHeatmap","CellChat")
 
 
 installed_packages <- packages %in% rownames(installed.packages())
@@ -41,6 +41,8 @@ librarian::shelf('sinanugur/MultiKParallel')
 librarian::shelf('stemangiola/tidyseurat')
 librarian::shelf('limma')
 librarian::shelf('ggthemes')
+librarian::shelf('ComplexHeatmap')
+librarian::shelf('sqjin/CellChat')
 
 
 

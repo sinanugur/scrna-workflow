@@ -155,6 +155,12 @@ def identity_dependent_dimplot(paramspace,identity):
         plots = plots + expand([results_folder + "/" + s + "/{params}/" + u + "-" + x + ".plot.pdf" for u in ["umap","tsne","pca"] for x in identity for s in files],params=list(paramspace.instance_patterns))
     return plots
 
+def cellchat_plot(paramspace,identity):
+    plots=[]
+    if len(identity_to_plot) > 0:
+        plots = plots + expand([results_folder + "/" + s + "/{params}/cellchat/" + u + "-" + x + ".pdf" for u in ["interactions"] for x in identity for s in files],params=list(paramspace.instance_patterns))
+    return plots
+
 def kraken_predictions(paramspace,taxa):
     #bamfiles=cellsnake_glob_wildcards(datafolder + "/{sample}/outs/possorted_genome_bam.bam").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/possorted_genome_bam.bam").sample 
     outs=[]
@@ -241,7 +247,8 @@ def sample_parameter(paramspace,files):
     
     elif option in ["clustree","clusteringTree"]:
         outs = outs + expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns))
-
+    elif option in ["advanced"]:
+        outs = outs + cellchat_plot(paramspace,identity_to_plot)
     else:
         print("Please select a correct option...")
 
@@ -262,7 +269,7 @@ if option in ["integration"]:
     if not any(b in ["--dry-run", "--dryrun", "-n"] for b in sys.argv):
         write_main_log(files)
 
-elif option in ["minimal","standard","clustree","clusteringTree"]:
+elif option in ["minimal","standard","clustree","clusteringTree","advanced"]:
     include: "rules/seurat.smk"
     include: "rules/microbiome.smk"
     rule all:

@@ -7,6 +7,7 @@ dependencies:
  - r-base
  - snakemake-minimal
  - geos
+ - cmake
  - hdf5
  - numba
  - r-xml
