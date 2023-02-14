@@ -158,7 +158,7 @@ def identity_dependent_dimplot(paramspace,identity):
 def cellchat_plot(paramspace,identity):
     plots=[]
     if len(identity_to_plot) > 0:
-        plots = plots + expand([results_folder + "/" + s + "/{params}/cellchat/" + u + "-" + x + ".pdf" for u in ["interactions"] for x in identity for s in files],params=list(paramspace.instance_patterns))
+        plots = plots + expand([results_folder + "/" + s + "/{params}/cellchat/" + x + "/" for x in identity for s in files],params=list(paramspace.instance_patterns))
     return plots
 
 def kraken_predictions(paramspace,taxa):
@@ -214,42 +214,28 @@ def write_sample_log(sample,paramspace):
 
 def sample_parameter(paramspace,files):
     outs=[]
-    if option in ["standard"]:
+    if option in ["standard","advanced"]:
         outs = outs + [
-                #expand(["analyses/raw/" + sample + "/{params}.rds"], params=list(paramspace.instance_patterns)), 
-                #expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                #expand([results_folder + "/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                #expand([results_folder + "/" + s + "/{params}/pca.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                expand([results_folder + "/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/positive-markers-forAllClusters.xlsx" for s in files],params=list(paramspace.instance_patterns)),
-                expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/summarized-cluster-markers-plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 dim_reduction_and_marker_plots(paramspace),
                 selected_markers(paramspace),
-                identity_dependent_dimplot(paramspace,identity_to_plot),
                 expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.dotplot.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.tsne.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.umap.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                expand([results_folder + "/" + s + "/{params}/gsea/" for s in files],params=list(paramspace.instance_patterns)),
-                kraken_predictions(paramspace,taxa)
-                #expand([results_folder + "/" + s + "/{params}/GO-enrichment-" + ontology +  "-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
+                expand([results_folder + "/" + s + "/{params}/gsea/" for s in files],params=list(paramspace.instance_patterns))
                 ]
-    elif option in ["minimal"]:
+    if option in ["minimal","standard","advanced"]:
         outs = outs + [
-                #expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                #expand([results_folder + "/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                #expand([results_folder + "/" + s + "/{params}/pca.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 identity_dependent_dimplot(paramspace,identity_to_plot),
                 expand([results_folder + "/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
-                kraken_predictions(paramspace,taxa),
-                expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns))
-        ]
-    
-    elif option in ["clustree","clusteringTree"]:
+                kraken_predictions(paramspace,taxa)
+                ]
+    if option in ["clustree","clusteringTree","minimal","standard","advanced"]:
         outs = outs + expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns))
-    elif option in ["advanced"]:
+    if option in ["advanced"]:
         outs = outs + cellchat_plot(paramspace,identity_to_plot)
-    else:
+    if option not in ["clustree","clusteringTree","minimal","standard","advanced"]:
         print("Please select a correct option...")
 
     if not any(b in ["--dry-run", "--dryrun", "-n"] for b in sys.argv):
