@@ -15,7 +15,6 @@ dependencies:
  - samtools
  - kraken2
  - openblas
- - scater
  - celltypist
  - bioconductor-scater
  - pip
