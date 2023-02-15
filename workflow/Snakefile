@@ -90,7 +90,7 @@ test_use=config.get("test_use","wilcox")
 marker_plots_per_cluster_n=config.get("marker_plots_per_cluster_n",10) #only print top 10 by default
 
 
-identity_to_plot=[config.get("identity_to_plot","seurat_clusters")]
+identity_to_analysis=[config.get("identity_to_analysis","seurat_clusters")]
 
 selected_markers_file=config.get("selected_markers_file","markers.tsv")
 
@@ -126,7 +126,7 @@ def initialization_of_paramspace(tsv_file,dictionary):
 
 
 if is_integrated_sample:
-    identity_to_plot.append("orig.ident")
+    identity_to_analysis.append("orig.ident")
     percent_mt="auto" #if integrated auto
 
 par_df = initialization_of_paramspace("params.tsv",{"percent_mt":[percent_mt],"resolution":[resolution]})
@@ -152,13 +152,13 @@ def selected_markers(paramspace):
 
 def identity_dependent_dimplot(paramspace,identity):
     plots=[]
-    if len(identity_to_plot) > 0:
+    if len(identity_to_analysis) > 0:
         plots = plots + expand([results_folder + "/" + s + "/{params}/" + u + "-" + x + ".plot.pdf" for u in ["umap","tsne","pca"] for x in identity for s in files],params=list(paramspace.instance_patterns))
     return plots
 
 def cellchat_plot(paramspace,identity):
     plots=[]
-    if len(identity_to_plot) > 0:
+    if len(identity_to_analysis) > 0:
         plots = plots + expand([results_folder + "/" + s + "/{params}/cellchat/" + x + "/" for x in identity for s in files],params=list(paramspace.instance_patterns))
     return plots
 
@@ -228,14 +228,14 @@ def sample_parameter(paramspace,files):
                 ]
     if option in ["minimal","standard","advanced"]:
         outs = outs + [
-                identity_dependent_dimplot(paramspace,identity_to_plot),
+                identity_dependent_dimplot(paramspace,identity_to_analysis),
                 expand([results_folder + "/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
                 kraken_predictions(paramspace,taxa)
                 ]
     if option in ["clustree","clusteringTree","minimal","standard","advanced"]:
         outs = outs + expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns))
     if option in ["advanced"]:
-        outs = outs + cellchat_plot(paramspace,identity_to_plot)
+        outs = outs + cellchat_plot(paramspace,[x for x in identity_to_analysis if x != "orig.ident"])
     if option not in ["clustree","clusteringTree","minimal","standard","advanced"]:
         print("Please select a correct option...")
 
