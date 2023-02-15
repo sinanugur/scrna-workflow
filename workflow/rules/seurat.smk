@@ -209,7 +209,14 @@ rule cellchat:
     input:
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        #interactions=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/cellchat/{i}/interactions.pdf"
+        cellchatrds=analyses_folder + "/cellchat/" + f"{paramspace.wildcard_pattern}" + "/{sample}/cellchat_{i}.rds"
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-cellchat.R --rds {input.rds} --species {species} --idents {wildcards.i} --output {output.cellchatrds}"
+
+rule cellchat_plots:
+    input:
+        cellchatrds=analyses_folder + "/cellchat/" + f"{paramspace.wildcard_pattern}" + "/{sample}/cellchat_{i}.rds"
+    output:
         outputdir=directory(results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/cellchat/{i}/")
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-cellchat.R --rds {input.rds} --idents {wildcards.i} --output.dir {output.outputdir}"
+        "{cellsnake_path}workflow/scripts/scrna-cellchat_plots.R --rds {input.cellchatrds} --output.dir {output.outputdir}"

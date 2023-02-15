@@ -12,8 +12,10 @@ Installation
 ```
 git clone https://github.com/sinanugur/scrna-workflow.git
 cd scrna-workflow
-conda env create -n scrna-workflow -f environment.yml
+conda env create --name scrna-workflow --file environment.yml
 conda activate scrna-workflow
+
+mamba env create --name cellsnake_testing --file environment.yml
 ```
 
 To install R packages:

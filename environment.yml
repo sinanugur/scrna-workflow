@@ -16,7 +16,7 @@ dependencies:
  - kraken2
  - pip
  - pip:
-  - scipy
-  - regex
-  - pysam
-  - celltypist
+   - scipy
+   - regex
+   - pysam
+   - celltypist
