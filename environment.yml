@@ -3,6 +3,8 @@ channels:
  - conda-forge
  - bioconda
  - anaconda
+ - bioconductor
+ - r
 dependencies:
  - r-base
  - snakemake-minimal
@@ -15,9 +17,10 @@ dependencies:
  - samtools
  - kraken2
  - openblas
+ - scater
+ - celltypist
  - pip
  - pip:
    - scipy
    - regex
    - pysam
-   - celltypist

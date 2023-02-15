@@ -4,6 +4,8 @@ option_list = list(
               help="Processed rds file of a Seurat object", metavar="character"),
     optparse::make_option(c("--tsv"), type="character", default=NULL, 
               help="A text file contains the gene list", metavar="character"),
+    optparse::make_option(c("--gene"), type="character", default=NULL, 
+              help="A list of genes to create plots", metavar="character"),
     optparse::make_option(c("--output.plot.dir"), type="character", default=NULL, 
               help="Output plot directory", metavar="character"),
             optparse::make_option(c("--reduction.type"), type="character", default="umap", 
@@ -32,7 +34,14 @@ require(tidyverse)
 require(viridis)
 require(randomcoloR)
 
+markers=c()
+
+if(!is.NULL(opt$tsv)) {
+
 markers=read_tsv(opt$tsv,col_names=FALSE) %>% pull()
+
+}
+
 
 
 scrna=readRDS(file = opt$rds)
@@ -43,6 +52,12 @@ DefaultAssay(scrna) <- "RNA"
 
 Idents(object = scrna) <- scrna@meta.data[[opt$idents]]
 
+
+if(!is.NULL(opt$gene)) {
+
+markers = c(unlist(strsplit(opt$gene, " ")),markers)
+
+}
 
 #identification=opt$idents
 

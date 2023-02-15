@@ -36,7 +36,7 @@ librarian::shelf('topGO')
 librarian::shelf('org.Hs.eg.db')
 librarian::shelf('randomcoloR')
 librarian::shelf('miQC')
-librarian::shelf('scater')
+#librarian::shelf('scater') #use conda installer
 librarian::shelf('sinanugur/MultiKParallel')
 librarian::shelf('stemangiola/tidyseurat')
 librarian::shelf('limma')
