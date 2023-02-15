@@ -2,7 +2,7 @@
 #basic paramaters
 min_cells: 3
 min_features: 200 
-percent_mt: "auto" #Mitochondrial genes maximum percentage, default automatic, you use 10 or 5
+percent_mt: "10" #Mitochondrial genes maximum percentage, default 10, you can use "auto"
 percent_rp: 0 #Ribosomal genes minimum percentage, default no filtering
 highly_variable_features: 2000
 

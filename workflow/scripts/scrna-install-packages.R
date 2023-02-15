@@ -48,7 +48,7 @@ librarian::shelf('sqjin/CellChat')
 
 
 if (!requireNamespace("cerebroApp", quietly = TRUE)) {
-ibrarian::shelf('romanhaa/cerebroApp') #will check later
+librarian::shelf('romanhaa/cerebroApp') #will check later
 }
 
 if (!requireNamespace("SeuratDisk", quietly = TRUE)) {

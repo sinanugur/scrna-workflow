@@ -14,6 +14,7 @@ dependencies:
  - bedtools
  - samtools
  - kraken2
+ - openblas
  - pip
  - pip:
    - scipy
