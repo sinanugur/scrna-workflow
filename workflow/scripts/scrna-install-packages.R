@@ -5,12 +5,17 @@ r["CRAN"] = "http://cran.us.r-project.org"
 options(repos = r)
 
 
-packages <- c("tidyverse","optparse","librarian","Seurat","SeuratDisk","patchwork","harmony",
+packages <- c("tidyverse","optparse","librarian","Seurat","SeuratDisk","patchwork",
 "DoubletFinder","viridis","clustree","openxlsx","topGO","org.Hs.eg.db",
 "cerebroApp","miQC","scater","MultiKParallel","limma","ggthemes","ComplexHeatmap","CellChat","NMF")
 
 
+
+
 installed_packages <- packages %in% rownames(installed.packages())
+
+print("Packages to be installed: ")
+print(packages[!installed_packages])
 
 if (any(installed_packages == FALSE)) {
   
@@ -27,8 +32,13 @@ if (!requireNamespace("Biobase", quietly = TRUE)) {
 
 librarian::shelf("optparse")
 librarian::shelf("tidyverse","patchwork")
+
+if (!requireNamespace("Seurat", quietly = TRUE)) {
 try({remotes::install_version("Seurat", version = "4.3.0")})
 librarian::shelf("Seurat")
+
+}
+
 librarian::shelf('clustree')
 librarian::shelf('openxlsx')
 librarian::shelf('chris-mcginnis-ucsf/DoubletFinder')
@@ -45,6 +55,7 @@ librarian::shelf('ggthemes')
 librarian::shelf('NMF')
 librarian::shelf('ComplexHeatmap')
 librarian::shelf('sqjin/CellChat')
+#librarian::shelf('harmony')
 
 
 
