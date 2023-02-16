@@ -3,10 +3,11 @@ channels:
  - conda-forge
  - bioconda
  - anaconda
+ - r
 dependencies:
- - r-base
- - snakemake-minimal
- - geos
+ - r-base==4.2.2
+ - snakemake-minimal==7.22.0
+ - geos==3.11.1
  - cmake
  - hdf5
  - numba
@@ -14,11 +15,12 @@ dependencies:
  - bedtools
  - samtools
  - kraken2
- - openblas
- - celltypist
+ - openblas==0.3.21
  - bioconductor-scater
  - pip
  - pip:
    - scipy
    - regex
    - pysam
+   - matplotlib<3.7
+   - celltypist==1.3.0

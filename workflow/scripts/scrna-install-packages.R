@@ -27,6 +27,7 @@ if (!requireNamespace("Biobase", quietly = TRUE)) {
 
 librarian::shelf("optparse")
 librarian::shelf("tidyverse","patchwork")
+try({remotes::install_version("Seurat", version = "4.3.0")})
 librarian::shelf("Seurat")
 librarian::shelf('clustree')
 librarian::shelf('openxlsx')
