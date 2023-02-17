@@ -35,8 +35,18 @@ require(tidyverse)
 require(Seurat)
 require(randomcoloR)
 
-try({source("workflow/scripts/scrna-functions.R")},silent=TRUE)
-try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE),"/scrna/workflow/scripts/scrna-functions.R"))},silent=TRUE)
+try(
+      {
+            source("workflow/scripts/scrna-functions.R")
+      },
+      silent = TRUE
+)
+try(
+      {
+            source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE), "/scrna/workflow/scripts/scrna-functions.R"))
+      },
+      silent = TRUE
+)
 
 
 scrna <- readRDS(file = opt$rds)
@@ -53,12 +63,12 @@ scrna@meta.data <- scrna@meta.data %>%
       tibble::column_to_rownames("barcodes")
 
 
-n<-length(scrna@meta.data %>% pull(majority_voting) %>% unique())
+n <- length(scrna@meta.data %>% pull(majority_voting) %>% unique())
 set.seed(149)
 palette <- sort(distinctColorPalette(n))
 
-p1 <- DimPlot(scrna, reduction = "tsne", label = TRUE, group.by = "majority_voting",repel=TRUE) & ggthemes::theme_few() & scale_color_manual(values = palette) 
-p2 <- DimPlot(scrna, reduction = "umap", label = TRUE, group.by = "majority_voting",repel=TRUE) & ggthemes::theme_few() & scale_color_manual(values = palette) 
+p1 <- DimPlot(scrna, reduction = "tsne", label = TRUE, group.by = "majority_voting", repel = TRUE) & ggthemes::theme_few() & scale_color_manual(values = palette)
+p2 <- DimPlot(scrna, reduction = "umap", label = TRUE, group.by = "majority_voting", repel = TRUE) & ggthemes::theme_few() & scale_color_manual(values = palette)
 
 
 

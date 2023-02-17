@@ -14,11 +14,14 @@ packages <- c("tidyverse","optparse","librarian","Seurat","SeuratDisk","patchwor
 
 installed_packages <- packages %in% rownames(installed.packages())
 
-print("Packages to be installed: ")
-print(packages[!installed_packages])
+
 
 if (any(installed_packages == FALSE)) {
-  
+
+print("Packages to be installed: ")
+
+print(packages[!installed_packages])
+
 if (!requireNamespace("librarian", quietly = TRUE)) {
   install.packages("librarian") }
 
@@ -65,6 +68,10 @@ librarian::shelf('romanhaa/cerebroApp') #will check later
 
 if (!requireNamespace("SeuratDisk", quietly = TRUE)) {
 librarian::shelf("mojaveazure/seurat-disk") }
+
+} else {
+
+print("All packages were installed...OK")
 
 }
 

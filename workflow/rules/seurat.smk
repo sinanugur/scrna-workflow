@@ -126,22 +126,35 @@ rule selected_marker_dot_plot:
     input:
         analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        dotplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/selected-markers-dotplot.pdf"
+        dotplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/selected-genes-dotplot.pdf"
     params:
         paramaters=paramspace.instance,
     shell:
         "{cellsnake_path}workflow/scripts/scrna-dotplot.R --rds {input} --tsv {selected_markers_file} --resolution {params.paramaters[resolution]} --output.dotplot {output.dotplot}"
 
 
-rule selected_marker_plots:
+rule selected_marker_plots_file:
     input:
         analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        sdir=directory(results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/selected_marker_plots_{reduction}/")
+        sdir=directory(results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/selected_gene_plots_from_file_{reduction}/")
     params:
         paramaters=paramspace.instance,
     shell:
         "{cellsnake_path}workflow/scripts/scrna-selected-marker-plots.R --rds {input} --tsv {selected_markers_file} --output.plot.dir {output.sdir} --reduction.type {wildcards.reduction}"
+
+
+rule selected_marker_plot:
+    input:
+        analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
+    output:
+        out=[results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/selected_gene_plots_{reduction}/" + g + ".pdf" for g in gene_to_plot if g is not None]
+    params:
+        paramaters=paramspace.instance,
+        sdir=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/selected_gene_plots_{reduction}/",
+        gene=str(" ".join(gene_to_plot))
+    shell:
+        """{cellsnake_path}workflow/scripts/scrna-selected-marker-plots.R --rds {input} --gene "{params.gene}" --output.plot.dir {params.sdir} --reduction.type {wildcards.reduction}"""
 
 
 
@@ -160,10 +173,10 @@ rule celltype:
         analyses_folder + "/h5ad/" + f"{paramspace.wildcard_pattern}" + "/{sample}.h5ad"
     
     output:
-        outputdir=directory(analyses_folder + "/celltypist/" + f"{paramspace.wildcard_pattern}" + "/{sample}"),
-        predicted=analyses_folder + "/celltypist/" + f"{paramspace.wildcard_pattern}" + "/{sample}/predicted_labels.csv",
-        dotplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltype_annotation/annotation.dotplot.pdf",
-        xlsx=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltype_annotation/cluster_annotation_table.xlsx"
+        outputdir=directory(analyses_folder + "/celltypist/" + celltypist_model + "/" + f"{paramspace.wildcard_pattern}" + "/{sample}"),
+        predicted=analyses_folder + "/celltypist/" + celltypist_model + "/" + f"{paramspace.wildcard_pattern}" + "/{sample}/predicted_labels.csv",
+        dotplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltype_annotation/" + celltypist_model + "/annotation.dotplot.pdf",
+        xlsx=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltype_annotation/" + celltypist_model + "/cluster_annotation_table.xlsx"
         
     shell:
         """
@@ -173,11 +186,11 @@ rule celltype:
 
 rule seurat_celltype:
     input:
-        csv=analyses_folder + "/celltypist/" + f"{paramspace.wildcard_pattern}" + "/{sample}/predicted_labels.csv",
+        csv=analyses_folder + "/celltypist/" + celltypist_model + "/" + f"{paramspace.wildcard_pattern}" + "/{sample}/predicted_labels.csv",
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        umap=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltype_annotation/annotation.umap.pdf",
-        tsne=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltype_annotation/annotation.tsne.pdf"
+        umap=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltype_annotation/" + celltypist_model + "/annotation.umap.pdf",
+        tsne=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltype_annotation/" + celltypist_model + "/annotation.tsne.pdf"
     shell:
         """
         {cellsnake_path}workflow/scripts/scrna-celltypist.R --rds {input.rds} --csv {input.csv} --output.tsne.plot {output.tsne} --output.umap.plot {output.umap}
@@ -207,11 +220,16 @@ rule gsea:
 
 rule cellchat:
     input:
-        rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
+        rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
+        csv=lambda wildcards: analyses_folder + "/celltypist/" + celltypist_model + "/" + f"{paramspace.wildcard_pattern}" + "/{sample}/predicted_labels.csv" if wildcards.i == "majority_voting" else []
     output:
         cellchatrds=analyses_folder + "/cellchat/" + f"{paramspace.wildcard_pattern}" + "/{sample}/cellchat_{i}.rds"
-    shell:
-        "{cellsnake_path}workflow/scripts/scrna-cellchat.R --rds {input.rds} --species {species} --idents {wildcards.i} --output {output.cellchatrds}"
+    threads: 5
+    run:
+        if wildcards.i == "majority_voting":
+            shell("{cellsnake_path}workflow/scripts/scrna-cellchat.R --rds {input.rds} --species {species} --idents {wildcards.i} --output {output.cellchatrds} --csv {input.csv}")
+        else:
+            shell("{cellsnake_path}workflow/scripts/scrna-cellchat.R --rds {input.rds} --species {species} --idents {wildcards.i} --output {output.cellchatrds}")
 
 rule cellchat_plots:
     input:

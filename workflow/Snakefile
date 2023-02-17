@@ -26,6 +26,7 @@ datafolder=config.get("datafolder","data") #this can be a directory with samples
 analyses_folder=config.get("analyses_folder","analyses")
 results_folder=config.get("results_folder","results")
 is_integrated_sample=config.get("is_integrated_sample",False)
+gene_to_plot=[] if config.get("gene_to_plot",None) is None else [config.get("gene_to_plot")]
 
 
 #configfile: "config.yaml"
@@ -92,7 +93,7 @@ marker_plots_per_cluster_n=config.get("marker_plots_per_cluster_n",10) #only pri
 
 identity_to_analysis=[config.get("identity_to_analysis","seurat_clusters")]
 
-selected_markers_file=config.get("selected_markers_file","markers.tsv")
+selected_gene_file=config.get("selected_gene_file","markers.tsv")
 
 #GO enrichment paramaters
 algorithm=config.get("algorithm","weight01")
@@ -105,7 +106,7 @@ gsea_file= config.get("gsea_file",cellsnake_path + "workflow/bundle/c2.cgp.v2022
 gesa_group= config.get("gsea_group","seurat_clusters")
 
 #alternative options
-integration_id=config.get("integration_id","combined")
+integration_id=config.get("integration_id","integrated")
 integration_resolution=str(config.get("resolution",0.3))
 celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
 
@@ -140,25 +141,29 @@ def dim_reduction_and_marker_plots(paramspace):
         plots = plots + expand([results_folder + "/" + s + "/{params}/positive_marker_plots_tsne/" for s in files],params=list(paramspace.instance_patterns))
     return plots
 
-def selected_markers(paramspace):
+try:
+    if os.path.isfile(selected_gene_file):
+        df=pd.read_table(selected_gene_file)
+        gene_to_plot += df[df.columns[0]].values.tolist()
+except:
+    pass
+
+def selected_gene_plot(paramspace,gene_to_plot):
     plots=[]
-    if os.path.isfile(selected_markers_file):
-        plots = plots + expand([results_folder + "/" + s + "/{params}/selected-markers-dotplot.pdf" for s in files],params=list(paramspace.instance_patterns))
-        if umap_markers_plot:
-            plots = plots + expand([results_folder + "/" + s + "/{params}/selected_marker_plots_umap" for s in files],params=list(paramspace.instance_patterns))
-        if tsne_markers_plot:
-            plots = plots + expand([results_folder + "/" + s + "/{params}/selected_marker_plots_tsne" for s in files],params=list(paramspace.instance_patterns))
+    if gene_to_plot:
+        plots = plots + expand([results_folder + "/" + s +  "/{params}/selected_gene_plots_umap/" + g + ".pdf" for g in gene_to_plot for s in files],params=list(paramspace.instance_patterns))
     return plots
 
 def identity_dependent_dimplot(paramspace,identity):
     plots=[]
-    if len(identity_to_analysis) > 0:
+    if len(identity) > 0:
         plots = plots + expand([results_folder + "/" + s + "/{params}/" + u + "-" + x + ".plot.pdf" for u in ["umap","tsne","pca"] for x in identity for s in files],params=list(paramspace.instance_patterns))
     return plots
 
 def cellchat_plot(paramspace,identity):
     plots=[]
-    if len(identity_to_analysis) > 0:
+    identity.append("majority_voting")
+    if len(identity) > 0:
         plots = plots + expand([results_folder + "/" + s + "/{params}/cellchat/" + x + "/" for x in identity for s in files],params=list(paramspace.instance_patterns))
     return plots
 
@@ -220,17 +225,17 @@ def sample_parameter(paramspace,files):
                 expand([results_folder + "/" + s + "/{params}/positive-markers-forAllClusters.xlsx" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/summarized-cluster-markers-plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 dim_reduction_and_marker_plots(paramspace),
-                selected_markers(paramspace),
-                expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.dotplot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.tsne.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.umap.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/celltype_annotation/" + celltypist_model + "/annotation.dotplot.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/celltype_annotation/" + celltypist_model + "/annotation.tsne.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/celltype_annotation/"+ celltypist_model + "/annotation.umap.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/gsea/" for s in files],params=list(paramspace.instance_patterns))
                 ]
     if option in ["minimal","standard","advanced"]:
         outs = outs + [
                 identity_dependent_dimplot(paramspace,identity_to_analysis),
                 expand([results_folder + "/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
-                kraken_predictions(paramspace,taxa)
+                kraken_predictions(paramspace,taxa),
+                selected_gene_plot(paramspace,gene_to_plot)
                 ]
     if option in ["clustree","clusteringTree","minimal","standard","advanced"]:
         outs = outs + expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns))
@@ -246,12 +251,13 @@ def sample_parameter(paramspace,files):
 
 
 
-if option in ["integration"]:
+if option in ["integration","integrate"]:
     integration_files = list(Path("analyses/processed/").rglob("*.rds"))
+    print(integration_files)
     include: "rules/integration.smk"
     rule all:
         input:
-            ["analyses_integrated/seurat/" + integration_id + ".rds"]
+             "analyses_integrated/seurat/" + integration_id + ".rds" if len(integration_files) > 0 else []
     
     if not any(b in ["--dry-run", "--dryrun", "-n"] for b in sys.argv):
         write_main_log(files)
