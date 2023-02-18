@@ -20,7 +20,7 @@ logfc_threshold: 0.25
 test_use: "wilcox"
 
 #plotting paramaters
-marker_plots_per_cluster_n: 50
+marker_plots_per_cluster_n: 20
 
 #GO enrichment paramaters
 algorithm: "weight01"
@@ -30,8 +30,8 @@ ontology: "BP"
 
 #alternative route paramaters
 ##integration params
-integration_id: "combined"
-integration_resolution: 0.8
+integration_id: "integrated"
+integration_resolution: 0.3
 
 #celltypist
 celltypist_model: "Immune_All_Low.pkl"

@@ -59,7 +59,7 @@ par(mfrow = c(3, 4), xpd = TRUE)
 for (i in 1:nrow(mat)) {
   mat2 <- matrix(0, nrow = nrow(mat), ncol = ncol(mat), dimnames = dimnames(mat))
   mat2[i, ] <- mat[i, ]
-  fName <- paste0("edge-weights-for-", rownames(mat)[i])
+  fName <- stringr::str_replace_all(paste0("edge-weights-for-", rownames(mat)[i]), "/", "_")
   pdf(paste(pathToPlotsStep2ResolutionCellChatClusters, fName, ".pdf", sep = ""), 10, 10)
   print(netVisual_circle(mat2, vertex.weight = groupSize, weight.scale = T, edge.weight.max = max(mat), title.name = rownames(mat)[i]))
   dev.off()
