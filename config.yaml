@@ -35,7 +35,7 @@ integration_id: "integrated"
 celltypist_model: "Immune_All_Low.pkl"
 
 #krakendbfolder
-kraken_db_folder: None
+kraken_db_folder: 
 taxa: genus # available options "domain", "kingdom", "phylum", "class", "order", "family", "genus", "species"
 microbiome_min_cells: 1
 microbiome_min_features: 3

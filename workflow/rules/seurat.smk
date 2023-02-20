@@ -210,7 +210,7 @@ rule kegg_enrichment:
     input:
         results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/all-markers-forAllClusters.xlsx"
     output:
-        rds=analyses_folder + "/kegg/" + "/" + f"{paramspace.wildcard_pattern}" + "/{sample}_kegg.rds",
+        rds=analyses_folder + "/kegg/" + f"{paramspace.wildcard_pattern}" + "/{sample}_kegg.rds",
         kegg=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/enrichment_analysis/KEGG-over_representation-all_clusters.xlsx",
         gse=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/enrichment_analysis/KEGG-geneset-all_clusters.xlsx",
         mkegg=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/enrichment_analysis/KEGG-module_over_representation-all_clusters.xlsx",
