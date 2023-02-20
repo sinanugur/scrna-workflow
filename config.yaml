@@ -13,7 +13,7 @@ doublet_filter: T
 #clustering and normalization paramaters
 normalization_method: "LogNormalize"
 scale_factor: 10000
-resolution: "0.8" #default is 0.8, you can write "auto" for automatic detection
+resolution: "0.8" #default is 0.8 and 0.3 for integrated samples, you can write "auto" for automatic detection
 
 #Differential expression paramaters
 logfc_threshold: 0.25
@@ -28,11 +28,14 @@ statistics: "ks"
 mapping: "org.Hs.eg.db"
 ontology: "BP"
 
-#alternative route paramaters
 ##integration params
 integration_id: "integrated"
-integration_resolution: 0.3
 
 #celltypist
 celltypist_model: "Immune_All_Low.pkl"
 
+#krakendbfolder
+kraken_db_folder: None
+taxa: genus # available options "domain", "kingdom", "phylum", "class", "order", "family", "genus", "species"
+microbiome_min_cells: 1
+microbiome_min_features: 3

@@ -1,13 +1,15 @@
 #!/usr/bin/env Rscript
 
-r = getOption("repos")
-r["CRAN"] = "http://cran.us.r-project.org"
+r <- getOption("repos")
+r["CRAN"] <- "http://cran.us.r-project.org"
 options(repos = r)
 
 
-packages <- c("tidyverse","optparse","librarian","Seurat","SeuratDisk","patchwork",
-"DoubletFinder","viridis","clustree","openxlsx","topGO","org.Hs.eg.db",
-"cerebroApp","miQC","scater","MultiKParallel","limma","ggthemes","ComplexHeatmap","CellChat","NMF")
+packages <- c(
+  "tidyverse", "optparse", "librarian", "Seurat", "SeuratDisk", "patchwork",
+  "DoubletFinder", "viridis", "clustree", "openxlsx", "topGO", "org.Hs.eg.db",
+  "cerebroApp", "miQC", "scater", "MultiKParallel", "limma", "ggthemes", "ComplexHeatmap", "CellChat", "NMF", "clusterProfiler"
+)
 
 
 
@@ -17,61 +19,62 @@ installed_packages <- packages %in% rownames(installed.packages())
 
 
 if (any(installed_packages == FALSE)) {
+  print("Packages to be installed: ")
 
-print("Packages to be installed: ")
+  print(packages[!installed_packages])
 
-print(packages[!installed_packages])
+  if (!requireNamespace("librarian", quietly = TRUE)) {
+    install.packages("librarian")
+  }
 
-if (!requireNamespace("librarian", quietly = TRUE)) {
-  install.packages("librarian") }
+  if (!requireNamespace("BiocManager", quietly = TRUE)) {
+    install.packages("BiocManager")
+  }
 
-if (!requireNamespace("BiocManager", quietly = TRUE)) {
-  install.packages("BiocManager") }
-
-if (!requireNamespace("Biobase", quietly = TRUE)) {
-  BiocManager::install("Biobase") }
-
-
-
-librarian::shelf("optparse")
-librarian::shelf("tidyverse","patchwork")
-
-if (!requireNamespace("Seurat", quietly = TRUE)) {
-try({remotes::install_version("Seurat", version = "4.3.0")})
-librarian::shelf("Seurat")
-
-}
-
-librarian::shelf('clustree')
-librarian::shelf('openxlsx')
-librarian::shelf('chris-mcginnis-ucsf/DoubletFinder')
-librarian::shelf('viridis')
-librarian::shelf('topGO')
-librarian::shelf('org.Hs.eg.db')
-librarian::shelf('randomcoloR')
-librarian::shelf('miQC')
-#librarian::shelf('scater') #use conda installer
-librarian::shelf('sinanugur/MultiKParallel')
-librarian::shelf('stemangiola/tidyseurat')
-librarian::shelf('limma')
-librarian::shelf('ggthemes')
-librarian::shelf('NMF')
-librarian::shelf('ComplexHeatmap')
-librarian::shelf('sqjin/CellChat')
-#librarian::shelf('harmony')
+  if (!requireNamespace("Biobase", quietly = TRUE)) {
+    BiocManager::install("Biobase")
+  }
 
 
 
-if (!requireNamespace("cerebroApp", quietly = TRUE)) {
-librarian::shelf('romanhaa/cerebroApp') #will check later
-}
+  librarian::shelf("optparse")
+  librarian::shelf("tidyverse", "patchwork")
 
-if (!requireNamespace("SeuratDisk", quietly = TRUE)) {
-librarian::shelf("mojaveazure/seurat-disk") }
+  if (!requireNamespace("Seurat", quietly = TRUE)) {
+    try({
+      remotes::install_version("Seurat", version = "4.3.0")
+    })
+    librarian::shelf("Seurat")
+  }
 
+  librarian::shelf("clustree")
+  librarian::shelf("openxlsx")
+  librarian::shelf("chris-mcginnis-ucsf/DoubletFinder")
+  librarian::shelf("viridis")
+  librarian::shelf("topGO")
+  librarian::shelf("org.Hs.eg.db")
+  librarian::shelf("randomcoloR")
+  librarian::shelf("miQC")
+  # librarian::shelf('scater') #use conda installer
+  librarian::shelf("sinanugur/MultiKParallel")
+  librarian::shelf("stemangiola/tidyseurat")
+  librarian::shelf("limma")
+  librarian::shelf("ggthemes")
+  librarian::shelf("NMF")
+  librarian::shelf("ComplexHeatmap")
+  librarian::shelf("sqjin/CellChat")
+  librarian::shelf("clusterProfiler")
+  # librarian::shelf('harmony')
+
+
+
+  if (!requireNamespace("cerebroApp", quietly = TRUE)) {
+    librarian::shelf("romanhaa/cerebroApp") # will check later
+  }
+
+  if (!requireNamespace("SeuratDisk", quietly = TRUE)) {
+    librarian::shelf("mojaveazure/seurat-disk")
+  }
 } else {
-
-print("All packages were installed...OK")
-
+  print("All packages were installed...OK")
 }
-

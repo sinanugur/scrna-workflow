@@ -200,22 +200,39 @@ rule go_enrichment:
     input:
         results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/all-markers-forAllClusters.xlsx"
     output:
-        results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "GO-enrichment-" + ontology +  "-all_clusters.xlsx"
+        results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/enrichment_analysis/GO-enrichment-" + ontology +  "-all_clusters.xlsx"
     shell:
         """
         {cellsnake_path}workflow/scripts/scrna-go_enrichment.R --xlsx {input} --output {output} --ontology {ontology} --algorithm {algorithm} --mapping {mapping} --statistics {statistics}
         """
 
+rule kegg_enrichment:
+    input:
+        results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/all-markers-forAllClusters.xlsx"
+    output:
+        rds=analyses_folder + "/kegg/" + "/" + f"{paramspace.wildcard_pattern}" + "/{sample}_kegg.rds",
+        kegg=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/enrichment_analysis/KEGG-over_representation-all_clusters.xlsx",
+        gse=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/enrichment_analysis/KEGG-geneset-all_clusters.xlsx",
+        mkegg=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/enrichment_analysis/KEGG-module_over_representation-all_clusters.xlsx",
+        mgse=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/enrichment_analysis/KEGG-module_geneset-all_clusters.xlsx"
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-kegg.R --xlsx {input} --output.rds {output.rds} --mapping {mapping} --output.kegg {output.kegg} --output.mkegg {output.mkegg}  --output.gse {output.gse} --output.mgse {output.mgse}"
+
+
+
 rule gsea:
     input:
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
+        csv=lambda wildcards: analyses_folder + "/celltypist/" + celltypist_model + "/" + f"{paramspace.wildcard_pattern}" + "/{sample}/predicted_labels.csv" if wildcards.i == "majority_voting" else [],
         gseafile=gsea_file
     output:
-        directory(results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/gsea/")
-    shell:
-        """
-        {cellsnake_path}workflow/scripts/scrna-gsea.R --rds {input.rds} --gseafile {input.gseafile} --output.dir {output}
-        """
+        xlsx=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/gsea/gsea-{i}-output.xlsx"
+
+    run:
+        if wildcards.i == "majority_voting":
+            shell("{cellsnake_path}workflow/scripts/scrna-gsea.R --idents {wildcards.i} --rds {input.rds} --gseafile {input.gseafile} --output.xlsx {output.xlsx}  --csv {input.csv}")
+        else:
+            shell("{cellsnake_path}workflow/scripts/scrna-gsea.R --idents {wildcards.i} --rds {input.rds} --gseafile {input.gseafile} --output.xlsx {output.xlsx}")
 
 
 rule cellchat:

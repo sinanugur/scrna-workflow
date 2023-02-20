@@ -75,7 +75,7 @@ grid_search=config.get("grid_search",False) #requires params file in tsv format
 #clustering and normalization paramaters
 normalization_method=config.get("normalization_method","LogNormalize")
 scale_factor=config.get("scale_factor",10000)
-resolution=config.get("resolution","0.8") #a double or "auto", default is 0.8
+resolution=config.get("resolution","0.8" if is_integrated_sample is False else "0.3") #a double or "auto", default is 0.8
 
 #dimension reduction options: by default both UMAP and TSNE will be plotted with predicted clusters
 umap_plot="--umap" if config.get("umap_plot",True) in [True,"TRUE","True","T"] else ""
@@ -103,11 +103,10 @@ ontology = config.get("ontology","BP")
 
 #GSEA
 gsea_file= config.get("gsea_file",cellsnake_path + "workflow/bundle/c2.cgp.v2022.1.Hs.symbols.gmt")
-gesa_group= config.get("gsea_group","seurat_clusters")
+gsea_group= config.get("gsea_group","seurat_clusters")
 
 #alternative options
 integration_id=config.get("integration_id","integrated")
-integration_resolution=str(config.get("resolution",0.3))
 celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
 
 #Kraken DB
@@ -167,6 +166,14 @@ def cellchat_plot(paramspace,identity):
         plots = plots + expand([results_folder + "/" + s + "/{params}/cellchat/" + x + "/" for x in identity for s in files],params=list(paramspace.instance_patterns))
     return plots
 
+def gsea_analysis(paramspace,identity):
+    outs=[]
+    identity.append("majority_voting")
+    if len(identity) > 0:
+        outs = outs + expand([results_folder + "/" + s + "/{params}/gsea/gsea-" + x + "-output.xlsx" for x in identity for s in files],params=list(paramspace.instance_patterns))
+    return outs
+
+
 def kraken_predictions(paramspace,taxa):
     #bamfiles=cellsnake_glob_wildcards(datafolder + "/{sample}/outs/possorted_genome_bam.bam").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/possorted_genome_bam.bam").sample 
     outs=[]
@@ -209,7 +216,7 @@ def write_sample_log(sample,paramspace):
         f.write("DE test use : " + str(test_use) + "\n")
         f.write("Algorithm (GO enrichment) : " + str(algorithm) + "\n")
         f.write("Statistics (GO enrichment) : " + str(statistics) + "\n")
-        f.write("Mapping (GO enrichment) : " + str(mapping) + "\n")
+        f.write("Mapping (GO and KEGG enrichment) : " + str(mapping) + "\n")
         f.write("Ontology (GO enrichment) : " + str(ontology) + "\n")
         f.write("Celltypist model : " + str(celltypist_model) + "\n")
         f.write("Kraken DB folder : " + str(kraken_db_folder) + "\n")
@@ -224,11 +231,12 @@ def sample_parameter(paramspace,files):
         outs = outs + [
                 expand([results_folder + "/" + s + "/{params}/positive-markers-forAllClusters.xlsx" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/summarized-cluster-markers-plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                dim_reduction_and_marker_plots(paramspace),
                 expand([results_folder + "/" + s + "/{params}/celltype_annotation/" + celltypist_model + "/annotation.dotplot.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/celltype_annotation/" + celltypist_model + "/annotation.tsne.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/celltype_annotation/"+ celltypist_model + "/annotation.umap.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                expand([results_folder + "/" + s + "/{params}/gsea/" for s in files],params=list(paramspace.instance_patterns))
+                gsea_analysis(paramspace,[x for x in identity_to_analysis if x != "orig.ident"]),
+                expand([results_folder + "/" + s + "/{params}/enrichment_analysis/GO-enrichment-" + ontology + "-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
+
                 ]
     if option in ["minimal","standard","advanced"]:
         outs = outs + [
@@ -240,7 +248,12 @@ def sample_parameter(paramspace,files):
     if option in ["clustree","clusteringTree","minimal","standard","advanced"]:
         outs = outs + expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns))
     if option in ["advanced"]:
-        outs = outs + cellchat_plot(paramspace,[x for x in identity_to_analysis if x != "orig.ident"])
+        outs += cellchat_plot(paramspace,[x for x in identity_to_analysis if x != "orig.ident"])
+        outs += dim_reduction_and_marker_plots(paramspace)
+        outs += expand([results_folder + "/" + s + "/{params}/enrichment_analysis/KEGG-geneset-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
+        outs += expand([results_folder + "/" + s + "/{params}/enrichment_analysis/KEGG-module_geneset-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
+        outs += expand([results_folder + "/" + s + "/{params}/enrichment_analysis/KEGG-over_representation-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
+        outs += expand([results_folder + "/" + s + "/{params}/enrichment_analysis/KEGG-module_over_representation-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
     if option not in ["clustree","clusteringTree","minimal","standard","advanced"]:
         print("Please select a correct option...")
 

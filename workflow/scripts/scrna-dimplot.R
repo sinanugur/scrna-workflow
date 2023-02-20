@@ -14,6 +14,10 @@ option_list <- list(
             type = "character", default = "reduction.pdf",
             help = "Plot file name", metavar = "character"
       ),
+      optparse::make_option(c("--csv"),
+            type = "character", default = NULL,
+            help = "Celltypist prediction file", metavar = "character"
+      ),
       optparse::make_option(c("--idents"),
             type = "character", default = "seurat_clusters",
             help = "Meta data column name for marker analysis", metavar = "character"
@@ -34,21 +38,22 @@ require(Seurat)
 require(tidyverse)
 require(randomcoloR)
 
-try(
-      {
-            source("workflow/scripts/scrna-functions.R")
-      },
-      silent = TRUE
-)
-try(
-      {
-            source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE), "/scrna/workflow/scripts/scrna-functions.R"))
-      },
-      silent = TRUE
-)
 
 scrna <- readRDS(file = opt$rds)
 DefaultAssay(scrna) <- "RNA"
+
+
+if (!is.null(opt$csv)) {
+      metadata <- read.csv(
+            opt$csv,
+            row.names = 1
+      )
+
+      scrna@meta.data <- scrna@meta.data %>%
+            tibble::rownames_to_column("barcodes") %>%
+            dplyr::left_join(metadata %>% as.data.frame() %>% rownames_to_column("barcodes"), by = "barcodes") %>%
+            tibble::column_to_rownames("barcodes")
+}
 
 Idents(object = scrna) <- scrna@meta.data[[opt$idents]]
 
