@@ -31,7 +31,7 @@ gene_to_plot=[] if config.get("gene_to_plot",None) is None else [config.get("gen
 
 #configfile: "config.yaml"
 
-
+files=[]
 try:
 
     if os.path.isdir(datafolder):
