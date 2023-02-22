@@ -150,7 +150,8 @@ except:
 def selected_gene_plot(paramspace,gene_to_plot):
     plots=[]
     if gene_to_plot:
-        plots = plots + expand([results_folder + "/" + s +  "/{params}/selected_gene_plots_umap/" + g + ".pdf" for g in gene_to_plot for s in files],params=list(paramspace.instance_patterns))
+        plots = plots + expand([results_folder + "/" + s +  "/{params}/selected_gene_plots_umap/" + g.upper() + ".pdf" for g in gene_to_plot for s in files],params=list(paramspace.instance_patterns))
+        plots = plots + expand([results_folder + "/" + s +  "/{params}/selected_gene_plots_tsne/" + g.upper() + ".pdf" for g in gene_to_plot for s in files],params=list(paramspace.instance_patterns))
     return plots
 
 def identity_dependent_dimplot(paramspace,identity):
@@ -275,7 +276,7 @@ if option in ["integration","integrate"]:
     if not any(b in ["--dry-run", "--dryrun", "-n"] for b in sys.argv):
         write_main_log(files)
 
-elif option in ["minimal","standard","clustree","clusteringTree","advanced"]:
+elif option in ["minimal","standard","clustree","clusteringTree","advanced"] and files:
     include: "rules/seurat.smk"
     include: "rules/microbiome.smk"
     rule all:
@@ -283,5 +284,5 @@ elif option in ["minimal","standard","clustree","clusteringTree","advanced"]:
             sample_parameter(paramspace,files)
 
 else:
-    print("Please select a correct option...")
+    print("Please select a correct option or no files detected...")
     pass

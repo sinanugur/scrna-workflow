@@ -28,9 +28,6 @@ statistics: "ks"
 mapping: "org.Hs.eg.db"
 ontology: "BP"
 
-##integration params
-integration_id: "integrated"
-
 #celltypist
 celltypist_model: "Immune_All_Low.pkl"
 
