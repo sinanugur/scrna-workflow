@@ -184,6 +184,7 @@ def kraken_predictions(paramspace,taxa):
         outs = outs + ["analyses_integrated/seurat/" + integration_id + "-" + taxa + ".rds"]
     elif is_integrated_sample is True and os.path.isfile("analyses_integrated/seurat/" + integration_id + "-" + taxa + ".rds"):
         outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/dimplot-integrated-" + taxa + "-" + "umap.pdf" for s in files],params=list(paramspace.instance_patterns))
+        outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/dimplot-integrated-" + taxa + "-" + "tsne.pdf" for s in files],params=list(paramspace.instance_patterns))
     return outs
 
 def write_main_log(files):
