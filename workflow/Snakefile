@@ -19,7 +19,7 @@ from itertools import repeat
 include: "rules/extra_functions.smk"
 option=config.get("option","standard") # select standard option for full analysis
 runid=config.get("runid","".join(random.choices("abcdefghisz",k=3) + random.choices("123456789",k=5)))
-logname = "_".join(["cellsnake",runid, datetime.datetime.now().strftime("%y%m%d_%H%M%S"),option,".log"])
+logname = "_".join(["cellsnake",runid, datetime.datetime.now().strftime("%y%m%d_%H%M%S"),option,"log"])
 
 cellsnake_path=config.get('cellsnake_path','') #if called by cellsnake
 datafolder=config.get("datafolder","data") #this can be a directory with samples or a single file to process
@@ -267,15 +267,36 @@ def sample_parameter(paramspace,files):
 
 
 if option in ["integration","integrate"]:
-    integration_files = list(Path("analyses/processed/").rglob("*.rds"))
-    print(integration_files)
+    #integration_files = list(pathlib.Path("analyses/processed/").rglob("*.rds"))
+    a,b,c=cellsnake_glob_wildcards("analyses/processed/percent_mt~{a}/resolution~{b}/{c}.rds")
+    integration_files=expand("analyses/processed/percent_mt~{a}/resolution~{b}/{c}.rds",zip,a=a,b=b,c=c)
+
+    total_samples_to_merge=len(set(c))
+    total_rds_files=len(list(zip(a,b,c)))
+    total_mt_samples=len(set(zip(a,c)))
+    
+    #print(total_samples_to_merge)
+    #print(total_mt_samples)
+    if total_samples_to_merge > 1: # there are at least two samples
+        if total_rds_files > total_samples_to_merge:
+
+            integration_files=[]
+            if total_mt_samples == total_samples_to_merge:
+                print("I detected more than one RDS file per sample, I will select one of them to merge...")
+                for i in set(c):
+                    integration_files.append(list(pathlib.Path("analyses/processed/").rglob(i + ".rds"))[0])
+            else:
+                print("There are identical samples with different MT content, I am not sure how to merge them, better to remove some RDS files manually...")
+                print(expand("analyses/processed/percent_mt~{a}/resolution~{b}/{c}.rds",zip,a=a,b=b,c=c))
+     
+    #print(integration_files)
     include: "rules/integration.smk"
     rule all:
         input:
-             "analyses_integrated/seurat/" + integration_id + ".rds" if len(integration_files) > 0 else []
+             "analyses_integrated/seurat/" + integration_id + ".rds" if len(integration_files) > 1 else []
     
     if not any(b in ["--dry-run", "--dryrun", "-n"] for b in sys.argv):
-        write_main_log(files)
+        write_main_log(integration_files)
 
 elif option in ["minimal","standard","clustree","clusteringTree","advanced"] and files:
     include: "rules/seurat.smk"
