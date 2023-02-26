@@ -118,9 +118,16 @@ for (pathways.show in allPathways)
 pathToPlotsStep2ResolutionCellChatContributionOfLRpairs <- paste0(pathToPlotsStep2ResolutionCellChat, "3-ligand-receptor-pairs", "/")
 dir.create(pathToPlotsStep2ResolutionCellChatContributionOfLRpairs, showWarnings = F)
 fName <- "all-pathways-contribution"
-pdf(paste(pathToPlotsStep2ResolutionCellChatContributionOfLRpairs, fName, ".pdf", sep = ""), 5, 20)
-print(netAnalysis_contribution(cellchat, signaling = allPathways))
-dev.off()
+tryCatch(
+  {
+    pdf(paste(pathToPlotsStep2ResolutionCellChatContributionOfLRpairs, fName, ".pdf", sep = ""), 5, 20)
+    print(netAnalysis_contribution(cellchat, signaling = allPathways))
+    dev.off()
+  },
+  error = function(e) {
+    dev.off()
+  }
+)
 
 # Compute the contribution of each ligand-receptor pair to the overall signaling pathway and visualize cell-cell communication mediated by a single ligand-receptor pair
 for (pathways.show in allPathways)
