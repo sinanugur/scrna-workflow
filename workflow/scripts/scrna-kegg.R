@@ -57,6 +57,7 @@ All_Features <- openxlsx::read.xlsx(opt$xlsx)
 
 
 function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
+  print(results %>% distinct(cluster) %>% pull())
   results %>%
     as.data.frame() %>%
     dplyr::filter(p_val_adj < p) %>%
@@ -67,37 +68,71 @@ function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
     dplyr::select(3, 2) %>%
     deframe() -> geneList
 
+
   gene <- names(geneList)[abs(geneList) > f] # as recommended by the documentation
 
-  kk <- enrichKEGG(
-    gene = gene,
-    organism = "hsa",
-    pAdjustMethod = "fdr",
-    keyType = "ncbi-geneid",
-    pvalueCutoff = 0.05
-  )
+  tryCatch(
+    {
+      kk <- enrichKEGG(
+        gene = gene,
+        organism = "hsa",
+        pAdjustMethod = "fdr",
+        minGSSize = 2,
+        pvalueCutoff = 0.05
+      )
+    },
+    error = function(e) {
+      kk <- NULL
+    }
+  ) -> kk
 
-  kk2 <- gseKEGG(
-    geneList = geneList,
-    organism = "hsa",
-    pvalueCutoff = 0.05,
-    pAdjustMethod = "fdr",
-    eps = 0,
-    verbose = FALSE
-  )
-  kk3 <- enrichMKEGG(
-    gene = gene,
-    organism = "hsa",
-    pvalueCutoff = 0.05,
-    pAdjustMethod = "fdr"
-  )
+  tryCatch(
+    {
+      kk2 <- gseKEGG(
+        geneList = geneList,
+        organism = "hsa",
+        pvalueCutoff = 0.05,
+        pAdjustMethod = "fdr",
+        minGSSize = 2,
+        eps = 0,
+        verbose = FALSE
+      )
+    },
+    error = function(e) {
+      kk2 <- NULL
+    }
+  ) -> kk2
 
-  kk4 <- gseMKEGG(
-    geneList = geneList,
-    organism = "hsa",
-    pAdjustMethod = "fdr",
-    pvalueCutoff = 0.05
-  )
+  tryCatch(
+    {
+      kk3 <- enrichMKEGG(
+        gene = gene,
+        organism = "hsa",
+        pvalueCutoff = 0.05,
+        minGSSize = 2,
+        pAdjustMethod = "fdr",
+      )
+    },
+    error = function(e) {
+      kk3 <- NULL
+    }
+  ) -> kk3
+
+  tryCatch(
+    {
+      kk4 <- gseMKEGG(
+        geneList = geneList,
+        organism = "hsa",
+        minGSSize = 2,
+        keyType = "kegg",
+        pAdjustMethod = "fdr",
+        pvalueCutoff = 0.05
+      )
+    },
+    error = function(e) {
+      kk4 <- NULL
+    }
+  ) -> kk4
 
   return(list(kk, kk2, kk3, kk4))
 }
@@ -106,6 +141,8 @@ function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
 All_Features %>%
   split(.$cluster) %>%
   purrr::map(~ function_enrichment_kegg_singlecell(.)) -> all_kegg_results
+
+
 
 saveRDS(all_kegg_results, opt$output.rds)
 
