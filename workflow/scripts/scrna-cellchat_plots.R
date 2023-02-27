@@ -182,9 +182,9 @@ dir.create(pathToPlotsStep2ResolutionCellChatCellCellCAllInteractions, showWarni
 
 # show all the significant interactions (L-R pairs) from some cell groups (defined by 'sources.use') to other cell groups (defined by 'targets.use')
 # show all the interactions sending from Inflam.FIB
-for (g1 in unique(cellchat@meta$group))
+for (g1 in unique(cellchat@meta$identity))
 {
-  for (g2 in unique(cellchat@meta$group))
+  for (g2 in unique(cellchat@meta$identity))
   {
     tryCatch(
       {
@@ -204,9 +204,9 @@ for (g1 in unique(cellchat@meta$group))
 pathToPlotsStep2ResolutionCellChatCellCellCAllInteractionsWithP <- paste0(pathToPlotsStep2ResolutionCellChatCellCellC, "interactions-with-pathways", "/")
 dir.create(pathToPlotsStep2ResolutionCellChatCellCellCAllInteractionsWithP, showWarnings = F)
 
-for (g1 in unique(cellchat@meta$group))
+for (g1 in unique(cellchat@meta$identity))
 {
-  for (g2 in unique(cellchat@meta$group))
+  for (g2 in unique(cellchat@meta$identity))
   {
     for (pathways.show in allPathways)
     {
