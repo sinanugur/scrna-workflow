@@ -182,39 +182,17 @@ dir.create(pathToPlotsStep2ResolutionCellChatCellCellCAllInteractions, showWarni
 
 # show all the significant interactions (L-R pairs) from some cell groups (defined by 'sources.use') to other cell groups (defined by 'targets.use')
 # show all the interactions sending from Inflam.FIB
-for (g1 in unique(cellchat@meta$identity))
-{
-  for (g2 in unique(cellchat@meta$identity))
-  {
-    tryCatch(
-      {
-        fName <- paste0("from-", g1, "-to-", g2)
-        pdf(paste(pathToPlotsStep2ResolutionCellChatCellCellCAllInteractions, fName, ".pdf", sep = ""), 50, 20)
-        print(netVisual_chord_gene(cellchat, sources.use = g1, targets.use = g2, lab.cex = 0.5, legend.pos.y = 30))
-        dev.off()
-      },
-      error = function(cond) {
-        dev.off()
-      },
-      finally = {}
-    )
-  }
-}
 
-pathToPlotsStep2ResolutionCellChatCellCellCAllInteractionsWithP <- paste0(pathToPlotsStep2ResolutionCellChatCellCellC, "interactions-with-pathways", "/")
-dir.create(pathToPlotsStep2ResolutionCellChatCellCellCAllInteractionsWithP, showWarnings = F)
-
-for (g1 in unique(cellchat@meta$identity))
-{
-  for (g2 in unique(cellchat@meta$identity))
+if (FALSE) { # commented out because it takes a lot of time
+  for (g1 in unique(cellchat@meta$identity))
   {
-    for (pathways.show in allPathways)
+    for (g2 in unique(cellchat@meta$identity))
     {
       tryCatch(
         {
-          fName <- paste0("from-", g1, "-to-", g2, "-pathway-", pathways.show)
-          pdf(paste(pathToPlotsStep2ResolutionCellChatCellCellCAllInteractionsWithP, fName, ".pdf", sep = ""), 50, 20)
-          print(netVisual_chord_gene(cellchat, sources.use = g1, targets.use = g2, signaling = pathways.show, lab.cex = 0.5, legend.pos.y = 30))
+          fName <- paste0("from-", g1, "-to-", g2)
+          pdf(paste(pathToPlotsStep2ResolutionCellChatCellCellCAllInteractions, fName, ".pdf", sep = ""), 50, 20)
+          print(netVisual_chord_gene(cellchat, sources.use = g1, targets.use = g2, lab.cex = 0.5, legend.pos.y = 30))
           dev.off()
         },
         error = function(cond) {
@@ -222,6 +200,31 @@ for (g1 in unique(cellchat@meta$identity))
         },
         finally = {}
       )
+    }
+  }
+
+  pathToPlotsStep2ResolutionCellChatCellCellCAllInteractionsWithP <- paste0(pathToPlotsStep2ResolutionCellChatCellCellC, "interactions-with-pathways", "/")
+  dir.create(pathToPlotsStep2ResolutionCellChatCellCellCAllInteractionsWithP, showWarnings = F)
+
+  for (g1 in unique(cellchat@meta$identity))
+  {
+    for (g2 in unique(cellchat@meta$identity))
+    {
+      for (pathways.show in allPathways)
+      {
+        tryCatch(
+          {
+            fName <- paste0("from-", g1, "-to-", g2, "-pathway-", pathways.show)
+            pdf(paste(pathToPlotsStep2ResolutionCellChatCellCellCAllInteractionsWithP, fName, ".pdf", sep = ""), 50, 20)
+            print(netVisual_chord_gene(cellchat, sources.use = g1, targets.use = g2, signaling = pathways.show, lab.cex = 0.5, legend.pos.y = 30))
+            dev.off()
+          },
+          error = function(cond) {
+            dev.off()
+          },
+          finally = {}
+        )
+      }
     }
   }
 }
