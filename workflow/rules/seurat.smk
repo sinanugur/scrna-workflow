@@ -55,7 +55,7 @@ rule clustree:
         if is_integrated_sample is True:
             shell("{cellsnake_path}workflow/scripts/scrna-clusteringtree.R --rds {input} --output {output.clustree} --integration")
         else:
-            shell("{cellsnake_path}workflow/scripts/scrna-clusteringtree.R --rds {input} --output {output.clustree} --heatmap {output.heatmap} --hvfplot {output.hvfplot} --jackandelbow {output.jackandelbow}")
+            shell("{cellsnake_path}workflow/scripts/scrna-clusteringtree.R --rds {input} --clplot {output.clustree} --heplot {output.heatmap} --hvfplot {output.hvfplot} --jeplot {output.jackandelbow}")
 
 
 
@@ -73,7 +73,7 @@ rule normalization_pca_rds:
         integration="--integration" if is_integrated_sample is True else " "
     shell:
         "{cellsnake_path}workflow/scripts/scrna-normalization-pca.R --rds {input} {params.doublet_filter} --normalization.method {normalization_method} "
-        "--scale.factor {scale_factor} --nfeature {highly_variable_features} --resolution {params.paramaters[resolution]} "
+        "--scale.factor {scale_factor} --variable.selection.method {variable_selection_method} --nfeature {highly_variable_features} --resolution {params.paramaters[resolution]} "
         "--output.rds {output.rds} --output.xlsx {output.xlsx} {umap_plot} {tsne_plot} {params.integration}"
 
 rule dim_plots:

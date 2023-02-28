@@ -10,6 +10,11 @@ option_list <- list(
     type = "integer", default = 2000,
     help = "Highly variable features [default= %default]", metavar = "integer"
   ),
+
+        optparse::make_option(c("--variable.selection.method"),
+    type = "character", default = "vst",
+    help = "Find variable features selection method [default= %default]", metavar = "character"
+  ),
   optparse::make_option(c("--rds"),
     type = "character", default = NULL,
     help = "RAW rds file of a Seurat object", metavar = "character"
@@ -18,12 +23,13 @@ option_list <- list(
     type = "character", default = "LogNormalize",
     help = "Normalization method[default= %default]", metavar = "character"
   ),
+
   optparse::make_option(c("--integration"), action = "store_true", default = FALSE),
-  optparse::make_option(c("--output"),
+  optparse::make_option(c("--clplot"),
     type = "character", default = "clustree.pdf",
     help = "Output clustree file name", metavar = "character"
   ),
-  optparse::make_option(c("--jackandelbow"),
+  optparse::make_option(c("--jeplot"),
     type = "character", default = "jackandelbow.pdf",
     help = "Output jack and elbow file name", metavar = "character"
   ),
@@ -31,7 +37,7 @@ option_list <- list(
     type = "character", default = "variable-features.pdf",
     help = "Variable features file name", metavar = "character"
   ),
-  optparse::make_option(c("--heatmap"),
+  optparse::make_option(c("--heplot"),
     type = "character", default = "dimheatmap.pdf",
     help = "Dim heatmap plot file name", metavar = "character"
   )
@@ -58,7 +64,7 @@ if(isFALSE(opt$integration)) {
 
 
 scrna <- NormalizeData(scrna, normalization.method = opt$normalization.method, scale.factor = opt$scale.factor)
-scrna <- FindVariableFeatures(scrna, selection.method = "vst", nfeatures = opt$nfeatures)
+scrna <- FindVariableFeatures(scrna, selection.method = opt$variable.selection.method, nfeatures = opt$nfeatures)
 } else {
 
 try({DefaultAssay(scrna) <- "integrated"}) #for now only for Seurat, Harmony will come
@@ -70,7 +76,7 @@ try({DefaultAssay(scrna) <- "integrated"}) #for now only for Seurat, Harmony wil
 not.all.genes <- VariableFeatures(scrna) #only variable features
 
 scrna <- ScaleData(scrna, features = not.all.genes)
-scrna <- RunPCA(scrna, features = VariableFeatures(object = scrna))
+scrna <- RunPCA(scrna, features = not.all.genes)
 
 
 if(isFALSE(opt$integration)) {
@@ -78,7 +84,7 @@ if(isFALSE(opt$integration)) {
 # dir.create(output.dir,recursive = T)
 
 # Identify the 10 most highly variable genes
-top10 <- head(VariableFeatures(scrna), 10)
+top10 <- head(not.all.genes, 10)
 
 # plot variable features with and without labels
 plot1 <- VariableFeaturePlot(scrna)
@@ -91,15 +97,15 @@ ggsave(opt$hvfplot, plot2, width = 8, height = 9)
 
 DimHeatmap(scrna, dims = 1:15, cells = 500, balanced = TRUE, fast = FALSE)
 # ggsave(paste0(output.dir,"DimHeatMap_plot.pdf") ,width = 8,height = 15)
-ggsave(opt$heatmap, width = 8, height = 15)
+ggsave(opt$heplot, width = 8, height = 15)
 
 
-scrna <- JackStraw(scrna, num.replicate = 100, dims = 50)
+scrna <- JackStraw(scrna, num.replicate = 20, dims = 50,verbose=FALSE)
 scrna <- ScoreJackStraw(scrna, dims = 1:50)
 plot1 <- JackStrawPlot(scrna, dims = 1:50)
 plot2 <- ElbowPlot(scrna, ndims = 50)
 # ggsave(paste0(output.dir,"JackandElbow_plot.pdf"), plot1 + plot2,width = 13,height = 5)
-ggsave(opt$jackandelbow, plot1 + plot2, width = 13, height = 5)
+ggsave(opt$jeplot, plot1 + plot2, width = 13, height = 5)
 
 }
 
@@ -125,4 +131,4 @@ clustree(scrna) -> p1
 # dir.create(output.dir,recursive = T)
 
 # ggsave(paste0(output.dir,"/clusteringTree-",opt$sampleid,".pdf"),p1,width=8,height=15)
-ggsave(opt$output, p1, width = 8, height = 15)
+ggsave(opt$clplot, p1, width = 8, height = 15)

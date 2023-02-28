@@ -12,7 +12,12 @@ option_list <- list(
     optparse::make_option(c("--output.rds"),
         type = "character", default = "output.rds",
         help = "Output RDS file name [default= %default]", metavar = "character"
+    ),
+    optparse::make_option(c("--cca.dims"),
+        type = "integer", default = 30,
+        help = "Which dimensions to use from the CCA to specify the neighbor search space 1 to [default= %default]", metavar = "character"
     )
+
 )
 
 opt_parser <- optparse::OptionParser(option_list = option_list)
@@ -42,10 +47,10 @@ for (i in files) {
 
 
 
-scrna_anchors <- FindIntegrationAnchors(object.list = scrna_list, dims = 1:30)
+scrna_anchors <- FindIntegrationAnchors(object.list = scrna_list, dims = 1:opt$cca.dims)
 
 
-scrna <- IntegrateData(anchorset = scrna_anchors, dims = 1:30)
+scrna <- IntegrateData(anchorset = scrna_anchors, dims = 1:opt$cca.dims)
 
 
 saveRDS(scrna, file = opt$output.rds)

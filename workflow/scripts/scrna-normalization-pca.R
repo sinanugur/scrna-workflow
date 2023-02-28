@@ -10,6 +10,10 @@ option_list <- list(
     type = "integer", default = 2000,
     help = "Highly variable features [default= %default]", metavar = "integer"
   ),
+      optparse::make_option(c("--variable.selection.method"),
+    type = "character", default = "vst",
+    help = "Find variable features selection method [default= %default]", metavar = "character"
+  ),
   optparse::make_option(c("--rds"),
     type = "character", default = NULL,
     help = "A RAW rds file of a Seurat object", metavar = "character"
@@ -64,7 +68,7 @@ if(isFALSE(opt$integration)) {
 
 
 scrna <- NormalizeData(scrna, normalization.method = opt$normalization.method, scale.factor = opt$scale.factor)
-scrna <- FindVariableFeatures(scrna, selection.method = "vst", nfeatures = opt$nfeatures)
+scrna <- FindVariableFeatures(scrna, selection.method = opt$variable.selection.method, nfeatures = opt$nfeatures)
 } else {
 
 try({DefaultAssay(scrna) <- "integrated"}) #for now only for Seurat, Harmony will come
@@ -76,7 +80,7 @@ try({DefaultAssay(scrna) <- "integrated"}) #for now only for Seurat, Harmony wil
 not.all.genes <- VariableFeatures(scrna) #only variable features
 
 scrna <- ScaleData(scrna, features = not.all.genes)
-scrna <- RunPCA(scrna, features = VariableFeatures(object = scrna))
+scrna <- RunPCA(scrna, features = not.all.genes)
 dimensionReduction <- function_pca_dimensions(scrna)
 scrna <- FindNeighbors(scrna, dims = 1:dimensionReduction)
 
