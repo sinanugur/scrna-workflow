@@ -53,9 +53,9 @@ rule clustree:
         jackandelbow=[results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/JackandElbow_plot.pdf"] if is_integrated_sample is False else []
     run:
         if is_integrated_sample is True:
-            shell("{cellsnake_path}workflow/scripts/scrna-clusteringtree.R --rds {input} --output {output.clustree} --integration")
+            shell("{cellsnake_path}workflow/scripts/scrna-clusteringtree.R --rds {input} --clplot {output.clustree} --integration")
         else:
-            shell("{cellsnake_path}workflow/scripts/scrna-clusteringtree.R --rds {input} --clplot {output.clustree} --heplot {output.heatmap} --hvfplot {output.hvfplot} --jeplot {output.jackandelbow}")
+            shell("{cellsnake_path}workflow/scripts/scrna-clusteringtree.R --rds {input} --scale.factor {scale_factor} --nfeature {highly_variable_features} --variable.selection.method {variable_selection_method} --normalization.method {normalization_method} --clplot {output.clustree} --heplot {output.heatmap} --hvfplot {output.hvfplot} --jeplot {output.jackandelbow}")
 
 
 
