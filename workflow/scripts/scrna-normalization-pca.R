@@ -53,9 +53,12 @@ if (is.null(opt$rds)) {
 }
 
 require(optparse)
+require(SingleR)
+require(celldex)
 require(tidyverse)
 require(Seurat)
 require(patchwork)
+
 
 
 try({source("workflow/scripts/scrna-functions.R")},silent=TRUE)
@@ -168,6 +171,14 @@ scrna@meta.data <- scrna@meta.data %>%
 metrics <- table(scrna@meta.data[["seurat_clusters"]], scrna@meta.data$orig.ident)
 
 #p1 <- DimPlot(scrna, reduction = "pca", label = TRUE, label.size = 10)
+
+#celltype annotation with SingleR
+ref <- BlueprintEncodeData()
+
+smObjSCE <- as.SingleCellExperiment(scrna)
+pred <- SingleR(test=smObjSCE, ref=ref, labels=ref$label.fine)
+AddMetaData(scrna,pred["labels"] %>% as.data.frame() %>% dplyr::select(singler=labels)) -> scrna
+
 
 
 # output files

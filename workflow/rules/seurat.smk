@@ -168,15 +168,26 @@ rule h5ad:
         "{cellsnake_path}workflow/scripts/scrna-convert-to-h5ad.R --rds {input.rds} --output {output}"
 
 
-rule celltype:
+rule singler_celltype:
+    input:
+        rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
+    output:
+        sheplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/singler/score_heatmap-celltype_annotation.pdf",
+        pheplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/singler/clusters-celltype_annotation.pdf",
+        sheplottop=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/singler/score_heatmap_top-celltype_annotation.pdf"
+
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-singler-plots.R --rds {input.rds} --sheplot {output.sheplot} --pheplot {output.pheplot} --sheplottop {output.sheplottop}"
+
+rule celltypist_celltype:
     input:
         analyses_folder + "/h5ad/" + f"{paramspace.wildcard_pattern}" + "/{sample}.h5ad"
     
     output:
         outputdir=directory(analyses_folder + "/celltypist/" + celltypist_model + "/" + f"{paramspace.wildcard_pattern}" + "/{sample}"),
         predicted=analyses_folder + "/celltypist/" + celltypist_model + "/" + f"{paramspace.wildcard_pattern}" + "/{sample}/predicted_labels.csv",
-        dotplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltype_annotation/" + celltypist_model + "/annotation.dotplot.pdf",
-        xlsx=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltype_annotation/" + celltypist_model + "/cluster_annotation_table.xlsx"
+        dotplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltypist/" + celltypist_model + "/annotation.dotplot.pdf",
+        xlsx=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltypist/" + celltypist_model + "/cluster_annotation_table.xlsx"
         
     shell:
         """
@@ -184,13 +195,13 @@ rule celltype:
         {cellsnake_path}workflow/scripts/scrna-celltypist.py {input} {output.dotplot} {output.outputdir} {output.xlsx} {celltypist_model}
         """
 
-rule seurat_celltype:
+rule seurat_celltype_celltypist:
     input:
         csv=analyses_folder + "/celltypist/" + celltypist_model + "/" + f"{paramspace.wildcard_pattern}" + "/{sample}/predicted_labels.csv",
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        umap=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltype_annotation/" + celltypist_model + "/annotation.umap.pdf",
-        tsne=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltype_annotation/" + celltypist_model + "/annotation.tsne.pdf"
+        umap=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltypist/" + celltypist_model + "/annotation.umap.pdf",
+        tsne=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltypist/" + celltypist_model + "/annotation.tsne.pdf"
     shell:
         """
         {cellsnake_path}workflow/scripts/scrna-celltypist.R --rds {input.rds} --csv {input.csv} --output.tsne.plot {output.tsne} --output.umap.plot {output.umap}

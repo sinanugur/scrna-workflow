@@ -1,14 +1,14 @@
 #!/usr/bin/env Rscript
 
 r <- getOption("repos")
-r["CRAN"] <- "http://cran.us.r-project.org"
+r["CRAN"] <- "https://cloud.r-project.org/"
 options(repos = r)
 
 
 packages <- c(
   "tidyverse", "optparse", "librarian", "Seurat", "SeuratDisk", "patchwork",
   "DoubletFinder", "viridis", "clustree", "openxlsx", "topGO", "org.Hs.eg.db",
-  "cerebroApp", "miQC", "scater", "MultiKParallel", "limma", "ggthemes", "ComplexHeatmap", "CellChat", "NMF", "clusterProfiler"
+  "cerebroApp", "miQC", "scater", "MultiKParallel", "limma", "ggthemes", "ComplexHeatmap", "CellChat", "NMF", "clusterProfiler","tidyseurat"
 )
 
 
@@ -37,8 +37,8 @@ if (any(installed_packages == FALSE)) {
 
 
 
-  librarian::shelf("optparse")
-  librarian::shelf("tidyverse", "patchwork")
+  librarian::shelf("optparse") #conda installer
+  librarian::shelf("tidyverse", "patchwork") #conda installer
 
   if (!requireNamespace("Seurat", quietly = TRUE)) {
     try({
@@ -53,8 +53,12 @@ if (any(installed_packages == FALSE)) {
   librarian::shelf("viridis")
   librarian::shelf("topGO")
   librarian::shelf("org.Hs.eg.db")
-  librarian::shelf("randomcoloR")
-  librarian::shelf("miQC")
+  
+   if (!requireNamespace("randomcoloR", quietly = TRUE)) {
+    install.packages("randomcoloR")
+  }
+
+  librarian::shelf("miQC") #conda installer
   # librarian::shelf('scater') #use conda installer
   librarian::shelf("sinanugur/MultiKParallel")
   librarian::shelf("stemangiola/tidyseurat")
@@ -62,19 +66,25 @@ if (any(installed_packages == FALSE)) {
   librarian::shelf("ggthemes")
   librarian::shelf("NMF")
   librarian::shelf("ComplexHeatmap")
-  librarian::shelf("sqjin/CellChat")
   librarian::shelf("clusterProfiler")
   # librarian::shelf('harmony')
 
 
 
   if (!requireNamespace("cerebroApp", quietly = TRUE)) {
-    librarian::shelf("romanhaa/cerebroApp") # will check later
+    remotes::install_github("romanhaa/cerebroApp")
   }
 
   if (!requireNamespace("SeuratDisk", quietly = TRUE)) {
-    librarian::shelf("mojaveazure/seurat-disk")
+    
+    remotes::install_github("mojaveazure/seurat-disk")
   }
+  if (!requireNamespace("CellChat", quietly = TRUE)) {
+    
+    remotes::install_github("sqjin/CellChat")
+  }
+
+
 } else {
   print("All packages were installed...OK")
 }
