@@ -163,14 +163,22 @@ def identity_dependent_dimplot(paramspace,identity):
 
 def cellchat_plot(paramspace,identity):
     plots=[]
-    #identity.append("majority_voting") #add majority voting to the list of identities but for now drop this
+    #identity.append("singler") #add majority voting to the list of identities but for now drop this
     if len(identity) > 0:
         plots = plots + expand([results_folder + "/" + s + "/{params}/cellchat/" + x + "/" for x in identity for s in files],params=list(paramspace.instance_patterns))
     return plots
 
+def celltypist_analysis(paramspace,celltypist_model):
+    plots=[]
+    if celltypist_model:
+        plots += expand([results_folder + "/" + s + "/{params}/celltypist/" + celltypist_model + "/annotation.dotplot.pdf" for s in files],params=list(paramspace.instance_patterns))
+        plots += expand([results_folder + "/" + s + "/{params}/celltypist/" + celltypist_model + "/annotation.tsne.pdf" for s in files],params=list(paramspace.instance_patterns))
+        plots += expand([results_folder + "/" + s + "/{params}/celltypist/"+ celltypist_model + "/annotation.umap.pdf" for s in files],params=list(paramspace.instance_patterns))
+    return plots
+
 def gsea_analysis(paramspace,identity):
     outs=[]
-    identity.append("majority_voting")
+    #identity.append("singler")
     if len(set(identity)) > 0:
         outs = outs + expand([results_folder + "/" + s + "/{params}/gsea/gsea-" + x + "-output.xlsx" for x in identity for s in files],params=list(paramspace.instance_patterns))
     return outs
@@ -234,13 +242,11 @@ def sample_parameter(paramspace,files):
         outs = outs + [
                 expand([results_folder + "/" + s + "/{params}/positive-markers-forAllClusters.xlsx" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/summarized-cluster-markers-plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                expand([results_folder + "/" + s + "/{params}/celltypist/" + celltypist_model + "/annotation.dotplot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                expand([results_folder + "/" + s + "/{params}/celltypist/" + celltypist_model + "/annotation.tsne.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                expand([results_folder + "/" + s + "/{params}/celltypist/"+ celltypist_model + "/annotation.umap.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/singler/score_heatmap-celltype_annotation.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/singler/clusters-celltype_annotation.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/singler/score_heatmap_top-celltype_annotation.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 gsea_analysis(paramspace,[x for x in identity_to_analysis if x != "orig.ident"]),
+                celltypist_analysis(paramspace,celltypist_model),
                 expand([results_folder + "/" + s + "/{params}/enrichment_analysis/GO-enrichment-" + ontology + "-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
 
                 ]

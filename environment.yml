@@ -37,6 +37,7 @@ dependencies:
  - bioconductor-miqc 
  - bioconductor-rhdf5lib
  - bioconductor-singler
+ - bioconductor-celldex
  - geos==3.11.1
  - cmake
  - hdf5
