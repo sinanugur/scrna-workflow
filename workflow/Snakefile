@@ -173,7 +173,7 @@ def celltypist_analysis(paramspace,celltypist_model):
     if celltypist_model:
         plots += expand([results_folder + "/" + s + "/{params}/celltypist/" + celltypist_model + "/annotation.dotplot.pdf" for s in files],params=list(paramspace.instance_patterns))
         plots += expand([results_folder + "/" + s + "/{params}/celltypist/" + celltypist_model + "/annotation.tsne.pdf" for s in files],params=list(paramspace.instance_patterns))
-        plots += expand([results_folder + "/" + s + "/{params}/celltypist/"+ celltypist_model + "/annotation.umap.pdf" for s in files],params=list(paramspace.instance_patterns))
+        plots += expand([results_folder + "/" + s + "/{params}/celltypist/" + celltypist_model + "/annotation.umap.pdf" for s in files],params=list(paramspace.instance_patterns))
     return plots
 
 def gsea_analysis(paramspace,identity):
@@ -245,6 +245,8 @@ def sample_parameter(paramspace,files):
                 expand([results_folder + "/" + s + "/{params}/singler/score_heatmap-celltype_annotation.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/singler/clusters-celltype_annotation.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/singler/score_heatmap_top-celltype_annotation.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/singler/annotation.tsne.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/singler/annotation.umap.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 gsea_analysis(paramspace,[x for x in identity_to_analysis if x != "orig.ident"]),
                 celltypist_analysis(paramspace,celltypist_model),
                 expand([results_folder + "/" + s + "/{params}/enrichment_analysis/GO-enrichment-" + ontology + "-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))

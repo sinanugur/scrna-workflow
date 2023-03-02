@@ -86,6 +86,16 @@ rule dim_plots:
     shell:
         "{cellsnake_path}workflow/scripts/scrna-dimplot.R --rds {input} --reduction.type {wildcards.reduction} --output.reduction.plot {output.pl} --idents {wildcards.i}"
 
+rule singler_dim_plots:
+    input:
+        analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
+    output:
+        pl=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/singler/annotation.{reduction}.pdf"
+    params:
+        paramaters=paramspace.instance,
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-dimplot.R --rds {input} --reduction.type {wildcards.reduction} --output.reduction.plot {output.pl} --idents singler"
+
     
     
 rule find_all_cluster_markers:

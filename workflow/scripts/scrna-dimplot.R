@@ -16,7 +16,7 @@ option_list <- list(
       ),
       optparse::make_option(c("--csv"),
             type = "character", default = NULL,
-            help = "Celltypist prediction file", metavar = "character"
+            help = "CSV meta file", metavar = "character"
       ),
       optparse::make_option(c("--idents"),
             type = "character", default = "seurat_clusters",
