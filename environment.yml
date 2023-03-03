@@ -26,6 +26,7 @@ dependencies:
  - r-curl
  - r-tidyseurat
  - r-tidyverse
+ - r-v8
  #- r-seuratdisk
  - bioconductor-rhdf5lib
  - bioconductor-clusterprofiler==4.6.0
