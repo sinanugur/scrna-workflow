@@ -1,3 +1,3 @@
 [submodule "workflow/mg2sc"]
 	path = workflow/mg2sc
-	url = git@github.com:sinanugur/mg2sc.git
+	url = https://github.com/sinanugur/mg2sc.git
