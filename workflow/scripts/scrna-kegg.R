@@ -4,30 +4,50 @@ option_list <- list(
     type = "character", default = NULL,
     help = "Excel table of markers", metavar = "character"
   ),
-  optparse::make_option(c("--output"),
+  optparse::make_option(c("--output.rds"),
     type = "character", default = NULL,
-    help = "Output excel file name", metavar = "character"
+    help = "Output RDS file name", metavar = "character"
   ),
-  optparse::make_option(c("--algorithm"),
-    type = "character", default = "weight01",
-    help = "Algorithm", metavar = "character"
+  optparse::make_option(c("--output.kegg"),
+    type = "character", default = NULL,
+    help = "Output kegg excel file name", metavar = "character"
+  ),
+  optparse::make_option(c("--output.mkegg"),
+    type = "character", default = NULL,
+    help = "Output kegg excel file name", metavar = "character"
+  ),
+  optparse::make_option(c("--output.gse"),
+    type = "character", default = NULL,
+    help = "Output gse excel file name", metavar = "character"
+  ),
+  optparse::make_option(c("--output.mgse"),
+    type = "character", default = NULL,
+    help = "Output gse excel file name", metavar = "character"
   ),
   optparse::make_option(c("--mapping"),
     type = "character", default = "org.Hs.eg.db",
     help = "Mapping", metavar = "character"
   ),
-  optparse::make_option(c("--statistics"),
-    type = "character", default = "ks",
-    help = "Statistics", metavar = "character"
+  optparse::make_option(c("--pval"),
+    type = "double", default = 0.05,
+    help = "P value treshold [default= %default]", metavar = "character"
+  ),
+  optparse::make_option(c("--logfc.treshold"),
+    type = "double", default = 1.5,
+    help = "LogFC [default= %default]", metavar = "character"
   )
 )
+require(clusterProfiler)
+require(org.Hs.eg.db)
+require(tidyverse)
+
 
 
 
 opt_parser <- optparse::OptionParser(option_list = option_list)
 opt <- optparse::parse_args(opt_parser)
 
-if (is.null(opt$xlsx) || is.null(opt$output)) {
+if (is.null(opt$xlsx)) {
   optparse::print_help(opt_parser)
   stop("Arguments must be supplied", call. = FALSE)
 }
@@ -35,46 +55,98 @@ if (is.null(opt$xlsx) || is.null(opt$output)) {
 
 All_Features <- openxlsx::read.xlsx(opt$xlsx)
 
-res <- All_Features
-original_gene_list <- res$avg_log2FC
-names(original_gene_list) <- res$gene
-gene_list <- na.omit(original_gene_list)
 
-# sort the list in decreasing order (required for clusterProfiler)
-gene_list <- sort(gene_list, decreasing = TRUE)
+function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
+  print(results %>% distinct(cluster) %>% pull())
+  results %>%
+    as.data.frame() %>%
+    dplyr::filter(p_val_adj < p) %>%
+    arrange(desc(avg_log2FC)) %>%
+    dplyr::select(gene, avg_log2FC) %>%
+    dplyr::mutate(GeneID = mapIds(org.Hs.eg.db, keys = gene, column = "ENTREZID", keytype = "SYMBOL", multiVals = "first")) %>%
+    dplyr::filter(!is.na(GeneID), !is.na(avg_log2FC), !duplicated(GeneID)) %>%
+    dplyr::select(3, 2) %>%
+    deframe() -> geneList
 
-# Convert gene IDs for gseKEGG function
-# We will lose some genes here because not all IDs will be converted
-ids <- bitr(names(original_gene_list), fromType = "SYMBOL", toType = "ENTREZID", OrgDb = org.Hs.eg.db)
 
-# remove duplicate IDS (here we use "SYMBOL", but it should be whatever was selected as keyType)
-dedup_ids <- ids[!duplicated(ids[c("SYMBOL")]), ]
+  gene <- names(geneList)[abs(geneList) > f] # as recommended by the documentation
 
-# Create a new dataframe df2 which has the respective entrez IDs for the gene symbols
-colnames(dedup_ids) <- c("gene", "EntrezID")
-df2 <- merge(res, dedup_ids, by = "gene")
+  tryCatch(
+    {
+      kk <- enrichKEGG(
+        gene = gene,
+        organism = "hsa",
+        pAdjustMethod = "fdr",
+        minGSSize = 2,
+        pvalueCutoff = 0.05
+      )
+    },
+    error = function(e) {
+      kk <- NULL
+    }
+  ) -> kk
 
-# Create a vector of the gene universe
-kegg_gene_list <- df2$avg_log2FC
-names(kegg_gene_list) <- df2$EntrezID
+  tryCatch(
+    {
+      kk2 <- gseKEGG(
+        geneList = geneList,
+        organism = "hsa",
+        pvalueCutoff = 0.05,
+        pAdjustMethod = "fdr",
+        minGSSize = 2,
+        eps = 0,
+        verbose = FALSE
+      )
+    },
+    error = function(e) {
+      kk2 <- NULL
+    }
+  ) -> kk2
 
-kegg_gene_list <- na.omit(kegg_gene_list)
+  tryCatch(
+    {
+      kk3 <- enrichMKEGG(
+        gene = gene,
+        organism = "hsa",
+        pvalueCutoff = 0.05,
+        minGSSize = 2,
+        pAdjustMethod = "fdr",
+      )
+    },
+    error = function(e) {
+      kk3 <- NULL
+    }
+  ) -> kk3
 
-# sort the list in decreasing order
-kegg_gene_list <- sort(kegg_gene_list, decreasing = TRUE)
+  tryCatch(
+    {
+      kk4 <- gseMKEGG(
+        geneList = geneList,
+        organism = "hsa",
+        minGSSize = 2,
+        keyType = "kegg",
+        pAdjustMethod = "fdr",
+        pvalueCutoff = 0.05
+      )
+    },
+    error = function(e) {
+      kk4 <- NULL
+    }
+  ) -> kk4
 
-kegg_organism <- "hsa"
+  return(list(kk, kk2, kk3, kk4))
+}
 
-kk2 <- gseKEGG(
-  geneList = kegg_gene_list,
-  organism = kegg_organism,
-  minGSSize = 3,
-  maxGSSize = 800,
-  pvalueCutoff = 0.05,
-  pAdjustMethod = "none",
-  keyType = "ncbi-geneid"
-)
 
-saveRDS(kk2, file = "kk2.rds")
-# out = as.matrix(kk2@result)
-# return(out)
+All_Features %>%
+  split(.$cluster) %>%
+  purrr::map(~ function_enrichment_kegg_singlecell(.)) -> all_kegg_results
+
+
+
+saveRDS(all_kegg_results, opt$output.rds)
+
+openxlsx::write.xlsx(all_kegg_results %>% keep(~ !is.null(.[[1]])) %>% map(~ .[[1]]@result) %>% bind_rows(.id = "cluster") %>% as_tibble(), opt$output.kegg)
+openxlsx::write.xlsx(all_kegg_results %>% keep(~ !is.null(.[[2]])) %>% map(~ .[[2]]@result) %>% bind_rows(.id = "cluster") %>% as_tibble(), opt$output.gse)
+openxlsx::write.xlsx(all_kegg_results %>% keep(~ !is.null(.[[3]])) %>% map(~ .[[3]]@result) %>% bind_rows(.id = "cluster") %>% as_tibble(), opt$output.mkegg)
+openxlsx::write.xlsx(all_kegg_results %>% keep(~ !is.null(.[[4]])) %>% map(~ .[[4]]@result) %>% bind_rows(.id = "cluster") %>% as_tibble(), opt$output.mgse)

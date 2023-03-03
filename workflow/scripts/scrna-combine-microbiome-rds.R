@@ -12,12 +12,7 @@ option_list <- list(
     optparse::make_option(c("--output.rds"),
         type = "character", default = "output.rds",
         help = "Output RDS file name [default= %default]", metavar = "character"
-    ),
-    optparse::make_option(c("--cca.dims"),
-        type = "integer", default = 30,
-        help = "Which dimensions to use from the CCA to specify the neighbor search space 1 to [default= %default]", metavar = "character"
     )
-
 )
 
 opt_parser <- optparse::OptionParser(option_list = option_list)
@@ -38,19 +33,12 @@ try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path
 files <- unlist(strsplit(opt$rds, " "))
 print(files)
 for (i in files) {
-    if (!exists("scrna_list")) {
-        scrna_list <- list(readRDS(file = i))
+    if (!exists("scrna")) {
+        scrna <- readRDS(file = i)
     } else {
-        scrna_list <- append(scrna_list, readRDS(file = i))
+        scrna <- bind_rows(scrna, readRDS(file = i))
     }
 }
-
-
-
-scrna_anchors <- FindIntegrationAnchors(object.list = scrna_list, dims = 1:opt$cca.dims)
-
-
-scrna <- IntegrateData(anchorset = scrna_anchors, dims = 1:opt$cca.dims)
 
 
 saveRDS(scrna, file = opt$output.rds)

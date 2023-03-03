@@ -57,11 +57,16 @@ try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path
 
 #CreateSeuratObject(scrna.data,min.cells = 1,min.features = 5) -> scrna
 
-CreateSeuratObject(LoadH5Seurat(opt$h5seurat)[["RNA"]]@counts,min.cells = opt$min.cells,min.features = opt$min.features)[["RNA"]]@counts %>% as.matrix() %>% 
+CreateSeuratObject(LoadH5Seurat(opt$h5seurat)[["RNA"]]@counts,min.cells = opt$min.cells,min.features = opt$min.features) -> scrna
+
+scrna <- RenameCells(object = scrna, add.cell.id = make.names(opt$sampleid)) #add cell.id to cell name
+
+
+scrna[["RNA"]]@counts %>% as.matrix() %>% 
 t() %>% as.data.frame() %>% select(-starts_with("Homo")) -> df
 
 df %>% rownames_to_column("barcode") %>% gather(group,umi,-barcode) %>% group_by(group) %>%
- summarise(sum=log(sum(umi))) %>% arrange(desc(sum)) %>% slice_max(n = 50,order_by = sum) %>% ggplot(aes(reorder(group,sum),sum)) + geom_col() + coord_flip() + theme_cellsnake_classic() + 
+ summarise(sum=log(sum(umi))) %>% arrange(desc(sum)) %>% slice_max(n = 50,order_by = sum) %>% ggplot(aes(reorder(group,sum),sum)) + geom_col() + coord_flip() + ggthemes::theme_few()  + 
  ylab("log-total UMI") + xlab(opt$taxa) + ggtitle(opt$sampleid) + theme(axis.title = element_text(size = 12)) -> p1
 
 ggsave(plot =p1,filename=opt$output.plot,width=6,height=9)

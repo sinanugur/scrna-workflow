@@ -7,87 +7,31 @@ import pandas as pd
 import pathlib
 
 from snakemake.io import chain, expand, regex
+import sys
 import os
 import re
 import collections
+import random
+import datetime
+from itertools import repeat
 
 
-_wildcard_regex = re.compile(
-    r"""
-    \{
-        (?=(   # This lookahead assertion emulates an 'atomic group'
-            # which is required for performance
-            \s*(?P<name>\w+)                    # wildcard name
-            (\s*,\s*
-                (?P<constraint>                 # an optional constraint
-                    ([^{}]+ | \{\d+(,\d+)?\})*  # allow curly braces to nest one level
-                )                               # ...  as in '{w,a{3,5}}'
-            )?\s*
-        ))\1
-    \}
-    """,
-    re.VERBOSE,
-)
-def walklevel(some_dir, level, followlinks):
-    some_dir = some_dir.rstrip(os.path.sep)
-    #assert os.path.isdir(some_dir)
-    num_sep = some_dir.count(os.path.sep)
-    for root, dirs, files in os.walk(some_dir,followlinks =followlinks):
-        yield root, dirs, files
-        num_sep_this = root.count(os.path.sep)
-        if num_sep + level <= num_sep_this:
-            del dirs[:]
-
-
-def cellsnake_glob_wildcards(pattern, followlinks=True, level=3, files=None):
-    """
-    Glob the values of the wildcards by matching the given pattern to the filesystem.
-    Returns a named tuple with a list of values for each wildcard.
-    """
-
-
-    pattern = os.path.normpath(pattern)
-    first_wildcard = re.search("{[^{]", pattern)
-    dirname = (
-        os.path.dirname(pattern[: first_wildcard.start()])
-        if first_wildcard
-        else os.path.dirname(pattern)
-    )
-    if not dirname:
-        dirname = "."
-
-    names = [match.group("name") for match in _wildcard_regex.finditer(pattern)]
-    Wildcards = collections.namedtuple("Wildcards", names)
-    wildcards = Wildcards(*[list() for name in names])
-
-    pattern = re.compile(regex(pattern))
-
-    if files is None:
-        files = (
-            os.path.normpath(os.path.join(dirpath, f))
-            for dirpath, dirnames, filenames in walklevel(
-                dirname,level,followlinks
-            )
-            for f in chain(filenames, dirnames)
-        )
-
-    for f in files:
-        match = re.match(pattern, f)
-        if match:
-            for name, value in match.groupdict().items():
-                getattr(wildcards, name).append(value)
-    return wildcards
-
+include: "rules/extra_functions.smk"
+option=config.get("option","standard") # select standard option for full analysis
+runid=config.get("runid","".join(random.choices("abcdefghisz",k=3) + random.choices("123456789",k=5)))
+logname = "_".join(["cellsnake",runid, datetime.datetime.now().strftime("%y%m%d_%H%M%S"),option,"log"])
 
 cellsnake_path=config.get('cellsnake_path','') #if called by cellsnake
 datafolder=config.get("datafolder","data") #this can be a directory with samples or a single file to process
 analyses_folder=config.get("analyses_folder","analyses")
 results_folder=config.get("results_folder","results")
 is_integrated_sample=config.get("is_integrated_sample",False)
+gene_to_plot=[] if config.get("gene_to_plot",None) is None else [config.get("gene_to_plot")]
 
 
 #configfile: "config.yaml"
 
+files=[]
 try:
 
     if os.path.isdir(datafolder):
@@ -118,7 +62,9 @@ min_features=config.get("min_features",200)
 percent_mt=config.get("percent_mt","10") #if not automatic, this will be used for all samples
 percent_rp=config.get("percent_rp",0) #by default, no filtering on ribosomal genes percentage 
 highly_variable_features=config.get("highly_variable_features",2000)
+variable_selection_method=config.get("variable_selection_method","vst")
 doublet_filter= "--doublet.filter" if config.get("doublet_filter",True) in [True,"TRUE","True","T"] and is_integrated_sample is False else ""
+species=config.get("species","human") #mouse is not ready yet, this is just a placeholder
 
 #automatic mt filtering
 grid_search=config.get("grid_search",False) #requires params file in tsv format
@@ -130,7 +76,7 @@ grid_search=config.get("grid_search",False) #requires params file in tsv format
 #clustering and normalization paramaters
 normalization_method=config.get("normalization_method","LogNormalize")
 scale_factor=config.get("scale_factor",10000)
-resolution=config.get("resolution","0.8") #a double or "auto", default is 0.8
+resolution=config.get("resolution","0.8" if is_integrated_sample is False else "0.3") #a double or "auto", default is 0.8
 
 #dimension reduction options: by default both UMAP and TSNE will be plotted with predicted clusters
 umap_plot="--umap" if config.get("umap_plot",True) in [True,"TRUE","True","T"] else ""
@@ -146,9 +92,9 @@ test_use=config.get("test_use","wilcox")
 marker_plots_per_cluster_n=config.get("marker_plots_per_cluster_n",10) #only print top 10 by default
 
 
-identity_to_plot=[config.get("identity_to_plot","seurat_clusters")]
+identity_to_analysis=[config.get("identity_to_analysis","seurat_clusters")]
 
-selected_markers_file=config.get("selected_markers_file","markers.tsv")
+selected_gene_file=config.get("selected_gene_file","markers.tsv")
 
 #GO enrichment paramaters
 algorithm=config.get("algorithm","weight01")
@@ -158,12 +104,10 @@ ontology = config.get("ontology","BP")
 
 #GSEA
 gsea_file= config.get("gsea_file",cellsnake_path + "workflow/bundle/c2.cgp.v2022.1.Hs.symbols.gmt")
-gesa_group= config.get("gsea_group","seurat_clusters")
+gsea_group= config.get("gsea_group","seurat_clusters")
 
-#alternative routes
-route=config.get("route","standard") # select standard route for analysis
-integration_id=config.get("integration_id","combined")
-integration_resolution=str(config.get("resolution",0.8))
+#alternative options
+integration_id=config.get("integration_id","integrated")
 celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
 
 #Kraken DB
@@ -183,13 +127,11 @@ def initialization_of_paramspace(tsv_file,dictionary):
 
 
 if is_integrated_sample:
-    identity_to_plot.append("orig.ident")
+    identity_to_analysis.append("orig.ident")
     percent_mt="auto" #if integrated auto
 
 par_df = initialization_of_paramspace("params.tsv",{"percent_mt":[percent_mt],"resolution":[resolution]})
 paramspace=Paramspace(par_df)
-
-
 
 def dim_reduction_and_marker_plots(paramspace):
     plots=[]
@@ -199,21 +141,48 @@ def dim_reduction_and_marker_plots(paramspace):
         plots = plots + expand([results_folder + "/" + s + "/{params}/positive_marker_plots_tsne/" for s in files],params=list(paramspace.instance_patterns))
     return plots
 
-def selected_markers(paramspace):
+try:
+    if os.path.isfile(selected_gene_file):
+        df=pd.read_table(selected_gene_file)
+        gene_to_plot += df[df.columns[0]].values.tolist()
+except:
+    pass
+
+def selected_gene_plot(paramspace,gene_to_plot):
     plots=[]
-    if os.path.isfile(selected_markers_file):
-        plots = plots + expand([results_folder + "/" + s + "/{params}/selected-markers-dotplot.pdf" for s in files],params=list(paramspace.instance_patterns))
-        if umap_markers_plot:
-            plots = plots + expand([results_folder + "/" + s + "/{params}/selected_marker_plots_umap" for s in files],params=list(paramspace.instance_patterns))
-        if tsne_markers_plot:
-            plots = plots + expand([results_folder + "/" + s + "/{params}/selected_marker_plots_tsne" for s in files],params=list(paramspace.instance_patterns))
+    if gene_to_plot:
+        plots = plots + expand([results_folder + "/" + s +  "/{params}/selected_gene_plots_umap/" + g.upper() + ".pdf" for g in gene_to_plot for s in files],params=list(paramspace.instance_patterns))
+        plots = plots + expand([results_folder + "/" + s +  "/{params}/selected_gene_plots_tsne/" + g.upper() + ".pdf" for g in gene_to_plot for s in files],params=list(paramspace.instance_patterns))
     return plots
 
 def identity_dependent_dimplot(paramspace,identity):
     plots=[]
-    if len(identity_to_plot) > 0:
+    if len(identity) > 0:
         plots = plots + expand([results_folder + "/" + s + "/{params}/" + u + "-" + x + ".plot.pdf" for u in ["umap","tsne","pca"] for x in identity for s in files],params=list(paramspace.instance_patterns))
     return plots
+
+def cellchat_plot(paramspace,identity):
+    plots=[]
+    #identity.append("singler") #add majority voting to the list of identities but for now drop this
+    if len(identity) > 0:
+        plots = plots + expand([results_folder + "/" + s + "/{params}/cellchat/" + x + "/" for x in identity for s in files],params=list(paramspace.instance_patterns))
+    return plots
+
+def celltypist_analysis(paramspace,celltypist_model):
+    plots=[]
+    if celltypist_model:
+        plots += expand([results_folder + "/" + s + "/{params}/celltypist/" + celltypist_model + "/annotation.dotplot.pdf" for s in files],params=list(paramspace.instance_patterns))
+        plots += expand([results_folder + "/" + s + "/{params}/celltypist/" + celltypist_model + "/annotation.tsne.pdf" for s in files],params=list(paramspace.instance_patterns))
+        plots += expand([results_folder + "/" + s + "/{params}/celltypist/" + celltypist_model + "/annotation.umap.pdf" for s in files],params=list(paramspace.instance_patterns))
+    return plots
+
+def gsea_analysis(paramspace,identity):
+    outs=[]
+    #identity.append("singler")
+    if len(set(identity)) > 0:
+        outs = outs + expand([results_folder + "/" + s + "/{params}/gsea/gsea-" + x + "-output.xlsx" for x in identity for s in files],params=list(paramspace.instance_patterns))
+    return outs
+
 
 def kraken_predictions(paramspace,taxa):
     #bamfiles=cellsnake_glob_wildcards(datafolder + "/{sample}/outs/possorted_genome_bam.bam").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/possorted_genome_bam.bam").sample 
@@ -221,73 +190,133 @@ def kraken_predictions(paramspace,taxa):
     if kraken_db_folder is not None:
         outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/microbiome-full-" + taxa + "-level.pdf" for s in files],params=list(paramspace.instance_patterns))
         outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/dimplot-" + taxa + "-" + "umap.pdf" for s in files],params=list(paramspace.instance_patterns))
+        outs = outs + ["analyses_integrated/seurat/" + integration_id + "-" + taxa + ".rds"]
+    elif is_integrated_sample is True and os.path.isfile("analyses_integrated/seurat/" + integration_id + "-" + taxa + ".rds"):
+        outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/dimplot-integrated-" + taxa + "-" + "umap.pdf" for s in files],params=list(paramspace.instance_patterns))
+        outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/dimplot-integrated-" + taxa + "-" + "tsne.pdf" for s in files],params=list(paramspace.instance_patterns))
     return outs
 
-def sample_paramater(sample):
-    if route == "standard":
-        return [
-                #expand(["analyses/raw/" + sample + "/{params}.rds"], params=list(paramspace.instance_patterns)), 
-                #expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                #expand([results_folder + "/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                #expand([results_folder + "/" + s + "/{params}/pca.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                expand([results_folder + "/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
+def write_main_log(files):
+
+    pathlib.Path("logs/").mkdir(parents=True, exist_ok=True)
+    with open("logs/" + logname,"w") as f:
+        f.write("Total number of samples processed : " + str(len(files)) + "\n")
+        f.write("Sample names in this run : " + " ".join(files) + "\n")
+        f.write("Run ID : " + str(runid) + "\n")
+        f.write("Option : " + str(option) + "\n")
+
+
+def write_sample_log(sample,paramspace):
+    l=results_folder + "/" + sample + "/logs/"
+    pathlib.Path(l).mkdir(parents=True, exist_ok=True)
+    with open(l + runid + ".txt","w") as f:
+        f.write("Sample name : " + sample + "\n")
+        f.write("Run ID : " + str(runid) + "\n")
+        f.write("Option : " + str(option) + "\n")
+        f.write("Main directory and params : " + "".join(list(paramspace.instance_patterns)) + "\n")
+        f.write("Minimum cells : " + str(min_cells) + "\n")
+        f.write("Minimum features : " + str(min_features) + "\n")
+        f.write("Percent mitochondrial gene treshold (smaller than) : " + str(percent_mt) + "\n")
+        f.write("Percent ribosomal gene treshold (larger than) : " + str(percent_rp) + "\n")
+        f.write("Resolution : " + str(resolution) + "\n")
+        f.write("Highly variable genes : " + str(highly_variable_features) + "\n")
+        f.write("Doublet filter : " + str(config.get("doublet_filter",True)) + "\n")
+        f.write("Normalization method : " + str(normalization_method) + "\n")
+        f.write("Scale factor : " + str(scale_factor) + "\n")
+        f.write("LogFC treshold : " + str(logfc_threshold) + "\n")
+        f.write("DE test use : " + str(test_use) + "\n")
+        f.write("Algorithm (GO enrichment) : " + str(algorithm) + "\n")
+        f.write("Statistics (GO enrichment) : " + str(statistics) + "\n")
+        f.write("Mapping (GO and KEGG enrichment) : " + str(mapping) + "\n")
+        f.write("Ontology (GO enrichment) : " + str(ontology) + "\n")
+        f.write("Celltypist model : " + str(celltypist_model) + "\n")
+        f.write("Kraken DB folder : " + str(kraken_db_folder) + "\n")
+        f.write("Collapse to this taxanomic level : " + str(taxa) + "\n")
+
+
+
+
+def sample_parameter(paramspace,files):
+    outs=[]
+    if option in ["standard","advanced"]:
+        outs = outs + [
                 expand([results_folder + "/" + s + "/{params}/positive-markers-forAllClusters.xlsx" for s in files],params=list(paramspace.instance_patterns)),
-                #expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                dim_reduction_and_marker_plots(paramspace),
-                selected_markers(paramspace),
-                identity_dependent_dimplot(paramspace,identity_to_plot),
-                expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.dotplot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.tsne.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                expand([results_folder + "/" + s + "/{params}/celltype_annotation/annotation.umap.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                expand([results_folder + "/" + s + "/{params}/gsea/" for s in files],params=list(paramspace.instance_patterns)),
-                kraken_predictions(paramspace,taxa)
-                #expand([results_folder + "/" + s + "/{params}/GO-enrichment-" + ontology +  "-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
+                expand([results_folder + "/" + s + "/{params}/summarized-cluster-markers-plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/singler/score_heatmap-celltype_annotation.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/singler/clusters-celltype_annotation.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/singler/score_heatmap_top-celltype_annotation.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/singler/annotation.tsne.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/singler/annotation.umap.pdf" for s in files],params=list(paramspace.instance_patterns)),
+                gsea_analysis(paramspace,[x for x in identity_to_analysis if x != "orig.ident"]),
+                celltypist_analysis(paramspace,celltypist_model),
+                expand([results_folder + "/" + s + "/{params}/enrichment_analysis/GO-enrichment-" + ontology + "-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
+
                 ]
-    else:
-        return [
-                #expand([results_folder + "/" + s + "/{params}/umap.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                #expand([results_folder + "/" + s + "/{params}/tsne.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                #expand([results_folder + "/" + s + "/{params}/pca.plot.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                identity_dependent_dimplot(paramspace,identity_to_plot),
+    if option in ["minimal","standard","advanced"]:
+        outs = outs + [
+                identity_dependent_dimplot(paramspace,identity_to_analysis),
                 expand([results_folder + "/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
-                kraken_predictions(paramspace,taxa)
-                #expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns))
-        ]
+                kraken_predictions(paramspace,taxa),
+                selected_gene_plot(paramspace,gene_to_plot)
+                ]
+    if option in ["clustree","clusteringTree","minimal","standard","advanced"]:
+        outs = outs + expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns))
+    if option in ["advanced"]:
+        outs += cellchat_plot(paramspace,[x for x in identity_to_analysis if x != "orig.ident"])
+        outs += dim_reduction_and_marker_plots(paramspace)
+        outs += expand([results_folder + "/" + s + "/{params}/enrichment_analysis/KEGG-geneset-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
+        outs += expand([results_folder + "/" + s + "/{params}/enrichment_analysis/KEGG-module_geneset-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
+        outs += expand([results_folder + "/" + s + "/{params}/enrichment_analysis/KEGG-over_representation-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
+        outs += expand([results_folder + "/" + s + "/{params}/enrichment_analysis/KEGG-module_over_representation-all_clusters.xlsx" for s in files],params=list(paramspace.instance_patterns))
+    if option not in ["clustree","clusteringTree","minimal","standard","advanced"]:
+        print("Please select a correct option...")
+
+    if not any(b in ["--dry-run", "--dryrun", "-n"] for b in sys.argv):
+        write_main_log(files)
+        list(map(write_sample_log, files,repeat(paramspace)))
+    return outs
 
 
 
+if option in ["integration","integrate"]:
+    #integration_files = list(pathlib.Path("analyses/processed/").rglob("*.rds"))
+    a,b,c=cellsnake_glob_wildcards("analyses/processed/percent_mt~{a}/resolution~{b}/{c}.rds")
+    integration_files=expand("analyses/processed/percent_mt~{a}/resolution~{b}/{c}.rds",zip,a=a,b=b,c=c)
 
+    total_samples_to_merge=len(set(c))
+    total_rds_files=len(list(zip(a,b,c)))
+    total_mt_samples=len(set(zip(a,c)))
+    
+    #print(total_samples_to_merge)
+    #print(total_mt_samples)
+    if total_samples_to_merge > 1: # there are at least two samples
+        if total_rds_files > total_samples_to_merge:
 
-if route in ["standard","minimal"]:
+            integration_files=[]
+            if total_mt_samples == total_samples_to_merge:
+                print("I detected more than one RDS file per sample, I will select one of them to merge...")
+                for i in set(c):
+                    integration_files.append(list(pathlib.Path("analyses/processed/").rglob(i + ".rds"))[0])
+            else:
+                print("There are identical samples with different MT content, I am not sure how to merge them, better to remove some RDS files manually...")
+                print(expand("analyses/processed/percent_mt~{a}/resolution~{b}/{c}.rds",zip,a=a,b=b,c=c))
+     
+    #print(integration_files)
+    include: "rules/integration.smk"
+    rule all:
+        input:
+             "analyses_integrated/seurat/" + integration_id + ".rds" if len(integration_files) > 1 else []
+    
+    if not any(b in ["--dry-run", "--dryrun", "-n"] for b in sys.argv):
+        write_main_log([str(i) for i in integration_files])
+
+elif option in ["minimal","standard","clustree","clusteringTree","advanced"] and files:
     include: "rules/seurat.smk"
     include: "rules/microbiome.smk"
     rule all:
         input:
-            [sample_paramater(sample) for sample in files]
-
-
-elif route == "others":
-    rule all:
-        input:
-            expand(["results/{sample}/resolution-" + x + "/enrichment/GO-enrichment-all_clusters-ontology-{ontology}.xlsx".format(ontology=ontology) for x in resolution], sample=files)
-
-elif route == "clustree" or route == "clusteringTree":
-    include: "rules/seurat.smk"
-    rule all:
-        input:
-            #expand("results/{sample}/clusteringTree/clusteringTree.pdf",sample=files)
-            expand([results_folder + "/" + s + "/{params}/ClustTree.pdf" for s in files],params=list(paramspace.instance_patterns))
-
-
-elif route == "integration":
-    integration_files = list(Path("analyses/processed/").rglob("*.rds"))
-    include: "rules/integration.smk"
-    print(integration_files)
-    rule all:
-        input:
-            #"analyses/integration/harmony/" + integration_id + "_harmony.rds",
-            "analyses_integrated/seurat/" + integration_id + ".rds"
-
+            sample_parameter(paramspace,files)
 
 else:
+    print("Please select a correct option or no files detected...")
     pass

@@ -33,6 +33,7 @@ rule create_initial_raw_rds_and_trimming:
         mtplot=[results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/model-metrics-mitochondrial-genes.pdf"] if percent_mt == "auto" and is_integrated_sample is False else []
     params:
         mt_param=" --plot.mtplot " + results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/technicals/model-metrics-mitochondrial-genes.pdf" if percent_mt == "auto" and is_integrated_sample is False else " "
+    
 
     run:
         if is_integrated_sample is True:
@@ -52,9 +53,9 @@ rule clustree:
         jackandelbow=[results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/JackandElbow_plot.pdf"] if is_integrated_sample is False else []
     run:
         if is_integrated_sample is True:
-            shell("{cellsnake_path}workflow/scripts/scrna-clusteringtree.R --rds {input} --output {output.clustree} --integration")
+            shell("{cellsnake_path}workflow/scripts/scrna-clusteringtree.R --rds {input} --clplot {output.clustree} --integration")
         else:
-            shell("{cellsnake_path}workflow/scripts/scrna-clusteringtree.R --rds {input} --output {output.clustree} --heatmap {output.heatmap} --hvfplot {output.hvfplot} --jackandelbow {output.jackandelbow}")
+            shell("{cellsnake_path}workflow/scripts/scrna-clusteringtree.R --rds {input} --scale.factor {scale_factor} --nfeature {highly_variable_features} --variable.selection.method {variable_selection_method} --normalization.method {normalization_method} --clplot {output.clustree} --heplot {output.heatmap} --hvfplot {output.hvfplot} --jeplot {output.jackandelbow}")
 
 
 
@@ -72,7 +73,7 @@ rule normalization_pca_rds:
         integration="--integration" if is_integrated_sample is True else " "
     shell:
         "{cellsnake_path}workflow/scripts/scrna-normalization-pca.R --rds {input} {params.doublet_filter} --normalization.method {normalization_method} "
-        "--scale.factor {scale_factor} --nfeature {highly_variable_features} --resolution {params.paramaters[resolution]} "
+        "--scale.factor {scale_factor} --variable.selection.method {variable_selection_method} --nfeature {highly_variable_features} --resolution {params.paramaters[resolution]} "
         "--output.rds {output.rds} --output.xlsx {output.xlsx} {umap_plot} {tsne_plot} {params.integration}"
 
 rule dim_plots:
@@ -84,6 +85,16 @@ rule dim_plots:
         paramaters=paramspace.instance,
     shell:
         "{cellsnake_path}workflow/scripts/scrna-dimplot.R --rds {input} --reduction.type {wildcards.reduction} --output.reduction.plot {output.pl} --idents {wildcards.i}"
+
+rule singler_dim_plots:
+    input:
+        analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
+    output:
+        pl=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/singler/annotation.{reduction}.pdf"
+    params:
+        paramaters=paramspace.instance,
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-dimplot.R --rds {input} --reduction.type {wildcards.reduction} --output.reduction.plot {output.pl} --idents singler"
 
     
     
@@ -97,6 +108,15 @@ rule find_all_cluster_markers:
         paramaters=paramspace.instance,
     shell:
         "{cellsnake_path}workflow/scripts/scrna-find-markers.R --rds {input} --resolution {params.paramaters[resolution]} --logfc.threshold {logfc_threshold} --test.use {test_use} --output.xlsx.positive {output.positive} --output.xlsx.all {output.allmarkers}"
+
+
+rule plot_top_markers:
+    input:
+        results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/positive-markers-forAllClusters.xlsx"
+    output:
+        results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/summarized-cluster-markers-plot.pdf"
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-top-marker-plot.R --xlsx {input} --output.plot {output}" 
 
 
 rule plot_top_positive_markers:
@@ -116,22 +136,35 @@ rule selected_marker_dot_plot:
     input:
         analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        dotplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/selected-markers-dotplot.pdf"
+        dotplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/selected-genes-dotplot.pdf"
     params:
         paramaters=paramspace.instance,
     shell:
         "{cellsnake_path}workflow/scripts/scrna-dotplot.R --rds {input} --tsv {selected_markers_file} --resolution {params.paramaters[resolution]} --output.dotplot {output.dotplot}"
 
 
-rule selected_marker_plots:
+rule selected_marker_plots_file:
     input:
         analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        sdir=directory(results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/selected_marker_plots_{reduction}/")
+        sdir=directory(results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/selected_gene_plots_from_file_{reduction}/")
     params:
         paramaters=paramspace.instance,
     shell:
         "{cellsnake_path}workflow/scripts/scrna-selected-marker-plots.R --rds {input} --tsv {selected_markers_file} --output.plot.dir {output.sdir} --reduction.type {wildcards.reduction}"
+
+
+rule selected_marker_plot:
+    input:
+        analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
+    output:
+        out=[results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/selected_gene_plots_{reduction}/" + g + ".pdf" for g in gene_to_plot if g is not None]
+    params:
+        paramaters=paramspace.instance,
+        sdir=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/selected_gene_plots_{reduction}/",
+        gene=str(" ".join(gene_to_plot))
+    shell:
+        """{cellsnake_path}workflow/scripts/scrna-selected-marker-plots.R --rds {input} --gene "{params.gene}" --output.plot.dir {params.sdir} --reduction.type {wildcards.reduction}"""
 
 
 
@@ -145,15 +178,26 @@ rule h5ad:
         "{cellsnake_path}workflow/scripts/scrna-convert-to-h5ad.R --rds {input.rds} --output {output}"
 
 
-rule celltype:
+rule singler_celltype:
+    input:
+        rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
+    output:
+        sheplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/singler/score_heatmap-celltype_annotation.pdf",
+        pheplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/singler/clusters-celltype_annotation.pdf",
+        sheplottop=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/singler/score_heatmap_top-celltype_annotation.pdf"
+
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-singler-plots.R --rds {input.rds} --sheplot {output.sheplot} --pheplot {output.pheplot} --sheplottop {output.sheplottop}"
+
+rule celltypist_celltype:
     input:
         analyses_folder + "/h5ad/" + f"{paramspace.wildcard_pattern}" + "/{sample}.h5ad"
     
     output:
-        outputdir=directory(analyses_folder + "/celltypist/" + f"{paramspace.wildcard_pattern}" + "/{sample}"),
-        predicted=analyses_folder + "/celltypist/" + f"{paramspace.wildcard_pattern}" + "/{sample}/predicted_labels.csv",
-        dotplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltype_annotation/annotation.dotplot.pdf",
-        xlsx=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltype_annotation/cluster_annotation_table.xlsx"
+        outputdir=directory(analyses_folder + "/celltypist/" + celltypist_model + "/" + f"{paramspace.wildcard_pattern}" + "/{sample}"),
+        predicted=analyses_folder + "/celltypist/" + celltypist_model + "/" + f"{paramspace.wildcard_pattern}" + "/{sample}/predicted_labels.csv",
+        dotplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltypist/" + celltypist_model + "/annotation.dotplot.pdf",
+        xlsx=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltypist/" + celltypist_model + "/cluster_annotation_table.xlsx"
         
     shell:
         """
@@ -161,13 +205,13 @@ rule celltype:
         {cellsnake_path}workflow/scripts/scrna-celltypist.py {input} {output.dotplot} {output.outputdir} {output.xlsx} {celltypist_model}
         """
 
-rule seurat_celltype:
+rule seurat_celltype_celltypist:
     input:
-        csv=analyses_folder + "/celltypist/" + f"{paramspace.wildcard_pattern}" + "/{sample}/predicted_labels.csv",
+        csv=analyses_folder + "/celltypist/" + celltypist_model + "/" + f"{paramspace.wildcard_pattern}" + "/{sample}/predicted_labels.csv",
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        umap=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltype_annotation/annotation.umap.pdf",
-        tsne=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltype_annotation/annotation.tsne.pdf"
+        umap=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltypist/" + celltypist_model + "/annotation.umap.pdf",
+        tsne=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltypist/" + celltypist_model + "/annotation.tsne.pdf"
     shell:
         """
         {cellsnake_path}workflow/scripts/scrna-celltypist.R --rds {input.rds} --csv {input.csv} --output.tsne.plot {output.tsne} --output.umap.plot {output.umap}
@@ -177,19 +221,58 @@ rule go_enrichment:
     input:
         results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/all-markers-forAllClusters.xlsx"
     output:
-        results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "GO-enrichment-" + ontology +  "-all_clusters.xlsx"
+        results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/enrichment_analysis/GO-enrichment-" + ontology +  "-all_clusters.xlsx"
     shell:
         """
         {cellsnake_path}workflow/scripts/scrna-go_enrichment.R --xlsx {input} --output {output} --ontology {ontology} --algorithm {algorithm} --mapping {mapping} --statistics {statistics}
         """
 
+rule kegg_enrichment:
+    input:
+        results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/all-markers-forAllClusters.xlsx"
+    output:
+        rds=analyses_folder + "/kegg/" + f"{paramspace.wildcard_pattern}" + "/{sample}_kegg.rds",
+        kegg=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/enrichment_analysis/KEGG-over_representation-all_clusters.xlsx",
+        gse=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/enrichment_analysis/KEGG-geneset-all_clusters.xlsx",
+        mkegg=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/enrichment_analysis/KEGG-module_over_representation-all_clusters.xlsx",
+        mgse=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/enrichment_analysis/KEGG-module_geneset-all_clusters.xlsx"
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-kegg.R --xlsx {input} --output.rds {output.rds} --mapping {mapping} --output.kegg {output.kegg} --output.mkegg {output.mkegg}  --output.gse {output.gse} --output.mgse {output.mgse}"
+
+
+
 rule gsea:
     input:
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
+        csv=lambda wildcards: analyses_folder + "/celltypist/" + celltypist_model + "/" + f"{paramspace.wildcard_pattern}" + "/{sample}/predicted_labels.csv" if wildcards.i == "majority_voting" else [],
         gseafile=gsea_file
     output:
-        directory(results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/gsea/")
+        xlsx=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/gsea/gsea-{i}-output.xlsx"
+
+    run:
+        if wildcards.i == "majority_voting":
+            shell("{cellsnake_path}workflow/scripts/scrna-gsea.R --idents {wildcards.i} --rds {input.rds} --gseafile {input.gseafile} --output.xlsx {output.xlsx}  --csv {input.csv}")
+        else:
+            shell("{cellsnake_path}workflow/scripts/scrna-gsea.R --idents {wildcards.i} --rds {input.rds} --gseafile {input.gseafile} --output.xlsx {output.xlsx}")
+
+
+rule cellchat:
+    input:
+        rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
+        csv=lambda wildcards: analyses_folder + "/celltypist/" + celltypist_model + "/" + f"{paramspace.wildcard_pattern}" + "/{sample}/predicted_labels.csv" if wildcards.i == "majority_voting" else []
+    output:
+        cellchatrds=analyses_folder + "/cellchat/" + f"{paramspace.wildcard_pattern}" + "/{sample}/cellchat_{i}.rds"
+    threads: 5
+    run:
+        if wildcards.i == "majority_voting":
+            shell("{cellsnake_path}workflow/scripts/scrna-cellchat.R --rds {input.rds} --species {species} --idents {wildcards.i} --output {output.cellchatrds} --csv {input.csv}")
+        else:
+            shell("{cellsnake_path}workflow/scripts/scrna-cellchat.R --rds {input.rds} --species {species} --idents {wildcards.i} --output {output.cellchatrds}")
+
+rule cellchat_plots:
+    input:
+        cellchatrds=analyses_folder + "/cellchat/" + f"{paramspace.wildcard_pattern}" + "/{sample}/cellchat_{i}.rds"
+    output:
+        outputdir=directory(results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/cellchat/{i}/")
     shell:
-        """
-        {cellsnake_path}workflow/scripts/scrna-gsea.R --rds {input.rds} --gseafile {input.gseafile} --output.dir {output}
-        """
+        "{cellsnake_path}workflow/scripts/scrna-cellchat_plots.R --rds {input.cellchatrds} --output.dir {output.outputdir}"

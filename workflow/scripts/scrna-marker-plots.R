@@ -75,9 +75,9 @@ suppressMessages(for (i in 1:nrow(Positive_Features)) {
     gene <- Positive_Features[i, ]$gene
     cluster <- Positive_Features[i, ]$cluster
 
-    p1 <- FeaturePlot(scrna, reduction = opt$reduction.type, features = gene) & theme_cellsnake_classic() & scale_color_continuous(type = "viridis") & labs(color="Expression") & theme(axis.text = element_text(size=12))
-    p2 <- DotPlot(scrna, features = gene) & theme_cellsnake_classic() & scale_color_continuous(type = "viridis") & labs(color="Average Expression",size="Percent Expressed") & ylab("Identity") &  theme(axis.title.x = element_blank(),axis.text = element_text(size=12)) & theme(legend.position = "right")
-    p3 <- VlnPlot(scrna, features = gene) & theme_cellsnake_classic() & scale_fill_manual(values = palette) & theme(legend.position = "right",axis.text = element_text(size = 12)) & labs(fill="") & xlab("Identity") & ylab("Expression Level")
+    p1 <- FeaturePlot(scrna, reduction = opt$reduction.type, features = gene) & ggthemes::theme_few() & scale_color_continuous(type = "viridis") & labs(color="Expression") & theme(axis.text = element_text(size=12))
+    p2 <- DotPlot(scrna, features = gene) & ggthemes::theme_few() & scale_color_continuous(type = "viridis") & labs(color="Average Expression",size="Percent Expressed") & ylab("Identity") &  theme(axis.title.x = element_blank(),axis.text = element_text(size=12)) & theme(legend.position = "right")
+    p3 <- VlnPlot(scrna, features = gene) & ggthemes::theme_hc() & scale_fill_manual(values = palette) & theme(legend.position = "right",axis.text = element_text(size = 12)) & labs(fill="") & xlab("Identity") & ylab("Expression Level")
 
     suppressWarnings(((p1 | p2) / p3) -> wp)
 
