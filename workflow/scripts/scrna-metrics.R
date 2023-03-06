@@ -1,61 +1,64 @@
 #!/usr/bin/env Rscript
-option_list = list(
-  optparse::make_option(c("--resolution"), type="double", default=0.8, 
-              help="Resolution [default= %default]", metavar="character"),
-
-    optparse::make_option(c("--rds"), type="character", default=NULL, 
-              help="Processed rds file of a Seurat object", metavar="character"),
-
-    optparse::make_option(c("--sampleid"), type="character", default=NULL, 
-              help="Sample ID", metavar="character")
-
-
+option_list <- list(
+  optparse::make_option(c("--rds"),
+    type = "character", default = NULL,
+    help = "Processed rds file of a Seurat object", metavar = "character"
+  ),
+  optparse::make_option(c("--sampleid"),
+    type = "character", default = NULL,
+    help = "Sample ID", metavar = "character"
+  ),
+  optparse::make_option(c("--idents"),
+    type = "character", default = "seurat_clusters",
+    help = "Meta data column name for marker analysis", metavar = "character"
+  ),
+  optparse::make_option(c("--ccplot"),
+    type = "character", default = "ccplot.pdf",
+    help = "Cell cluster count plot", metavar = "character"
+  ),
+  optparse::make_option(c("--ccbarplot"),
+    type = "character", default = "ccbarplot.pdf",
+    help = "Cell cluster count plot", metavar = "character"
+  )
 )
 
-opt_parser = optparse::OptionParser(option_list=option_list)
-opt = optparse::parse_args(opt_parser)
+opt_parser <- optparse::OptionParser(option_list = option_list)
+opt <- optparse::parse_args(opt_parser)
 
-if (is.null(opt$rds) || is.null(opt$sampleid) ){
+if (is.null(opt$rds)) {
   optparse::print_help(opt_parser)
-  stop("At least one argument must be supplied (rds file and sampleid)", call.=FALSE)
+  stop("At least one argument must be supplied (rds file and sampleid)", call. = FALSE)
 }
 
+require(ggpubr)
 require(Seurat)
 require(tidyverse)
-#try({source("workflow/scripts/scrna-functions.R")})
-#try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE),"/scrna/workflow/scripts/scrna-functions.R"))})
+# try({source("workflow/scripts/scrna-functions.R")})
+# try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE),"/scrna/workflow/scripts/scrna-functions.R"))})
 
 
 
-scrna=readRDS(file = opt$rds)
-
-
-output.dir=paste0("results/",opt$sampleid,"/technicals/")
-dir.create(output.dir,recursive = T)
-
-# Identify the 10 most highly variable genes
-top10 <- head(VariableFeatures(scrna), 10)
-
-# plot variable features with and without labels
-plot1 <- VariableFeaturePlot(scrna)
-plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
+scrna <- readRDS(file = opt$rds)
 
 
 
-ggsave(paste0(output.dir,"highly-variable-features.pdf"), plot2 ,width = 8,height = 9)
+scrna@meta.data %>%
+  dplyr::add_count(orig.ident) %>%
+  dplyr::mutate(total_clusters = length(unique(get(opt$idents)))) %>%
+  distinct(orig.ident, n, total_clusters) %>%
+  dplyr::select("Sample Name" = orig.ident, "Total Cells" = n, "Total Clusters" = total_clusters) %>%
+  ggtexttable(rows = NULL, theme = ttheme("light")) -> p1
 
+ggsave(opt$ccplot, p1)
 
+scrna@meta.data %>%
+  dplyr::group_by(orig.ident, get(opt$idents)) %>%
+  dplyr::count() %>%
+  dplyr::select("Sample Name" = 1, "Cluster" = 2, "Total Cells" = 3) %>%
+  ggplot(aes(x = Cluster, y = `Total Cells`, fill = `Sample Name`)) +
+  geom_col() +
+  ggthemes::theme_hc() +
+  theme(legend.title = element_blank()) -> p2
+n <- length(unique(scrna@meta.data[opt$idents]))
 
-
-DimHeatmap(scrna, dims = 1:15, cells = 500, balanced = TRUE,fast = FALSE)
-ggsave(paste0(output.dir,"DimHeatMap_plot.pdf") ,width = 8,height = 15)
-
-
-
-scrna <- JackStraw(scrna, num.replicate = 100,  dims=50)
-scrna <- ScoreJackStraw(scrna, dims = 1:50)
-
-
-plot1 <- JackStrawPlot(scrna, dims = 1:50) 
-plot2 <- ElbowPlot(scrna, ndims=50)
-ggsave(paste0(output.dir,"JackandElbow_plot.pdf"), plot1 + plot2,width = 13,height = 5)
+ggsave(opt$ccbarplot, p2, height = 5, width = 5 + (n * 0.12))
