@@ -161,6 +161,13 @@ def identity_dependent_dimplot(paramspace,identity):
         plots = plots + expand([results_folder + "/" + s + "/{params}/" + u + "-" + x + ".plot.pdf" for u in ["umap","tsne","pca"] for x in identity for s in files],params=list(paramspace.instance_patterns))
     return plots
 
+def identity_dependent_metrics(paramspace,identity):
+    plots=[]
+    if len(identity) > 0:
+        plots = plots + expand([results_folder + "/" + s + "/{params}/metrics/ccplot-" + x + ".pdf"  for x in identity for s in files],params=list(paramspace.instance_patterns))
+        plots = plots + expand([results_folder + "/" + s + "/{params}/metrics/ccbarplot-" + x + ".pdf"  for x in identity for s in files],params=list(paramspace.instance_patterns))
+    return plots
+
 def cellchat_plot(paramspace,identity):
     plots=[]
     #identity.append("singler") #add majority voting to the list of identities but for now drop this
@@ -204,6 +211,8 @@ def write_main_log(files):
         f.write("Sample names in this run : " + " ".join(files) + "\n")
         f.write("Run ID : " + str(runid) + "\n")
         f.write("Option : " + str(option) + "\n")
+
+
 
 
 def write_sample_log(sample,paramspace):
@@ -255,6 +264,7 @@ def sample_parameter(paramspace,files):
     if option in ["minimal","standard","advanced"]:
         outs = outs + [
                 identity_dependent_dimplot(paramspace,identity_to_analysis),
+                identity_dependent_metrics(paramspace,[x for x in identity_to_analysis if x != "orig.ident"]),
                 expand([results_folder + "/" + s + "/{params}/number-of-cells-per-cluster.xlsx" for s in files],params=list(paramspace.instance_patterns)),
                 kraken_predictions(paramspace,taxa),
                 selected_gene_plot(paramspace,gene_to_plot)

@@ -76,6 +76,17 @@ rule normalization_pca_rds:
         "--scale.factor {scale_factor} --variable.selection.method {variable_selection_method} --nfeature {highly_variable_features} --resolution {params.paramaters[resolution]} "
         "--output.rds {output.rds} --output.xlsx {output.xlsx} {umap_plot} {tsne_plot} {params.integration}"
 
+rule some_metrics:
+    input:
+        rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
+    output:
+        ccplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/metrics/ccplot-{i}.pdf",
+        ccbarplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/metrics/ccbarplot-{i}.pdf"
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-metrics.R --rds {input.rds} --ccplot {output.ccplot} --ccbarplot {output.ccbarplot} --idents {wildcards.i}"
+
+    
+
 rule dim_plots:
     input:
         analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
