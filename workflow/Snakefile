@@ -89,7 +89,7 @@ tsne_markers_plot="--tsne" if config.get("tsne_markers_plot",False) in [True,"TR
 #Differential expression paramaters
 logfc_threshold=config.get("logfc_threshold",0.25)
 test_use=config.get("test_use","wilcox")
-marker_plots_per_cluster_n=config.get("marker_plots_per_cluster_n",10) #only print top 10 by default
+marker_plots_per_cluster_n=config.get("marker_plots_per_cluster_n",20) #only print top 10 by default
 
 
 identity_to_analysis=[config.get("identity_to_analysis","seurat_clusters")]

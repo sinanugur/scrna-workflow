@@ -50,9 +50,8 @@ if (is.null(opt$rds)) {
 }
 
 require(Seurat)
-require(tidyverse)
 require(viridis)
-require(randomcoloR)
+require(tidyverse)
 
 
 
