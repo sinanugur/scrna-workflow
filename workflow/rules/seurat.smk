@@ -81,7 +81,8 @@ rule some_metrics:
     output:
         ccplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/metrics/plot_cellcount-{i}.pdf",
         ccbarplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/metrics/plot_cellcount_barplot-{i}.pdf",
-        html=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/metrics/plot_cellcount_barplot-{i}.html"
+        html=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/metrics/plot_cellcount_barplot-{i}.html",
+        t=temp(directory(results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/metrics/plot_cellcount_barplot-{i}_files/"))
     shell:
         "{cellsnake_path}workflow/scripts/scrna-metrics.R --rds {input.rds} --ccplot {output.ccplot} --ccbarplot {output.ccbarplot} --html {output.html} --idents {wildcards.i}"
 
@@ -104,7 +105,8 @@ rule singler_dim_plots: #this is singler annotation that does not include cluste
         analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
         pl=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/plot_annotation_{reduction}.pdf",
-        html=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/plot_annotation_{reduction}.html"
+        html=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/plot_annotation_{reduction}.html",
+        t=temp(directory(results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/plot_annotation_{reduction}_files"))
     params:
         paramaters=paramspace.instance,
     shell:
