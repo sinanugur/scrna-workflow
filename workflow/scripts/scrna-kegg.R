@@ -33,7 +33,7 @@ option_list <- list(
     help = "P value treshold [default= %default]", metavar = "character"
   ),
   optparse::make_option(c("--logfc.treshold"),
-    type = "double", default = 1.5,
+    type = "double", default = 1,
     help = "LogFC [default= %default]", metavar = "character"
   )
 )
@@ -63,7 +63,7 @@ function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
     dplyr::filter(p_val_adj < p) %>%
     arrange(desc(avg_log2FC)) %>%
     dplyr::select(gene, avg_log2FC) %>%
-    dplyr::mutate(GeneID = mapIds(org.Hs.eg.db, keys = gene, column = "ENTREZID", keytype = "SYMBOL", multiVals = "first")) %>%
+    dplyr::mutate(GeneID = mapIds(get(opt$mapping), keys = gene, column = "ENTREZID", keytype = "SYMBOL", multiVals = "first")) %>%
     dplyr::filter(!is.na(GeneID), !is.na(avg_log2FC), !duplicated(GeneID)) %>%
     dplyr::select(3, 2) %>%
     deframe() -> geneList
@@ -73,25 +73,25 @@ function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
 
   tryCatch(
     {
-      kk <- enrichKEGG(
+      kk1 <- enrichKEGG(
         gene = gene,
         organism = "hsa",
         pAdjustMethod = "fdr",
         minGSSize = 2,
-        pvalueCutoff = 0.05
+        pvalueCutoff = 1
       )
     },
     error = function(e) {
-      kk <- NULL
+      kk1 <- NULL
     }
-  ) -> kk
+  ) -> kk1
 
   tryCatch(
     {
       kk2 <- gseKEGG(
         geneList = geneList,
         organism = "hsa",
-        pvalueCutoff = 0.05,
+        pvalueCutoff = 1,
         pAdjustMethod = "fdr",
         minGSSize = 2,
         eps = 0,
@@ -108,7 +108,7 @@ function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
       kk3 <- enrichMKEGG(
         gene = gene,
         organism = "hsa",
-        pvalueCutoff = 0.05,
+        pvalueCutoff = 1,
         minGSSize = 2,
         pAdjustMethod = "fdr",
       )
@@ -126,7 +126,7 @@ function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
         minGSSize = 2,
         keyType = "kegg",
         pAdjustMethod = "fdr",
-        pvalueCutoff = 0.05
+        pvalueCutoff = 1
       )
     },
     error = function(e) {
@@ -134,13 +134,13 @@ function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
     }
   ) -> kk4
 
-  return(list(kk, kk2, kk3, kk4))
+  return(list(kk1, kk2, kk3, kk4))
 }
 
 
 All_Features %>%
   split(.$cluster) %>%
-  purrr::map(~ function_enrichment_kegg_singlecell(.)) -> all_kegg_results
+  purrr::map(~ function_enrichment_kegg_singlecell(., p = opt$pval, f = opt$logfc.treshold)) -> all_kegg_results
 
 
 

@@ -19,6 +19,10 @@ option_list <- list(
   optparse::make_option(c("--ccbarplot"),
     type = "character", default = "ccbarplot.pdf",
     help = "Cell cluster count plot", metavar = "character"
+  ),
+  optparse::make_option(c("--htmlplot"),
+    type = "character", default = "htmlplot.pdf",
+    help = "Cell cluster html plot", metavar = "character"
   )
 )
 
@@ -30,6 +34,7 @@ if (is.null(opt$rds)) {
   stop("At least one argument must be supplied (rds file and sampleid)", call. = FALSE)
 }
 
+require(plotly)
 require(ggpubr)
 require(Seurat)
 require(tidyverse)
@@ -62,3 +67,8 @@ scrna@meta.data %>%
 n <- length(unique(scrna@meta.data[opt$idents]))
 
 ggsave(opt$ccbarplot, p2, height = 5, width = 5 + (n * 0.12))
+
+
+ggplotly(p2) -> p1_plotly
+
+p1_plotly %>% htmlwidgets::saveWidget(file = opt$htmlplot, selfcontained = T)

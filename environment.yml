@@ -27,6 +27,7 @@ dependencies:
  - r-tidyseurat
  - r-tidyverse
  - r-v8
+ - r-plotly
  #- r-seuratdisk
  - bioconductor-rhdf5lib
  - bioconductor-clusterprofiler==4.6.0
@@ -46,6 +47,7 @@ dependencies:
  - r-xml
  - bedtools
  - samtools
+ - pandoc
  - kraken2
  - openblas==0.3.21
  - pip
@@ -61,3 +63,5 @@ dependencies:
    - docopt
    - snakemake>=7.22.0
    - umap-learn
+   - plotly
+   - kaleido

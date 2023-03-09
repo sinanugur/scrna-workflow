@@ -10,7 +10,6 @@ variable_selection_method: "vst"
 #doublet filtering, True:T or False:F
 doublet_filter: T
 
-
 #clustering and normalization paramaters
 normalization_method: "LogNormalize"
 scale_factor: 10000
@@ -20,20 +19,20 @@ resolution: "0.8" #default is 0.8 and 0.3 for integrated samples, you can write 
 logfc_threshold: 0.25
 test_use: "wilcox"
 
-#plotting paramaters
-marker_plots_per_cluster_n: 20
+
+marker_plots_per_cluster_n: 20 #plot summary marker plots for top markers
+umap_markers_plot: True
+tsne_markers_plot: False
 
 #GO enrichment paramaters
-algorithm: "weight01"
-statistics: "ks"
 mapping: "org.Hs.eg.db"
-ontology: "BP"
+
 
 #celltypist
 celltypist_model: "Immune_All_Low.pkl" #refer to Celltypist for another model 
 
 #krakendbfolder
-kraken_db_folder: 
+kraken_db_folder: ""
 taxa: "genus" # available options "domain", "kingdom", "phylum", "class", "order", "family", "genus", "species"
 microbiome_min_cells: 1
 microbiome_min_features: 3

@@ -22,7 +22,7 @@ option_list <- list(
   ),
   optparse::make_option(c("--idents"),
     type = "character", default = "seurat_clusters",
-    help = "Meta data column name for marker analysis", metavar = "character"
+    help = "Meta data column name", metavar = "character"
   )
 )
 
@@ -52,7 +52,6 @@ if (is.null(opt$rds)) {
 require(Seurat)
 require(tidyverse)
 require(viridis)
-require(randomcoloR)
 
 markers <- c()
 
@@ -87,8 +86,7 @@ dir.create(opt$output.plot.dir, recursive = TRUE)
 
 suppressMessages(for (i in markers) {
   n <- length(Idents(scrna) %>% unique())
-  set.seed(149)
-  palette <- distinctColorPalette(n)
+  palette <- function_color_palette(n)
 
   tryCatch(
     {
@@ -106,6 +104,6 @@ suppressMessages(for (i in markers) {
       wp <- plot.new()
     },
     finally = {}
-  )
+  ) -> wp
   ggsave(paste0(opt$output.plot.dir, "/", i, ".pdf"), wp, height = 5 + (n * 0.15), width = 7 + (n * 0.15), useDingbats = TRUE)
 })

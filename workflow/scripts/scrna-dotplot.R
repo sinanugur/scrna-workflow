@@ -2,10 +2,6 @@
 
 
 option_list <- list(
-      optparse::make_option(c("--resolution"),
-            type = "double", default = 0.8,
-            help = "Resolution [default= %default]", metavar = "character"
-      ),
       optparse::make_option(c("--rds"),
             type = "character", default = NULL,
             help = "Processed rds file of a Seurat object", metavar = "character"
