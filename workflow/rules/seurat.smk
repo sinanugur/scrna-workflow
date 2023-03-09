@@ -237,7 +237,7 @@ rule go2_enrichment:
         go=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/enrichment_analysis/table_GO-enrichment-{i}.xlsx",
         gse=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/enrichment_analysis/table_GO-geneset_enrichment-{i}.xlsx"
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-go.R --xlsx {input} --output.rds {output.rds} --mapping {mapping} --output.go {output.go} --output.gse {output.gse}"
+        "{cellsnake_path}workflow/scripts/scrna-go_analysis.R --xlsx {input} --output.rds {output.rds} --mapping {mapping} --output.go {output.go} --output.gse {output.gse}"
 
 
 
