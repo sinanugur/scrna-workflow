@@ -103,8 +103,8 @@ mapping=config.get("mapping","org.Hs.eg.db")
 ontology = config.get("ontology","BP")
 
 #GSEA
-gsea_file= config.get("gsea_file",cellsnake_path + "workflow/bundle/c2.cgp.v2022.1.Hs.symbols.gmt")
-gsea_group= config.get("gsea_group","seurat_clusters")
+gsea_file=cellsnake_path + "workflow/bundle/c2.cgp.v2022.1.Hs.symbols.gmt" if config.get("gsea_file") is None else config.get("gsea_file")
+gsea_group=config.get("gsea_group","seurat_clusters")
 
 #alternative options
 integration_id=config.get("integration_id","integrated")
