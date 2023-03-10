@@ -29,8 +29,8 @@ tsne_markers_plot: False
 #GO enrichment paramaters
 mapping: "org.Hs.eg.db"
 
-#cerebroapp GSEA params
-gsea_file : #GSEA file is bundled (c2.cgp.v2022.1.Hs.symbols.gmt), you may download another one and write the exact path here
+#cerebroapp GSEA params #GSEA file is bundled (c2.cgp.v2022.1.Hs.symbols.gmt), you may download another one and write the exact path here
+gsea_file :
 gsea_group : "seurat_clusters"
 
 #celltypist
