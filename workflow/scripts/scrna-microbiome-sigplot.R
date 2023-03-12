@@ -73,14 +73,14 @@ AddMetaData(scrna, microbiome %>% rownames_to_column("barcodes") %>% gather(taxa
 # p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = TRUE) & theme_cellsnake_classic() & scale_color_manual(values = palette)
 
 scrna %>%
-  dplyr::select(opt$idents, starts_with(opt$taxa)) %>%
+  dplyr::select(one_of(opt$idents), starts_with(opt$taxa)) %>%
   gather(taxa, umi, starts_with(opt$taxa)) %>%
-  group_by(seurat_clusters, taxa) %>%
+  group_by(get(opt$idents), taxa) %>%
   dplyr::mutate(total = sum(umi, na.rm = T)) %>%
-  group_by(taxa, opt$idents) %>%
+  group_by(taxa, get(opt$idents)) %>%
   dplyr::mutate(cell = n()) %>%
   dplyr::ungroup() %>%
-  distinct(seurat_clusters, taxa, total, cell) %>%
+  distinct(get(opt$idents), taxa, total, cell) %>%
   group_by(taxa) %>%
   dplyr::mutate(v3 = sum(total) - total, v4 = sum(cell) - cell) %>%
   rowwise() %>%
@@ -90,7 +90,7 @@ scrna %>%
   arrange(p) -> df
 
 
-df %>% ggplot(aes(x = opt$idents, y = -log10(p))) +
+df %>% ggplot(aes(x = get(opt$idents), y = -log10(p))) +
   geom_col() +
   geom_hline(yintercept = -log10(0.05), color = "red") +
   facet_wrap(~taxa) +
