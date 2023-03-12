@@ -205,7 +205,7 @@ def enrichment_analysis(paramspace,identity):
 
 
 
-def kraken_predictions(paramspace,taxa):
+def kraken_predictions(paramspace,taxa,identity):
     #bamfiles=cellsnake_glob_wildcards(datafolder + "/{sample}/outs/possorted_genome_bam.bam").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/possorted_genome_bam.bam").sample 
     outs=[]
     if kraken_db_folder is not None:
@@ -214,6 +214,8 @@ def kraken_predictions(paramspace,taxa):
         outs = outs + ["analyses_integrated/seurat/" + integration_id + "-" + taxa + ".rds"]
     elif is_integrated_sample is True and os.path.isfile("analyses_integrated/seurat/" + integration_id + "-" + taxa + ".rds"):
         outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/plot_integrated_microbiome_dimplot-" + taxa + "-" + x + ".pdf" for x in ["umap","tsne"] for s in files],params=list(paramspace.instance_patterns))
+        outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/plot_integrated_significance-" + taxa + "-" + x + ".pdf" for x in identity for s in files],params=list(paramspace.instance_patterns))
+        outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/plot_integrated_significance-" + taxa + "-" + x + ".xlsx" for x in identity for s in files],params=list(paramspace.instance_patterns))
     return outs
 
 def write_main_log(files):

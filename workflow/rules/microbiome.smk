@@ -78,7 +78,16 @@ rule dimplot_for_combined_microbiome:
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
         microbiome_rds="analyses_integrated/seurat/" + integration_id + "-{taxa}.rds"
     output:
-        results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/plot_integrated_microbiome_dimplot-{taxa}-{reduction}.pdf"
+        dimplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/plot_integrated_microbiome_dimplot-{taxa}-{reduction}.pdf"
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-microbiome-dimplot.R --rds {input.rds} --microbiome.rds {input.microbiome_rds} --output.plot {output} --reduction.type {wildcards.reduction} --taxa {wildcards.taxa}"
+        "{cellsnake_path}workflow/scripts/scrna-microbiome-dimplot.R --rds {input.rds} --microbiome.rds {input.microbiome_rds} --dimplot {output.dimplot} --reduction.type {wildcards.reduction} --taxa {wildcards.taxa}"
 
+rule sigplot_for_combined_microbiome:
+    input:
+        rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
+        microbiome_rds="analyses_integrated/seurat/" + integration_id + "-{taxa}.rds"
+    output:
+        dimplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/plot_integrated_significance-{taxa}-{i}.pdf",
+        xlsx=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/table_integrated_significance-{taxa}-{i}.xlsx"
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-microbiome-sigplot.R --rds {input.rds} --microbiome.rds {input.microbiome_rds} --taxa {wildcards.taxa} --output.xlsx.microbiome {output.xlsx} --sigplot {output.dimplot} --sigtable {output.xlsx} --idents {wildcards.i}"
