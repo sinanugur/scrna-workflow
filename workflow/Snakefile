@@ -288,7 +288,7 @@ def sample_parameter(paramspace,files):
         outs = outs + [
                 identity_dependent_dimplot(paramspace,identity_to_analysis),
                 identity_dependent_metrics(paramspace,[x for x in identity_to_analysis if x != "orig.ident"]),
-                kraken_predictions(paramspace,taxa),
+                kraken_predictions(paramspace,taxa,identity_to_analysis),
                 selected_gene_plot(paramspace,gene_to_plot,identity_to_analysis)
                 ]
     if option in ["clustree","clusteringTree","minimal","standard","advanced"]:
