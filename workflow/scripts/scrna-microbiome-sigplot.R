@@ -90,7 +90,7 @@ scrna %>%
   arrange(p) -> df
 
 
-df %>% ggplot(aes(x = get(opt$idents), y = -log10(p))) +
+df %>% ggplot(aes(x = get(opt$idents), y = -log10(p + 1e-200))) +
   geom_col() +
   geom_hline(yintercept = -log10(0.05), color = "red") +
   facet_wrap(~taxa) +
