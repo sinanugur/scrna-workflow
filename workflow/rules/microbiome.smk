@@ -90,4 +90,4 @@ rule sigplot_for_combined_microbiome:
         dimplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/plot_integrated_significance-{taxa}-{i}.pdf",
         xlsx=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/table_integrated_significance-{taxa}-{i}.xlsx"
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-microbiome-sigplot.R --rds {input.rds} --microbiome.rds {input.microbiome_rds} --taxa {wildcards.taxa} --output.xlsx.microbiome {output.xlsx} --sigplot {output.dimplot} --sigtable {output.xlsx} --idents {wildcards.i}"
+        "{cellsnake_path}workflow/scripts/scrna-microbiome-sigplot.R --rds {input.rds} --microbiome.rds {input.microbiome_rds} --taxa {wildcards.taxa}  --sigplot {output.dimplot} --sigtable {output.xlsx} --idents {wildcards.i}"

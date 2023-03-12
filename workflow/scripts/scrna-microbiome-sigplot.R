@@ -14,7 +14,7 @@ option_list <- list(
     type = "character", default = "sigplot.pdf",
     help = "Plot file name", metavar = "character"
   ),
-  optparse::make_option(c("--output.xlsx.microbiome"),
+  optparse::make_option(c("--sigtable"),
     type = "character", default = NULL,
     help = "Excel table of positive markers", metavar = "character"
   ),
@@ -102,4 +102,4 @@ df %>% ggplot(aes(x = opt$idents, y = -log10(p))) +
 ggsave(plot = p1, filename = opt$sigplot, width = 12, height = 8)
 
 
-openxlsx::write.xlsx(df, file = opt$output.xlsx.microbiome)
+openxlsx::write.xlsx(df, file = opt$sigtable)
