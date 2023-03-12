@@ -75,12 +75,12 @@ AddMetaData(scrna, microbiome %>% rownames_to_column("barcodes") %>% gather(taxa
 scrna %>%
   dplyr::select(one_of(opt$idents), starts_with(opt$taxa)) %>%
   gather(taxa, umi, starts_with(opt$taxa)) %>%
-  group_by(get(opt$idents), taxa) %>%
+  group_by(across(opt$idents), taxa) %>%
   dplyr::mutate(total = sum(umi, na.rm = T)) %>%
-  group_by(taxa, get(opt$idents)) %>%
+  group_by(taxa, across(opt$idents)) %>%
   dplyr::mutate(cell = n()) %>%
   dplyr::ungroup() %>%
-  distinct(get(opt$idents), taxa, total, cell) %>%
+  distinct(across(opt$idents), taxa, total, cell) %>%
   group_by(taxa) %>%
   dplyr::mutate(v3 = sum(total) - total, v4 = sum(cell) - cell) %>%
   rowwise() %>%
