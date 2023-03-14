@@ -30,8 +30,8 @@ tsne_markers_plot: False
 mapping: "org.Hs.eg.db"
 
 #cerebroapp GSEA params #GSEA file is bundled (c2.cgp.v2022.1.Hs.symbols.gmt), you may download another one and write the exact path here
-gsea_file :
-gsea_group : "seurat_clusters"
+gsea_file:
+gsea_group: "seurat_clusters"
 
 #celltypist
 celltypist_model: "Immune_All_Low.pkl" #refer to Celltypist for another model 
@@ -41,3 +41,5 @@ kraken_db_folder:
 taxa: "genus" # available options "domain", "kingdom", "phylum", "class", "order", "family", "genus", "species"
 microbiome_min_cells: 1
 microbiome_min_features: 3
+confidence: 0.05
+min_hit_groups: 4

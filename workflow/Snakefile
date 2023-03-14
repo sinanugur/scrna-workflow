@@ -115,6 +115,8 @@ kraken_db_folder=config.get("kraken_db_folder",None)
 taxa=config.get("taxa","genus")
 microbiome_min_cells=config.get("microbiome_min_cells",1)
 microbiome_min_features=config.get("microbiome_min_features",3)
+confidence=config.get("confidence",0.05)
+min_hit_groups=config.get("min_hit_groups",4)
 
 #initialization of paramspace object using defaults
 def initialization_of_paramspace(tsv_file,dictionary):
@@ -256,6 +258,8 @@ def write_sample_log(sample,paramspace):
         f.write("Celltypist model : " + str(celltypist_model) + "\n")
         f.write("Kraken DB folder : " + str(kraken_db_folder) + "\n")
         f.write("Collapse to this taxanomic level : " + str(taxa) + "\n")
+        f.write("Kraken confidence to this taxanomic level : " + str(confidence) + "\n")
+        f.write("Kraken minimum hit groups : " + str(min_hit_groups) + "\n")
 
 
 def singler_plots(paramspace,identity):
