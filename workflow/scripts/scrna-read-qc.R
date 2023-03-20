@@ -65,45 +65,47 @@ require(data.table)
 
 
 
-try({
-  scrna.data <- Read10X(data.dir = opt$data.dir)
-},silent = TRUE)
-try({
-  scrna.data <- Read10X_h5(filename = paste0(opt$data.dir, "/filtered_feature_bc_matrix.h5"))
-},silent = TRUE)
-try({
-  scrna.data <- Read10X_h5(filename = opt$data.dir)
-},silent = TRUE)
+try(
+  {
+    scrna.data <- Read10X(data.dir = opt$data.dir)
+  },
+  silent = TRUE
+)
+try(
+  {
+    scrna.data <- Read10X_h5(filename = paste0(opt$data.dir, "/filtered_feature_bc_matrix.h5"))
+  },
+  silent = TRUE
+)
+try(
+  {
+    scrna.data <- Read10X_h5(filename = opt$data.dir)
+  },
+  silent = TRUE
+)
 
-try({
+try(
+  {
+    x <- tolower(file_ext(opt$data.dir))
 
-x=tolower(file_ext(opt$data.dir)) 
+    if (x %in% c("h5")) {
+      scrna.data <- Read10X_h5(filename = opt$data.dir)
+    } else if (x %in% c("gz")) {
+      scrna.data <- fread(cmd = paste("gunzip -dc", opt$data.dir))
 
-if (x %in% c("h5")) {
+      scrna.data <- scrna.data %>% column_to_rownames("V1")
+    } else if (x %in% c("zip")) {
+      scrna.data <- fread(cmd = paste("unzip -p", opt$data.dir))
 
-scrna.data <- Read10X_h5(filename = opt$data.dir)
+      scrna.data <- scrna.data %>% column_to_rownames("V1")
+    } else if (x %in% c("csv", "tsv")) {
+      scrna.data <- fread(paste(opt$data.dir))
 
-} else if (x %in% c("gz")) {
-
-  scrna.data <- fread(cmd=paste('gunzip -dc',opt$data.dir))
-
-  scrna.data <- scrna.data %>% column_to_rownames("V1")
-
-} else if (x %in% c("zip")) {
-
-  scrna.data <- fread(cmd=paste('unzip -p',opt$data.dir))
-
-  scrna.data <- scrna.data %>% column_to_rownames("V1")
-
-} else if (x %in% c("csv","tsv")) {
-
-  scrna.data <- fread(paste(opt$data.dir))
-
-  scrna.data <- scrna.data %>% column_to_rownames("V1")
-
-
-}
-},silent = TRUE)
+      scrna.data <- scrna.data %>% column_to_rownames("V1")
+    }
+  },
+  silent = TRUE
+)
 
 
 
@@ -111,11 +113,11 @@ scrna <- CreateSeuratObject(counts = scrna.data, project = make.names(opt$sample
 rm(scrna.data)
 
 
-scrna <- RenameCells(object = scrna, add.cell.id = make.names(opt$sampleid)) #add cell.id to cell name
+scrna <- RenameCells(object = scrna, add.cell.id = make.names(opt$sampleid)) # add cell.id to cell name
 
 
-scrna[["percent.mt"]] <- PercentageFeatureSet(scrna, pattern = "^MT-")
-scrna[["percent.rp"]] <- PercentageFeatureSet(scrna, pattern = "^RP[SL]")
+scrna[["percent.mt"]] <- PercentageFeatureSet(scrna, pattern = "^[Mm][Tt]-")
+scrna[["percent.rp"]] <- PercentageFeatureSet(scrna, pattern = "(?i)(^RP[SL])")
 
 VlnPlot(scrna, features = c("nFeature_RNA", "nCount_RNA", "percent.mt", "percent.rp"), ncol = 4)
 
@@ -147,27 +149,27 @@ if (opt$percent.mt %in% c("auto", "Auto", "AUTO")) {
     feature_ctrls <- list(mito = rownames(smObjSCE)[mt_genes])
     smObjSCE <- addPerCellQC(smObjSCE, subsets = feature_ctrls)
 
-    tryCatch({
-    model <- mixtureModel(smObjSCE)
-    p1 <- plotModel(smObjSCE, model)
-    p2 <- plotMetrics(smObjSCE)
-    ggsave(filename = opt$plot.mtplot, p1 + p2, width = 10, height = 4)
-    smObjSCE <- filterCells(smObjSCE, model)
-    scrna <- scrna[, colnames(smObjSCE)]
-    return(scrna)
-    }, error= function(a) {
+    tryCatch(
+      {
+        model <- mixtureModel(smObjSCE)
+        p1 <- plotModel(smObjSCE, model)
+        p2 <- plotMetrics(smObjSCE)
+        ggsave(filename = opt$plot.mtplot, p1 + p2, width = 10, height = 4)
+        smObjSCE <- filterCells(smObjSCE, model)
+        scrna <- scrna[, colnames(smObjSCE)]
+        return(scrna)
+      },
+      error = function(a) {
+        upper_bound_MT <- median(scrna$percent.mt) + 1 * mad(scrna$percent.mt, constant = 1) # miQC failed, use median absolute deviation
 
-      upper_bound_MT <- median(scrna$percent.mt) + 1 * mad(scrna$percent.mt, constant = 1) #miQC failed, use median absolute deviation
+        scrna <- subset(scrna, subset = percent.mt <= upper_bound_MT)
+        p1 <- plot.new()
+        p2 <- plotMetrics(smObjSCE)
 
-      scrna <- subset(scrna, subset = percent.mt <= upper_bound_MT)
-      p1 <- plot.new()
-      p2 <- plotMetrics(smObjSCE)
-
-      ggsave(filename = opt$plot.mtplot, p1 + p2, width = 10, height = 4)
-      return(scrna)
-
-    }) -> scrna
-
+        ggsave(filename = opt$plot.mtplot, p1 + p2, width = 10, height = 4)
+        return(scrna)
+      }
+    ) -> scrna
   }
 } else {
   scrna <- subset(scrna, subset = percent.mt <= as.numeric(opt$percent.mt))

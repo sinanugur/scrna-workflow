@@ -278,3 +278,21 @@ rule cellchat_plots:
         outputdir=directory(results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/cellchat/{i}/")
     shell:
         "{cellsnake_path}workflow/scripts/scrna-cellchat_plots.R --rds {input.cellchatrds} --output.dir {output.outputdir}"
+
+rule monocle3_plots:
+    input:
+        rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
+    output:
+        pplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/cellvelocity/plot_monocle-partition-plot.pdf"
+    params:
+        outputdir=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/cellvelocity/"
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-monocle3.R --rds {input.rds} --output.dir {params.outputdir} --pplot {output.pplot}"
+
+rule subset_final_rds:
+    input:
+        rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
+    output:
+        output=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/dataoutput/{keyword}.rds"
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-subset_final_rds.R --rds {input.rds} --output {output.rds}"

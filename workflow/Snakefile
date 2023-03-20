@@ -65,6 +65,7 @@ highly_variable_features=config.get("highly_variable_features",2000)
 variable_selection_method=config.get("variable_selection_method","vst")
 doublet_filter= "--doublet.filter" if config.get("doublet_filter",True) in [True,"TRUE","True","T"] and is_integrated_sample is False else ""
 species=config.get("species","human") #mouse is not ready yet, this is just a placeholder
+metadata_file=config.get("metadata_file","metadata.csv")
 
 #automatic mt filtering
 grid_search=config.get("grid_search",False) #requires params file in tsv format
@@ -285,8 +286,8 @@ def sample_parameter(paramspace,files):
                 #expand([results_folder + "/" + s + "/{params}/singler/annotation.umap.html" for s in files],params=list(paramspace.instance_patterns)),
                 gsea_analysis(paramspace,[x for x in identity_to_analysis if x != "orig.ident"]),
                 celltypist_analysis(paramspace,celltypist_model,identity_to_analysis),
-                enrichment_analysis(paramspace,identity_to_analysis)
-
+                enrichment_analysis(paramspace,identity_to_analysis),
+                expand([results_folder + "/" + s + "/{params}/cellvelocity/plot_monocle-partition-plot.pdf" for s in files],params=list(paramspace.instance_patterns))
                 ]
     if option in ["minimal","standard","advanced"]:
         outs = outs + [
