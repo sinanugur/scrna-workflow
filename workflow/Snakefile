@@ -287,7 +287,7 @@ def sample_parameter(paramspace,files):
                 gsea_analysis(paramspace,[x for x in identity_to_analysis if x != "orig.ident"]),
                 celltypist_analysis(paramspace,celltypist_model,identity_to_analysis),
                 enrichment_analysis(paramspace,identity_to_analysis),
-                expand([results_folder + "/" + s + "/{params}/cellvelocity/plot_monocle-partition-plot.pdf" for s in files],params=list(paramspace.instance_patterns))
+                expand([results_folder + "/" + s + "/{params}/trajectory/plot_monocle-partition-plot.pdf" for s in files],params=list(paramspace.instance_patterns))
                 ]
     if option in ["minimal","standard","advanced"]:
         outs = outs + [

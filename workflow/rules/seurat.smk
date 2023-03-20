@@ -283,9 +283,9 @@ rule monocle3_plots:
     input:
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
-        pplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/cellvelocity/plot_monocle-partition-plot.pdf"
+        pplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/trajectory/plot_monocle-partition-plot.pdf"
     params:
-        outputdir=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/cellvelocity/"
+        outputdir=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/trajectory/"
     shell:
         "{cellsnake_path}workflow/scripts/scrna-monocle3.R --rds {input.rds} --output.dir {params.outputdir} --pplot {output.pplot}"
 
