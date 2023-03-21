@@ -58,9 +58,10 @@ except:
 
 #basic paramaters
 min_cells=config.get("min_cells",3)
-min_features=config.get("min_features",200)
+min_features=config.get("min_features",200) #nFeature_RNA
 max_features=config.get("max_features","Inf") #nFeature_RNA
 max_molecules=config.get("max_molecules","Inf") #nCount_RNA
+min_molecules=config.get("min_molecules",0) #nCount_RNA
 percent_mt=str(config.get("percent_mt",10)) #if not automatic, this will be used for all samples
 percent_rp=config.get("percent_rp",0) #by default, no filtering on ribosomal genes percentage 
 highly_variable_features=config.get("highly_variable_features",2000)
