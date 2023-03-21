@@ -59,12 +59,13 @@ except:
 #basic paramaters
 min_cells=config.get("min_cells",3)
 min_features=config.get("min_features",200)
+max_features=config.get("max_features","Inf") #nFeature_RNA
+max_molecules=config.get("max_molecules","Inf") #nCount_RNA
 percent_mt=str(config.get("percent_mt",10)) #if not automatic, this will be used for all samples
 percent_rp=config.get("percent_rp",0) #by default, no filtering on ribosomal genes percentage 
 highly_variable_features=config.get("highly_variable_features",2000)
 variable_selection_method=config.get("variable_selection_method","vst")
 doublet_filter= "--doublet.filter" if config.get("doublet_filter",True) in [True,"TRUE","True","T"] and is_integrated_sample is False else ""
-species=config.get("species","human") #mouse is not ready yet, this is just a placeholder
 metadata_file=config.get("metadata_file","metadata.csv")
 
 #automatic mt filtering
@@ -97,11 +98,12 @@ identity_to_analysis=[config.get("identity_to_analysis","seurat_clusters")]
 
 selected_gene_file=config.get("selected_gene_file","markers.tsv")
 
-#GO enrichment paramaters
+#enrichment paramaters
 algorithm=config.get("algorithm","weight01")
 statistics=config.get("statistics","ks")
 mapping=config.get("mapping","org.Hs.eg.db")
 ontology = config.get("ontology","BP")
+organism=config.get("organism","hsa")
 
 #GSEA
 gsea_file=cellsnake_path + "workflow/bundle/c2.cgp.v2022.1.Hs.symbols.gmt" if config.get("gsea_file") is None else config.get("gsea_file")
@@ -110,6 +112,9 @@ gsea_group=config.get("gsea_group","seurat_clusters")
 #alternative options
 integration_id=config.get("integration_id","integrated")
 celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
+
+#cellchat
+species=config.get("species","human") #cellchat species, only mouse or human
 
 #Kraken DB
 kraken_db_folder=config.get("kraken_db_folder",None)
@@ -239,10 +244,13 @@ def write_sample_log(sample,paramspace):
     with open(l + runid + ".txt","w") as f:
         f.write("Sample name : " + sample + "\n")
         f.write("Run ID : " + str(runid) + "\n")
-        f.write("Option : " + str(option) + "\n")
+        f.write("Run option : " + str(option) + "\n")
         f.write("Main directory and params : " + "".join(list(paramspace.instance_patterns)) + "\n")
         f.write("Minimum cells : " + str(min_cells) + "\n")
-        f.write("Minimum features : " + str(min_features) + "\n")
+        f.write("Minimum features (nFeature_RNA) : " + str(min_features) + "\n")
+        f.write("Maximum features (nFeature_RNA) : " + str(max_features) + "\n")
+        f.write("Maximum molecules (nCount_RNA) : " + str(max_molecules) + "\n")
+        f.write("Minimum molecules (nCount_RNA) : " + str(min_molecules) + "\n")
         f.write("Percent mitochondrial gene treshold (smaller than) : " + str(percent_mt) + "\n")
         f.write("Percent ribosomal gene treshold (larger than) : " + str(percent_rp) + "\n")
         f.write("Resolution : " + str(resolution) + "\n")
@@ -255,11 +263,13 @@ def write_sample_log(sample,paramspace):
         #f.write("Algorithm (GO enrichment) : " + str(algorithm) + "\n")
         #f.write("Statistics (GO enrichment) : " + str(statistics) + "\n")
         f.write("Mapping (GO and KEGG enrichment) : " + str(mapping) + "\n")
+        f.write("Organism (KEGG enrichment) : " + str(organism) + "\n")
+        f.write("Species (cellchat) : " + str(species) + "\n")
         #f.write("Ontology (GO enrichment) : " + str(ontology) + "\n")
         f.write("Celltypist model : " + str(celltypist_model) + "\n")
         f.write("Kraken DB folder : " + str(kraken_db_folder) + "\n")
         f.write("Collapse to this taxanomic level : " + str(taxa) + "\n")
-        f.write("Kraken confidence to this taxanomic level : " + str(confidence) + "\n")
+        f.write("Kraken confidence param : " + str(confidence) + "\n")
         f.write("Kraken minimum hit groups : " + str(min_hit_groups) + "\n")
 
 
@@ -284,7 +294,7 @@ def sample_parameter(paramspace,files):
                 expand([results_folder + "/" + s + "/{params}/plot_annotation_umap.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/plot_annotation_pca.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 #expand([results_folder + "/" + s + "/{params}/singler/annotation.umap.html" for s in files],params=list(paramspace.instance_patterns)),
-                gsea_analysis(paramspace,[x for x in identity_to_analysis if x != "orig.ident"]),
+                #gsea_analysis(paramspace,[x for x in identity_to_analysis if x != "orig.ident"]),
                 celltypist_analysis(paramspace,celltypist_model,identity_to_analysis),
                 enrichment_analysis(paramspace,identity_to_analysis),
                 expand([results_folder + "/" + s + "/{params}/trajectory/plot_monocle-partition-plot.pdf" for s in files],params=list(paramspace.instance_patterns))
@@ -298,6 +308,8 @@ def sample_parameter(paramspace,files):
                 ]
     if option in ["clustree","clusteringTree","minimal","standard","advanced"]:
         outs += expand([results_folder + "/" + s + "/{params}/technicals/plot_clustree.pdf" for s in files],params=list(paramspace.instance_patterns))
+        outs += expand([results_folder + "/" + s + "/{params}/technicals/plot_nFeature.pdf" for s in files],params=list(paramspace.instance_patterns))
+        outs += expand([results_folder + "/" + s + "/{params}/technicals/plot_nCount.pdf" for s in files],params=list(paramspace.instance_patterns))
     if option in ["advanced"]:
         outs += cellchat_plot(paramspace,[x for x in identity_to_analysis if x != "orig.ident"])
         outs += dim_reduction_and_marker_plots(paramspace,identity_to_analysis)

@@ -38,35 +38,44 @@ scrna <- readRDS(file = opt$rds)
 
 cds <- as.cell_data_set(scrna)
 cds <- cluster_cells(cds)
-p1 <- plot_cells(cds, show_trajectory_graph = FALSE)
+
+p1 <- plot_cells(cds, color_cells_by = "singler", show_trajectory_graph = FALSE)
 p2 <- plot_cells(cds, color_cells_by = "partition", show_trajectory_graph = FALSE)
+
+
 wrap_plots(p1, p2)
 
-ggsave(opt$pplot, width = 10, height = 5)
+ggsave(opt$pplot, width = 11, height = 5.5)
 
 
 as.Seurat(cds, assay = NULL) -> scrna
 scrna@meta.data %>%
     dplyr::count(monocle3_partitions) %>%
-    dplyr::mutate(perc = n * 100 / sum(n)) %>%
-    dplyr::filter(perc >= 5) %>%
+    dplyr::mutate(perc = (n * 100) / sum(n)) %>%
+    dplyr::filter(perc >= 5, n > 200) %>%
     pull(monocle3_partitions) %>%
     as.vector() -> partitions
 
-
+print(partitions)
 for (i in partitions) {
-    integrated.sub <- subset(as.Seurat(cds, assay = NULL), monocle3_partitions == i)
+    integrated.sub <- subset(scrna, monocle3_partitions == i)
 
-    cds <- as.cell_data_set(integrated.sub)
-    cds <- learn_graph(cds)
-    plot_cells(cds, label_groups_by_cluster = FALSE, label_leaves = FALSE, label_branch_points = FALSE)
+
+    cds2 <- as.cell_data_set(integrated.sub)
+    if (i != "1") {
+        cds2 <- cluster_cells(cds2)
+    }
+    cds2 <- learn_graph(cds2)
+    p1 <- plot_cells(cds2, label_groups_by_cluster = FALSE, label_leaves = FALSE, label_branch_points = FALSE)
 
     max.avp <- which.max(unlist(FetchData(integrated.sub, "AVP")))
     max.avp <- colnames(integrated.sub)[max.avp]
-    cds <- order_cells(cds, root_cells = max.avp)
-    plot_cells(cds,
+    cds2 <- order_cells(cds2, root_cells = max.avp)
+    p2 <- plot_cells(cds2,
         color_cells_by = "pseudotime", label_cell_groups = FALSE, label_leaves = FALSE,
         label_branch_points = FALSE
     )
-    ggsave(paste0(opt$output.plot.dir, "/plot_monocle3-partition-", i, ".pdf"), width = 6, height = 6)
+
+    wrap_plots(p1, p2)
+    ggsave(paste0(opt$output.dir, "/plot_monocle-partition-", i, ".pdf"), width = 11, height = 5.5)
 }

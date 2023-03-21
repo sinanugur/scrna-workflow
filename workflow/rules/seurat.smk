@@ -39,7 +39,7 @@ rule create_initial_raw_rds_and_trimming:
         if is_integrated_sample is True:
             shell("cp {input.raw} {output.rds}")
         else:
-            shell("{cellsnake_path}workflow/scripts/scrna-read-qc.R --data.dir {input.raw} --output.rds {output.rds} --sampleid {wildcards.sample} --percent.rp {percent_rp} --percent.mt {wildcards.percent_mt} --min.features {min_features} --min.cells {min_cells} --before.violin.plot {output.before} --after.violin.plot {output.after} {params.mt_param}")
+            shell("{cellsnake_path}workflow/scripts/scrna-read-qc.R --data.dir {input.raw} --output.rds {output.rds} --sampleid {wildcards.sample} --percent.rp {percent_rp} --percent.mt {wildcards.percent_mt} --min.features {min_features} --max.features {max_features} --max.molecules {max_molecules}  --min.cells {min_cells} --before.violin.plot {output.before} --after.violin.plot {output.after} {params.mt_param}")
             
 
 
@@ -86,7 +86,17 @@ rule some_metrics:
     shell:
         "{cellsnake_path}workflow/scripts/scrna-metrics.R --rds {input.rds} --ccplot {output.ccplot} --ccbarplot {output.ccbarplot} --html {output.html} --idents {wildcards.i}"
 
-    
+rule some_technicals:
+    input:
+        rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
+    output:
+        fplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/plot_nFeature.pdf",
+        cplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/plot_nCount.pdf"
+
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-technicals.R --rds {input.rds} --fplot {output.fplot} --cplot {output.cplot}"
+
+
 
 rule dim_plots:
     input:
@@ -99,6 +109,8 @@ rule dim_plots:
         paramaters=paramspace.instance,
     shell:
         "{cellsnake_path}workflow/scripts/scrna-dimplot.R --rds {input} --reduction.type {wildcards.reduction} --pdfplot {output.pl} --htmlplot {output.html} --idents {wildcards.i}"
+
+
 
 rule singler_dim_plots: #this is singler annotation that does not include cluster idents and only use singler annotation
     input:
@@ -209,15 +221,6 @@ rule seurat_celltype_celltypist:
         {cellsnake_path}workflow/scripts/scrna-celltypist.R --rds {input.rds} --csv {input.csv} --output.tsne.plot {output.tsne} --output.umap.plot {output.umap}
         """
 
-rule go_enrichment:
-    input:
-        results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/table_all-markers-{i}.xlsx"
-    output:
-        results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/enrichment_analysis/table_GO-enrichment-" + ontology +  "-{i}.xlsx"
-    shell:
-        """
-        {cellsnake_path}workflow/scripts/scrna-go_enrichment.R --xlsx {input} --output {output} --ontology {ontology} --algorithm {algorithm} --mapping {mapping} --statistics {statistics}
-        """
 
 rule kegg_enrichment:
     input:
@@ -229,7 +232,7 @@ rule kegg_enrichment:
         mkegg=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/enrichment_analysis/table_KEGG-module_enrichment-{i}.xlsx",
         mgse=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/enrichment_analysis/table_KEGG-module_geneset_enrichment-{i}.xlsx"
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-kegg.R --xlsx {input} --output.rds {output.rds} --mapping {mapping} --output.kegg {output.kegg} --output.mkegg {output.mkegg}  --output.gse {output.gse} --output.mgse {output.mgse}"
+        "{cellsnake_path}workflow/scripts/scrna-kegg.R --xlsx {input} --output.rds {output.rds} --mapping {mapping} --organism {organism} --output.kegg {output.kegg} --output.mkegg {output.mkegg}  --output.gse {output.gse} --output.mgse {output.mgse}"
 
 rule go2_enrichment:
     input:

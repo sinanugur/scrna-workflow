@@ -30,15 +30,14 @@ option_list <- list(
   )
 )
 require(clusterProfiler)
-require(org.Hs.eg.db)
 require(tidyverse)
-
-
 
 
 
 opt_parser <- optparse::OptionParser(option_list = option_list)
 opt <- optparse::parse_args(opt_parser)
+
+require(opt$mapping, character.only = T)
 
 if (is.null(opt$xlsx)) {
   optparse::print_help(opt_parser)

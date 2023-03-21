@@ -8,7 +8,7 @@ options(repos = r)
 packages <- c(
   "tidyverse", "optparse", "librarian", "Seurat", "SeuratDisk", "patchwork",
   "DoubletFinder", "viridis", "clustree", "openxlsx", "topGO", "org.Hs.eg.db",
-  "cerebroApp", "miQC", "scater", "MultiKParallel", "limma", "ggthemes", "ComplexHeatmap", "CellChat", "NMF", "clusterProfiler","tidyseurat"
+  "cerebroApp", "miQC", "scater", "MultiKParallel", "limma", "ggthemes", "ComplexHeatmap", "CellChat", "NMF", "clusterProfiler", "tidyseurat", "SeuratWrappers", "monocle3"
 )
 
 
@@ -37,8 +37,8 @@ if (any(installed_packages == FALSE)) {
 
 
 
-  librarian::shelf("optparse") #conda installer
-  librarian::shelf("tidyverse", "patchwork") #conda installer
+  librarian::shelf("optparse") # conda installer
+  librarian::shelf("tidyverse", "patchwork") # conda installer
 
   if (!requireNamespace("Seurat", quietly = TRUE)) {
     try({
@@ -53,38 +53,40 @@ if (any(installed_packages == FALSE)) {
   librarian::shelf("viridis")
   librarian::shelf("topGO")
   librarian::shelf("org.Hs.eg.db")
-  
-   if (!requireNamespace("randomcoloR", quietly = TRUE)) {
+
+  if (!requireNamespace("randomcoloR", quietly = TRUE)) {
     install.packages("randomcoloR")
   }
 
-  librarian::shelf("miQC") #conda installer
+  librarian::shelf("miQC") # conda installer
   # librarian::shelf('scater') #use conda installer
   librarian::shelf("sinanugur/MultiKParallel")
   librarian::shelf("stemangiola/tidyseurat")
+
   librarian::shelf("limma")
   librarian::shelf("ggthemes")
   librarian::shelf("NMF")
   librarian::shelf("ComplexHeatmap")
   librarian::shelf("clusterProfiler")
+
   # librarian::shelf('harmony')
-
-
 
   if (!requireNamespace("cerebroApp", quietly = TRUE)) {
     remotes::install_github("romanhaa/cerebroApp")
   }
 
   if (!requireNamespace("SeuratDisk", quietly = TRUE)) {
-    
     remotes::install_github("mojaveazure/seurat-disk")
   }
   if (!requireNamespace("CellChat", quietly = TRUE)) {
-    
     remotes::install_github("sqjin/CellChat")
   }
-
-
+  if (!requireNamespace("SeuratWrappers", quietly = TRUE)) {
+    remotes::install_github("satijalab/seurat-wrappers")
+  }
+  if (!requireNamespace("monocle3", quietly = TRUE)) {
+    remotes::install_github("cole-trapnell-lab/monocle3")
+  }
 } else {
   print("All packages were installed...OK")
 }

@@ -28,6 +28,10 @@ option_list <- list(
     type = "character", default = "org.Hs.eg.db",
     help = "Mapping", metavar = "character"
   ),
+  optparse::make_option(c("--organism"),
+    type = "character", default = "hsa",
+    help = "Organism code, look at https://www.genome.jp/kegg/catalog/org_list.html", metavar = "character"
+  ),
   optparse::make_option(c("--pval"),
     type = "double", default = 0.05,
     help = "P value treshold [default= %default]", metavar = "character"
@@ -38,7 +42,6 @@ option_list <- list(
   )
 )
 require(clusterProfiler)
-require(org.Hs.eg.db)
 require(tidyverse)
 
 
@@ -46,7 +49,7 @@ require(tidyverse)
 
 opt_parser <- optparse::OptionParser(option_list = option_list)
 opt <- optparse::parse_args(opt_parser)
-
+require(opt$mapping, character.only = T)
 if (is.null(opt$xlsx)) {
   optparse::print_help(opt_parser)
   stop("Arguments must be supplied", call. = FALSE)
@@ -75,7 +78,7 @@ function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
     {
       kk1 <- enrichKEGG(
         gene = gene,
-        organism = "hsa",
+        organism = opt$organism,
         pAdjustMethod = "fdr",
         minGSSize = 2,
         pvalueCutoff = 1
@@ -90,7 +93,7 @@ function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
     {
       kk2 <- gseKEGG(
         geneList = geneList,
-        organism = "hsa",
+        organism = opt$organism,
         pvalueCutoff = 1,
         pAdjustMethod = "fdr",
         minGSSize = 2,
@@ -107,7 +110,7 @@ function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
     {
       kk3 <- enrichMKEGG(
         gene = gene,
-        organism = "hsa",
+        organism = opt$organism,
         pvalueCutoff = 1,
         minGSSize = 2,
         pAdjustMethod = "fdr",
@@ -122,7 +125,7 @@ function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
     {
       kk4 <- gseMKEGG(
         geneList = geneList,
-        organism = "hsa",
+        organism = opt$organism,
         minGSSize = 2,
         keyType = "kegg",
         pAdjustMethod = "fdr",

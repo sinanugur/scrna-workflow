@@ -1,7 +1,10 @@
 #These are also default settings of a Cellsnake run without any configfile
 #basic paramaters
 min_cells: 3 #seurat defaults, recommended
-min_features: 200 #seurat defaults, recommended
+min_features: 200 #seurat defaults, recommended, nFeature_RNA
+max_features: Inf #seurat default, nFeature_RNA, 5000 can be a good cutoff
+max_molecules: Inf #seurat default, nCount_RNA, to filter potential doublets, doublet filtering is already default, so keep this Inf
+min_molecules: 0 #seurat default, nCount_RNA, min_features usually handles this so keep it 0
 
 
 percent_mt: 10 #Mitochondrial genes maximum percentage (0-100), default 10, you can use "auto"
@@ -26,8 +29,9 @@ marker_plots_per_cluster_n: 20 #plot summary marker plots for top markers
 umap_markers_plot: True
 tsne_markers_plot: False
 
-#GO enrichment paramaters
-mapping: "org.Hs.eg.db"
+#enrichment paramaters
+mapping: "org.Hs.eg.db" #you may install others from Bioconductor, this is for human
+organism: "hsa" #alternatives https://www.genome.jp/kegg/catalog/org_list.html
 
 #cerebroapp GSEA params #GSEA file is bundled (c2.cgp.v2022.1.Hs.symbols.gmt), you may download another one and write the exact path here
 gsea_file:
@@ -36,10 +40,13 @@ gsea_group: "seurat_clusters"
 #celltypist
 celltypist_model: "Immune_All_Low.pkl" #refer to Celltypist for another model 
 
-#krakendbfolder
+#krakendb settings
 kraken_db_folder:
 taxa: "genus" # available options "domain", "kingdom", "phylum", "class", "order", "family", "genus", "species"
 microbiome_min_cells: 1
 microbiome_min_features: 3
-confidence: 0.05
-min_hit_groups: 4
+confidence: 0.05 #see kraken2 manual
+min_hit_groups: 4 #see kraken2 manual
+
+#cellchat
+species: "human" #human or mouse is accepted, http://www.cellchat.org/cellchatdb/
