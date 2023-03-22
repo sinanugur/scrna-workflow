@@ -432,6 +432,9 @@ theme_cellsnake_classic <- function(base_size = 12, base_family = "Ubuntu") {
 
 
 function_color_palette <- function(n) {
+  if (n > 75) {
+    return(palette200)
+  }
   if (n > 10 && n <= 30) {
     return(palette30)
   }
@@ -446,9 +449,6 @@ function_color_palette <- function(n) {
     return(palette75)
   }
 
-  if (n > 75) {
-    return(palette200)
-  }
 
 
   randomcoloR::distinctColorPalette(n)
