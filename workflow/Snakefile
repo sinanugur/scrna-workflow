@@ -112,7 +112,7 @@ gsea_group=config.get("gsea_group","seurat_clusters")
 
 integration_id=config.get("integration_id","integrated")
 celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
-singler_ref=config.get("singler_ref","BlueprintEncodeData")
+singler_ref=config.get("singler_ref","HumanPrimaryCellAtlasData")
 
 
 #cellchat
