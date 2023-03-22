@@ -72,7 +72,7 @@ rule normalization_pca_rds:
         integration="--integration" if is_integrated_sample is True else " "
     shell:
         "{cellsnake_path}workflow/scripts/scrna-normalization-pca.R --rds {input} {params.doublet_filter} --normalization.method {normalization_method} "
-        "--scale.factor {scale_factor} --variable.selection.method {variable_selection_method} --nfeature {highly_variable_features} --resolution {params.paramaters[resolution]} "
+        "--scale.factor {scale_factor} --reference {singler_ref} --variable.selection.method {variable_selection_method} --nfeature {highly_variable_features} --resolution {params.paramaters[resolution]} "
         "--output.rds {output.rds} {umap_plot} {tsne_plot} {params.integration}"
 
 rule some_metrics:
@@ -193,7 +193,7 @@ rule singler_celltype: #this singler rule use idents information from the cluste
         sheplottop=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/singler/plot_score_heatmap_top-{i}.pdf"
 
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-singler-plots.R --rds {input.rds} --sheplot {output.sheplot} --pheplot {output.pheplot} --sheplottop {output.sheplottop} --idents {wildcards.i}"
+        "{cellsnake_path}workflow/scripts/scrna-singler-plots.R --rds {input.rds} --reference {singler_ref} --sheplot {output.sheplot} --pheplot {output.pheplot} --sheplottop {output.sheplottop} --idents {wildcards.i}"
 
 
 rule celltypist_celltype:

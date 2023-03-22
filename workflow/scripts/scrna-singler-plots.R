@@ -24,6 +24,10 @@ option_list <- list(
       optparse::make_option(c("--csv"),
             type = "character", default = NULL,
             help = "A meta data table", metavar = "character"
+      ),
+      optparse::make_option(c("--reference"),
+            type = "character", default = "HumanPrimaryCellAtlasData",
+            help = "SingleR reference", metavar = "character"
       )
 )
 
@@ -40,7 +44,7 @@ if (is.null(opt$rds)) {
 require(optparse)
 require(SingleR)
 require(SingleCellExperiment)
-require(celldex)
+# require(celldex)
 require(tidyverse)
 require(pheatmap)
 require(Seurat)
@@ -54,7 +58,7 @@ if (!is.null(opt$tsv)) {
 
 
 # celltype annotation with SingleR
-ref <- BlueprintEncodeData()
+ref <- get(opt$reference)()
 
 smObjSCE <- as.SingleCellExperiment(scrna)
 pred <- SingleR(test = smObjSCE, ref = ref, labels = ref$label.fine)

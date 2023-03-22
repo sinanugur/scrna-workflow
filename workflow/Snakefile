@@ -103,16 +103,17 @@ selected_gene_file=config.get("selected_gene_file","markers.tsv")
 algorithm=config.get("algorithm","weight01")
 statistics=config.get("statistics","ks")
 mapping=config.get("mapping","org.Hs.eg.db")
-ontology = config.get("ontology","BP")
 organism=config.get("organism","hsa")
 
 #GSEA
 gsea_file=cellsnake_path + "workflow/bundle/c2.cgp.v2022.1.Hs.symbols.gmt" if config.get("gsea_file") is None else config.get("gsea_file")
 gsea_group=config.get("gsea_group","seurat_clusters")
 
-#alternative options
+
 integration_id=config.get("integration_id","integrated")
 celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
+singler_ref=config.get("singler_ref","BlueprintEncodeData")
+
 
 #cellchat
 species=config.get("species","human") #cellchat species, only mouse or human
@@ -267,6 +268,7 @@ def write_sample_log(sample,paramspace):
         f.write("Organism (KEGG enrichment) : " + str(organism) + "\n")
         f.write("Species (cellchat) : " + str(species) + "\n")
         #f.write("Ontology (GO enrichment) : " + str(ontology) + "\n")
+        f.write("SingleR reference : " + str(singler_ref) + "\n")
         f.write("Celltypist model : " + str(celltypist_model) + "\n")
         f.write("Kraken DB folder : " + str(kraken_db_folder) + "\n")
         f.write("Collapse to this taxanomic level : " + str(taxa) + "\n")

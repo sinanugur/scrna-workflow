@@ -37,6 +37,9 @@ organism: "hsa" #alternatives https://www.genome.jp/kegg/catalog/org_list.html
 gsea_file:
 gsea_group: "seurat_clusters"
 
+#SingleR reference
+singler_ref: "HumanPrimaryCellAtlasData" # https://bioconductor.org/packages/release/data/experiment/vignettes/celldex/inst/doc/userguide.html#1_Overview
+
 #celltypist
 celltypist_model: "Immune_All_Low.pkl" #refer to Celltypist for another model 
 

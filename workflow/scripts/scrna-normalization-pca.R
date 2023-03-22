@@ -37,6 +37,10 @@ option_list <- list(
   optparse::make_option(c("--cpu"),
     type = "integer", default = 5,
     help = "Number of CPU for parallel run [default= %default]", metavar = "character"
+  ),
+  optparse::make_option(c("--reference"),
+    type = "character", default = "HumanPrimaryCellAtlasData",
+    help = "SingleR reference", metavar = "character"
   )
 )
 
@@ -176,12 +180,18 @@ if (opt$doublet.filter) {
 # p1 <- DimPlot(scrna, reduction = "pca", label = TRUE, label.size = 10)
 
 # celltype annotation with SingleR
-ref <- BlueprintEncodeData()
+ref <- get(opt$reference)()
 
+
+
+DefaultAssay(scrna) <- "RNA"
 smObjSCE <- as.SingleCellExperiment(scrna)
 pred <- SingleR(test = smObjSCE, ref = ref, labels = ref$label.fine)
-AddMetaData(scrna, pred["labels"] %>% as.data.frame() %>% dplyr::select(singler = labels)) -> scrna
+AddMetaData(scrna, pred["pruned.labels"] %>% as.data.frame() %>% dplyr::select(singler = pruned.labels)) -> scrna
 
+try({
+  DefaultAssay(scrna) <- "integrated"
+})
 
 
 # output files
