@@ -41,7 +41,7 @@ option_list <- list(
     help = "LogFC [default= %default]", metavar = "character"
   )
 )
-require(clusterProfiler)
+# require(clusterProfiler)
 require(tidyverse)
 
 
@@ -60,7 +60,7 @@ All_Features <- openxlsx::read.xlsx(opt$xlsx)
 
 
 function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
-  print(results %>% distinct(cluster) %>% pull())
+  print(results %>% distinct(cluster) %>% dplyr::pull())
   results %>%
     as.data.frame() %>%
     dplyr::filter(p_val_adj < p) %>%
@@ -76,7 +76,7 @@ function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
 
   tryCatch(
     {
-      kk1 <- enrichKEGG(
+      kk1 <- clusterProfiler::enrichKEGG(
         gene = gene,
         organism = opt$organism,
         pAdjustMethod = "fdr",
@@ -91,7 +91,7 @@ function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
 
   tryCatch(
     {
-      kk2 <- gseKEGG(
+      kk2 <- clusterProfiler::gseKEGG(
         geneList = geneList,
         organism = opt$organism,
         pvalueCutoff = 1,
@@ -108,7 +108,7 @@ function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
 
   tryCatch(
     {
-      kk3 <- enrichMKEGG(
+      kk3 <- clusterProfiler::enrichMKEGG(
         gene = gene,
         organism = opt$organism,
         pvalueCutoff = 1,
@@ -123,7 +123,7 @@ function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
 
   tryCatch(
     {
-      kk4 <- gseMKEGG(
+      kk4 <- clusterProfiler::gseMKEGG(
         geneList = geneList,
         organism = opt$organism,
         minGSSize = 2,

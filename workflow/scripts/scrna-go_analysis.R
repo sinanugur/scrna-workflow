@@ -29,7 +29,7 @@ option_list <- list(
     help = "LogFC [default= %default]", metavar = "character"
   )
 )
-require(clusterProfiler)
+# require(clusterProfiler)
 require(tidyverse)
 
 
@@ -65,7 +65,7 @@ function_enrichment_go_singlecell <- function(results, p = 0.05, f = 1.5) {
 
   tryCatch(
     {
-      kk <- enrichGO(
+      kk <- clusterProfiler::enrichGO(
         gene = gene,
         universe = names(geneList),
         OrgDb = get(opt$mapping),
@@ -82,7 +82,7 @@ function_enrichment_go_singlecell <- function(results, p = 0.05, f = 1.5) {
 
   tryCatch(
     {
-      kk2 <- gseGO(
+      kk2 <- clusterProfiler::gseGO(
         geneList = names(geneList),
         OrgDb = get(opt$mapping),
         ont = "ALL",
