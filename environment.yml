@@ -28,6 +28,8 @@ dependencies:
  - r-tidyverse
  - r-v8
  - r-plotly
+ - r-terra
+ - r-r.utils
  #- r-seuratdisk
  - bioconductor-rhdf5lib
  - bioconductor-clusterprofiler==4.6.0

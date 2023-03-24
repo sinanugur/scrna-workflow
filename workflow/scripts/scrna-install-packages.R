@@ -82,10 +82,10 @@ if (any(installed_packages == FALSE)) {
     remotes::install_github("sqjin/CellChat")
   }
   if (!requireNamespace("SeuratWrappers", quietly = TRUE)) {
-    remotes::install_github("satijalab/seurat-wrappers")
+    librarian::shelf("satijalab/seurat-wrappers")
   }
   if (!requireNamespace("monocle3", quietly = TRUE)) {
-    remotes::install_github("cole-trapnell-lab/monocle3")
+    librarian::shelf("cole-trapnell-lab/monocle3")
   }
 } else {
   print("All packages were installed...OK")
