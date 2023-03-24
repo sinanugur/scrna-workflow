@@ -22,7 +22,6 @@ opt <- optparse::parse_args(opt_parser)
 
 library(monocle3)
 library(Seurat)
-library(SeuratData)
 library(SeuratWrappers)
 library(tidyverse)
 library(patchwork)
