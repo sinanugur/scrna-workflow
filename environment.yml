@@ -32,6 +32,7 @@ dependencies:
  - r-r.utils
  - r-spdep
  - r-hdf5r
+ - r-monocle3 #version 1.0.0 is the current
  #- r-seuratdisk
  - bioconductor-rhdf5lib
  - bioconductor-clusterprofiler==4.6.0
@@ -44,7 +45,7 @@ dependencies:
  - bioconductor-rhdf5lib
  - bioconductor-singler
  - bioconductor-celldex
-  - geos==3.11.1
+ - geos==3.11.1
  - cmake
  - hdf5
  - numba

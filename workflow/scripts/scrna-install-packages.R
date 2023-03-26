@@ -51,7 +51,9 @@ if (any(installed_packages == FALSE)) {
   librarian::shelf("openxlsx")
   librarian::shelf("chris-mcginnis-ucsf/DoubletFinder")
   librarian::shelf("viridis")
-  librarian::shelf("topGO")
+  if (!requireNamespace("topGO", quietly = TRUE)) {
+    BiocManager::install("topGO")
+  }
   librarian::shelf("org.Hs.eg.db")
 
   if (!requireNamespace("randomcoloR", quietly = TRUE)) {
@@ -82,10 +84,10 @@ if (any(installed_packages == FALSE)) {
     remotes::install_github("sqjin/CellChat")
   }
   if (!requireNamespace("SeuratWrappers", quietly = TRUE)) {
-    librarian::shelf("satijalab/seurat-wrappers")
+    remotes::install_github("satijalab/seurat-wrappers")
   }
   if (!requireNamespace("monocle3", quietly = TRUE)) {
-    librarian::shelf("cole-trapnell-lab/monocle3")
+    remotes::install_github("cole-trapnell-lab/monocle3")
   }
 } else {
   print("All packages were installed...OK")
