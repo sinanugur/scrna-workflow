@@ -7,8 +7,7 @@ options(repos = r)
 
 packages <- c(
   "tidyverse", "optparse", "librarian", "Seurat", "SeuratDisk", "patchwork",
-  "DoubletFinder", "viridis", "clustree", "openxlsx", "topGO", "org.Hs.eg.db",
-  "cerebroApp", "miQC", "scater", "MultiKParallel", "limma", "ggthemes", "ComplexHeatmap", "CellChat", "NMF", "clusterProfiler",
+  "DoubletFinder", "viridis", "clustree", "openxlsx", "topGO", "org.Hs.eg.db", "miQC", "scater", "MultiKParallel", "limma", "ggthemes", "ComplexHeatmap", "CellChat", "NMF", "clusterProfiler",
   "tidyseurat", "SeuratWrappers", "monocle3", "randomcoloR"
 )
 
@@ -74,9 +73,9 @@ if (any(installed_packages == FALSE)) {
 
   # librarian::shelf('harmony')
 
-  if (!requireNamespace("cerebroApp", quietly = TRUE)) {
-    remotes::install_github("romanhaa/cerebroApp")
-  }
+  # if (!requireNamespace("cerebroApp", quietly = TRUE)) {
+  #  remotes::install_github("romanhaa/cerebroApp")
+  # }
 
   if (!requireNamespace("SeuratDisk", quietly = TRUE)) {
     remotes::install_github("mojaveazure/seurat-disk")
