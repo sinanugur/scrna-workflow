@@ -161,8 +161,8 @@ except:
 def selected_gene_plot(paramspace,gene_to_plot,identity):
     plots=[]
     if gene_to_plot:
-        plots = plots + expand([results_folder + "/" + s +  "/{params}/selected_gene_plots_umap/" + i + "/" + g.upper() + ".pdf" for i in identity for g in gene_to_plot for s in files],params=list(paramspace.instance_patterns))
-        plots = plots + expand([results_folder + "/" + s +  "/{params}/selected_gene_plots_tsne/" + i + "/" + g.upper() + ".pdf" for i in identity for g in gene_to_plot for s in files],params=list(paramspace.instance_patterns))
+        plots = plots + expand([results_folder + "/" + s +  "/{params}/selected_gene_plots_umap/" + i + "/" + g + ".pdf" for i in identity for g in gene_to_plot for s in files],params=list(paramspace.instance_patterns))
+        plots = plots + expand([results_folder + "/" + s +  "/{params}/selected_gene_plots_tsne/" + i + "/" + g + ".pdf" for i in identity for g in gene_to_plot for s in files],params=list(paramspace.instance_patterns))
     return plots
 
 def identity_dependent_dimplot(paramspace,identity):
