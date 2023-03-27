@@ -8,7 +8,8 @@ options(repos = r)
 packages <- c(
   "tidyverse", "optparse", "librarian", "Seurat", "SeuratDisk", "patchwork",
   "DoubletFinder", "viridis", "clustree", "openxlsx", "topGO", "org.Hs.eg.db",
-  "cerebroApp", "miQC", "scater", "MultiKParallel", "limma", "ggthemes", "ComplexHeatmap", "CellChat", "NMF", "clusterProfiler", "tidyseurat", "SeuratWrappers", "monocle3"
+  "cerebroApp", "miQC", "scater", "MultiKParallel", "limma", "ggthemes", "ComplexHeatmap", "CellChat", "NMF", "clusterProfiler",
+  "tidyseurat", "SeuratWrappers", "monocle3", "randomcoloR"
 )
 
 
