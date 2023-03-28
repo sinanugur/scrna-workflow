@@ -35,17 +35,13 @@ require(tidyverse)
 require(Seurat)
 
 
-try(
+tryCatch(
       {
             source("workflow/scripts/scrna-functions.R")
       },
-      silent = TRUE
-)
-try(
-      {
+      error = function(cond) {
             source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE), "/scrna/workflow/scripts/scrna-functions.R"))
-      },
-      silent = TRUE
+      }
 )
 
 
