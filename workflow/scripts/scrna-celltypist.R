@@ -33,7 +33,7 @@ if (is.null(opt$rds) || is.null(opt$csv)) {
 
 require(tidyverse)
 require(Seurat)
-require(randomcoloR)
+
 
 try(
       {
@@ -64,11 +64,11 @@ scrna@meta.data <- scrna@meta.data %>%
 
 
 n <- length(scrna@meta.data %>% pull(majority_voting) %>% unique())
-set.seed(149)
-palette <- sort(distinctColorPalette(n))
 
-p1 <- DimPlot(scrna, reduction = "tsne", label = TRUE, group.by = "majority_voting", repel = TRUE) & ggthemes::theme_few() & scale_color_manual(values = palette)
-p2 <- DimPlot(scrna, reduction = "umap", label = TRUE, group.by = "majority_voting", repel = TRUE) & ggthemes::theme_few() & scale_color_manual(values = palette)
+palette <- function_color_palette(n)
+
+p1 <- DimPlot(scrna, reduction = "tsne", label = TRUE, group.by = "majority_voting", repel = TRUE) & scale_color_manual(values = palette)
+p2 <- DimPlot(scrna, reduction = "umap", label = TRUE, group.by = "majority_voting", repel = TRUE) & scale_color_manual(values = palette)
 
 
 

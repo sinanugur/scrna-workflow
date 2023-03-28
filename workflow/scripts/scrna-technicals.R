@@ -36,12 +36,12 @@ require(tidyverse)
 scrna <- readRDS(file = opt$rds)
 
 
-FeaturePlot(scrna, features = "nFeature_RNA", pt.size = 0.1) & ggthemes::theme_few()
+FeaturePlot(scrna, features = "nFeature_RNA", pt.size = 0.1)
 
 ggsave(opt$fplot, width = 7, height = 5)
 
 
 
-FeaturePlot(scrna, features = "nCount_RNA", pt.size = 0.1) & ggthemes::theme_few()
+FeaturePlot(scrna, features = "nCount_RNA", pt.size = 0.1)
 
 ggsave(opt$cplot, width = 7, height = 5)

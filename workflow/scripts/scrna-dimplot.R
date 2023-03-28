@@ -75,7 +75,7 @@ n <- length(Idents(scrna) %>% unique())
 
 palette <- function_color_palette(n)
 
-p1 <- DimPlot(scrna, reduction = opt$reduction.type) & ggthemes::theme_few() & scale_color_manual(values = palette)
+p1 <- DimPlot(scrna, reduction = opt$reduction.type) & scale_color_manual(values = palette)
 
 ggplotly(p1) -> p1_plotly
 
@@ -83,5 +83,5 @@ p1_plotly %>% htmlwidgets::saveWidget(file = opt$htmlplot, selfcontained = T)
 
 
 
-p1 <- DimPlot(scrna, reduction = opt$reduction.type) & ggthemes::theme_few() & scale_color_manual(values = palette)
+p1 <- DimPlot(scrna, reduction = opt$reduction.type) & scale_color_manual(values = palette)
 ggsave(plot = p1, filename = opt$pdfplot, width = 9 + floor(n / 11), height = 7)
