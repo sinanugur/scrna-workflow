@@ -17,7 +17,7 @@ dependencies:
  - snakemake >=7.22.0
  - umap-learn
  - plotly
- - kaleido
+ - python-kaleido
  - r-base==4.2.2
  - r-igraph==1.3.4
  #- r-igraph
