@@ -45,6 +45,7 @@ dependencies:
  - bioconductor-rhdf5lib
  - bioconductor-singler
  - bioconductor-celldex
+ - bioconductor-enhancedvolcano
  - geos==3.11.1
  - cmake
  - hdf5

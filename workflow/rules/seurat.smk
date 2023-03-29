@@ -43,7 +43,7 @@ rule create_initial_raw_rds_and_trimming:
             
 
 
-rule clustree:
+rule plot_clustree:
     input:
         analyses_folder + "/raw/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
@@ -75,7 +75,7 @@ rule normalization_pca_rds:
         "--scale.factor {scale_factor} --reference {singler_ref} --variable.selection.method {variable_selection_method} --nfeature {highly_variable_features} --resolution {params.paramaters[resolution]} "
         "--output.rds {output.rds} {umap_plot} {tsne_plot} {params.integration}"
 
-rule some_metrics:
+rule plot_some_metrics:
     input:
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
@@ -86,7 +86,7 @@ rule some_metrics:
     shell:
         "{cellsnake_path}workflow/scripts/scrna-metrics.R --rds {input.rds} --ccplot {output.ccplot} --ccbarplot {output.ccbarplot} --html {output.html} --idents {wildcards.i}"
 
-rule some_technicals:
+rule plot_some_technicals:
     input:
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
@@ -98,7 +98,7 @@ rule some_technicals:
 
 
 
-rule dim_plots:
+rule plot_dimplots:
     input:
         analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
@@ -108,11 +108,11 @@ rule dim_plots:
     params:
         paramaters=paramspace.instance,
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-dimplot.R --rds {input} --reduction.type {wildcards.reduction} --pdfplot {output.pl} --htmlplot {output.html} --idents {wildcards.i}"
+        "{cellsnake_path}workflow/scripts/scrna-dimplot.R --rds {input} --reduction.type {wildcards.reduction} --pdfplot {output.pl} --htmlplot {output.html} --idents {wildcards.i} --percentage {min_percentage_to_plot} {show_labels}"
 
 
 
-rule singler_dim_plots: #this is singler annotation that does not include cluster idents and only use singler annotation
+rule plot_singler_dimplots: #this is singler annotation that does not include cluster idents and only use singler annotation
     input:
         analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
@@ -122,7 +122,7 @@ rule singler_dim_plots: #this is singler annotation that does not include cluste
     params:
         paramaters=paramspace.instance,
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-dimplot.R --rds {input} --reduction.type {wildcards.reduction} --pdfplot {output.pl} --htmlplot {output.html} --idents singler"
+        "{cellsnake_path}workflow/scripts/scrna-dimplot.R --rds {input} --reduction.type {wildcards.reduction} --pdfplot {output.pl} --htmlplot {output.html} --idents singler --percentage {min_percentage_to_plot}  {show_labels}"
 
     
     
@@ -130,15 +130,26 @@ rule find_all_cluster_markers:
     input:
         analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
+        rds=analyses_folder + "/markers/" + f"{paramspace.wildcard_pattern}" + "/markers_{sample}-{i}.rds"
+    params:
+        paramaters=paramspace.instance,
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-find-markers.R --rds {input} --idents {wildcards.i} --logfc.threshold {logfc_threshold} --test.use {test_use}  --output.rds {output.rds}"
+
+
+rule create_marker_tables:
+    input:
+        analyses_folder + "/markers/" + f"{paramspace.wildcard_pattern}" + "/markers_{sample}-{i}.rds"
+    output:
         positive=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/table_positive-markers-{i}.xlsx",
         allmarkers=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/table_all-markers-{i}.xlsx"
     params:
         paramaters=paramspace.instance,
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-find-markers.R --rds {input} --idents {wildcards.i} --resolution {params.paramaters[resolution]} --logfc.threshold {logfc_threshold} --test.use {test_use} --output.xlsx.positive {output.positive} --output.xlsx.all {output.allmarkers}"
+        "{cellsnake_path}workflow/scripts/scrna-marker-tables.R --rds {input} --output.xlsx.positive {output.positive} --output.xlsx.all {output.allmarkers}"
 
 
-rule plot_top_markers:
+rule plot_summarized_markers:
     input:
         results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/table_positive-markers-{i}.xlsx"
     output:
@@ -146,8 +157,17 @@ rule plot_top_markers:
     shell:
         "{cellsnake_path}workflow/scripts/scrna-top-marker-plot.R --xlsx {input} --output.plot {output}" 
 
+rule plot_summarized_markers_heatmap:
+    input:
+        rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
+        excel=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/table_positive-markers-{i}.xlsx"
+    output:
+        results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/plot_marker-heatmap-{i}.pdf"
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-marker-heatmap.R --rds {input.rds} --xlsx {input.excel} --output.plot {output} --idents {wildcards.i}" 
 
-rule plot_top_positive_markers:
+
+rule plot_top_positive_markers_separately:
     input:
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
         excel=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/table_positive-markers-{i}.xlsx"
@@ -160,7 +180,7 @@ rule plot_top_positive_markers:
 
 
 
-rule selected_marker_plot:
+rule plot_selected_marker_plots_separately:
     input:
         analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
@@ -184,7 +204,7 @@ rule h5ad:
         "{cellsnake_path}workflow/scripts/scrna-convert-to-h5ad.R --rds {input.rds} --output {output}"
 
 
-rule singler_celltype: #this singler rule use idents information from the clustering step
+rule plot_singler_celltype: #this singler rule use idents information from the clustering step
     input:
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
@@ -209,7 +229,7 @@ rule celltypist_celltype:
     shell:
         "{cellsnake_path}workflow/scripts/scrna-celltypist.py {input} {output.dotplot} {output.outputdir} {output.xlsx} {celltypist_model} {wildcards.i}"
 
-rule seurat_celltype_celltypist:
+rule plot_celltype_celltypist:
     input:
         csv=analyses_folder + "/celltypist/" + celltypist_model + "/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{i}/predicted_labels.csv",
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
@@ -218,7 +238,7 @@ rule seurat_celltype_celltypist:
         tsne=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/celltypist/" + celltypist_model + "/plot_celltypist_tsne-{i}.pdf"
     shell:
         """
-        {cellsnake_path}workflow/scripts/scrna-celltypist.R --rds {input.rds} --csv {input.csv} --output.tsne.plot {output.tsne} --output.umap.plot {output.umap}
+        {cellsnake_path}workflow/scripts/scrna-celltypist.R --rds {input.rds} --csv {input.csv} --output.tsne.plot {output.tsne} --output.umap.plot {output.umap} --percentage {min_percentage_to_plot} {show_labels}
         """
 
 
@@ -274,7 +294,7 @@ rule cellchat:
         else:
             shell("{cellsnake_path}workflow/scripts/scrna-cellchat.R --rds {input.rds} --species {species} --idents {wildcards.i} --output {output.cellchatrds}")
 
-rule cellchat_plots:
+rule plot_cellchat:
     input:
         cellchatrds=analyses_folder + "/cellchat/" + f"{paramspace.wildcard_pattern}" + "/{sample}/cellchat-{i}.rds"
     output:
@@ -282,7 +302,7 @@ rule cellchat_plots:
     shell:
         "{cellsnake_path}workflow/scripts/scrna-cellchat_plots.R --rds {input.cellchatrds} --output.dir {output.outputdir}"
 
-rule monocle3_plots:
+rule plot_monocle3:
     input:
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:

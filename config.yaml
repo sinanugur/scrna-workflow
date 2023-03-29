@@ -12,6 +12,10 @@ percent_rp: 0 #Ribosomal genes minimum percentage (0-100), default no filtering
 highly_variable_features: 2000 #seurat defaults, recommended
 variable_selection_method: "vst" #seurat defaults, recommended
 
+#plotting paramaters
+min_percentage_to_plot: 2 #only plot clusters with more than 2% of cells, still all of them visible on HTMLs and on plots if labels are True
+show_labels: T #show labels on plots
+
 #doublet filtering, True:T or False:F
 doublet_filter: T #this may fail on some samples
 
@@ -33,12 +37,8 @@ tsne_markers_plot: False
 mapping: "org.Hs.eg.db" #you may install others from Bioconductor, this is for human
 organism: "hsa" #alternatives https://www.genome.jp/kegg/catalog/org_list.html
 
-#cerebroapp GSEA params #GSEA file is bundled (c2.cgp.v2022.1.Hs.symbols.gmt), you may download another one and write the exact path here
-gsea_file:
-gsea_group: "seurat_clusters"
-
 #SingleR reference
-singler_ref: "HumanPrimaryCellAtlasData" # https://bioconductor.org/packages/release/data/experiment/vignettes/celldex/inst/doc/userguide.html#1_Overview
+singler_ref: "BlueprintEncodeData" # https://bioconductor.org/packages/release/data/experiment/vignettes/celldex/inst/doc/userguide.html#1_Overview
 
 #celltypist
 celltypist_model: "Immune_All_Low.pkl" #refer to Celltypist for another model 

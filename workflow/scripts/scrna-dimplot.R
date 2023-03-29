@@ -25,7 +25,12 @@ option_list <- list(
       optparse::make_option(c("--idents"),
             type = "character", default = "seurat_clusters",
             help = "Meta data column name for marker analysis", metavar = "character"
-      )
+      ),
+      optparse::make_option(c("--percentage"),
+            type = "double", default = 5,
+            help = "Cluster mimnimum percentage to plot", metavar = "double"
+      ),
+      optparse::make_option(c("--labels"), action = "store_true", default = FALSE, help = "Print labels on the plot")
 )
 
 
@@ -74,6 +79,18 @@ Idents(object = scrna) <- scrna@meta.data[[opt$idents]]
 n <- length(Idents(scrna) %>% unique())
 
 palette <- function_color_palette(n)
+palette <- setNames(palette, Idents(scrna) %>% unique())
+
+breaks <- scrna@meta.data %>%
+      dplyr::select(opt$idents) %>%
+      dplyr::count(get(opt$idents)) %>%
+      dplyr::mutate(perc = (n * 100) / sum(n)) %>%
+      dplyr::filter(perc >= opt$percentage) %>%
+      dplyr::select(-n, -perc) %>%
+      distinct() %>%
+      pull() %>%
+      as.character()
+
 
 p1 <- DimPlot(scrna, reduction = opt$reduction.type) & scale_color_manual(values = palette)
 
@@ -81,7 +98,10 @@ ggplotly(p1) -> p1_plotly
 
 p1_plotly %>% htmlwidgets::saveWidget(file = opt$htmlplot, selfcontained = T)
 
+m <- max(str_count(breaks))
+
+w <- c(7.5 + (m * 0.08) * (floor(length(breaks) / 11) + 1))
 
 
-p1 <- DimPlot(scrna, reduction = opt$reduction.type) & scale_color_manual(values = palette)
-ggsave(plot = p1, filename = opt$pdfplot, width = 9 + floor(n / 11), height = 7)
+p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = opt$labels, repel = TRUE) & scale_color_manual(values = palette, breaks = breaks)
+ggsave(plot = p1, filename = opt$pdfplot, width = w, height = 7)

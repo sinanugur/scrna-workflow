@@ -69,6 +69,8 @@ variable_selection_method=config.get("variable_selection_method","vst")
 doublet_filter= "--doublet.filter" if config.get("doublet_filter",True) in [True,"TRUE","True","T"] and is_integrated_sample is False else ""
 metadata_file=config.get("metadata_file","metadata.csv")
 
+min_percentage_to_plot=config.get("min_percentage_to_plot",5) #only plot clusters with more than 5% of cells
+
 #automatic mt filtering
 grid_search=config.get("grid_search",False) #requires params file in tsv format
 
@@ -84,6 +86,7 @@ resolution=config.get("resolution","0.8" if is_integrated_sample is False else "
 #dimension reduction options: by default both UMAP and TSNE will be plotted with predicted clusters
 umap_plot="--umap" if config.get("umap_plot",True) in [True,"TRUE","True","T"] else ""
 tsne_plot="--tsne" if config.get("tsne_plot",True) in [True,"TRUE","True","T"] else ""
+show_labels="--labels" if config.get("show_labels",True) in [True,"TRUE","True","T"] else ""
 
 #Each marker plot contains a DimPlot, by default only UMAP plots will be created (to save space and time), this behavior can be changed.
 umap_markers_plot="--umap" if config.get("umap_markers_plot",True) in [True,"TRUE","True","T"] else ""
@@ -290,6 +293,7 @@ def sample_parameter(paramspace,files):
     if option in ["standard","advanced"]:
         outs = outs + [
                 expand([results_folder + "/" + s + "/{params}/summarized_markers-for-" + x + ".pdf" for x in identity_to_analysis for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/plot_marker-heatmap-" + x + ".pdf" for x in identity_to_analysis for s in files],params=list(paramspace.instance_patterns)),
                 singler_plots(paramspace,identity_to_analysis),
                 #expand([results_folder + "/" + s + "/{params}/singler/clusters-celltype_annotation.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 #expand([results_folder + "/" + s + "/{params}/singler/score_heatmap_top-celltype_annotation.pdf" for s in files],params=list(paramspace.instance_patterns)),

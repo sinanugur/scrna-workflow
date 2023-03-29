@@ -20,7 +20,11 @@ option_list <- list(
       optparse::make_option(c("--output.umap.plot"),
             type = "character", default = NULL,
             help = "Output umap file name", metavar = "character"
-      )
+      ),
+      optparse::make_option(c("--percentage"),
+            type = "double", default = 5,
+            help = "Cluster mimnimum percentage to plot", metavar = "double"
+      ), optparse::make_option(c("--labels"), action = "store_true", default = FALSE, help = "Print labels on the plot")
 )
 
 opt_parser <- optparse::OptionParser(option_list = option_list)
@@ -62,15 +66,30 @@ scrna@meta.data <- scrna@meta.data %>%
 n <- length(scrna@meta.data %>% pull(majority_voting) %>% unique())
 
 palette <- function_color_palette(n)
+palette <- function_color_palette(n)
+palette <- setNames(palette, scrna@meta.data %>% pull(majority_voting) %>% unique())
 
-p1 <- DimPlot(scrna, reduction = "tsne", label = TRUE, group.by = "majority_voting", repel = TRUE) & scale_color_manual(values = palette)
-p2 <- DimPlot(scrna, reduction = "umap", label = TRUE, group.by = "majority_voting", repel = TRUE) & scale_color_manual(values = palette)
+breaks <- scrna@meta.data %>%
+      dplyr::select(majority_voting) %>%
+      dplyr::count(majority_voting) %>%
+      dplyr::mutate(perc = (n * 100) / sum(n)) %>%
+      dplyr::filter(perc >= opt$percentage) %>%
+      dplyr::select(-n, -perc) %>%
+      distinct() %>%
+      pull() %>%
+      as.character()
+
+p1 <- DimPlot(scrna, reduction = "tsne", label = opt$labels, group.by = "majority_voting", repel = TRUE) & scale_color_manual(values = palette, breaks = breaks)
+p2 <- DimPlot(scrna, reduction = "umap", label = opt$labels, group.by = "majority_voting", repel = TRUE) & scale_color_manual(values = palette, breaks = breaks)
 
 
+m <- max(str_count(breaks))
+
+w <- c(7.5 + (m * 0.08) * (floor(length(breaks) / 11) + 1))
 
 
-ggsave(plot = p1, filename = opt$output.tsne.plot, width = 12, height = 7)
-ggsave(plot = p2, filename = opt$output.umap.plot, width = 12, height = 7)
+ggsave(plot = p1, filename = opt$output.tsne.plot, width = w, height = 7)
+ggsave(plot = p2, filename = opt$output.umap.plot, width = w, height = 7)
 
 
 
