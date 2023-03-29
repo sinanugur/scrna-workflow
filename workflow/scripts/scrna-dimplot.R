@@ -10,8 +10,12 @@ option_list <- list(
             type = "character", default = "umap",
             help = "Reduction type, umap or tsne", metavar = "character"
       ),
-      optparse::make_option(c("--output.reduction.plot"),
+      optparse::make_option(c("--pdfplot"),
             type = "character", default = "reduction.pdf",
+            help = "Plot file name", metavar = "character"
+      ),
+      optparse::make_option(c("--htmlplot"),
+            type = "character", default = "reduction.html",
             help = "Plot file name", metavar = "character"
       ),
       optparse::make_option(c("--csv"),
@@ -21,7 +25,12 @@ option_list <- list(
       optparse::make_option(c("--idents"),
             type = "character", default = "seurat_clusters",
             help = "Meta data column name for marker analysis", metavar = "character"
-      )
+      ),
+      optparse::make_option(c("--percentage"),
+            type = "double", default = 5,
+            help = "Cluster mimnimum percentage to plot", metavar = "double"
+      ),
+      optparse::make_option(c("--labels"), action = "store_true", default = FALSE, help = "Print labels on the plot")
 )
 
 
@@ -34,9 +43,19 @@ if (is.null(opt$rds)) {
       stop("At least one argument must be supplied (rds file)", call. = FALSE)
 }
 
+require(plotly)
 require(Seurat)
 require(tidyverse)
-require(randomcoloR)
+
+tryCatch(
+      {
+            source("workflow/scripts/scrna-functions.R")
+      },
+      error = function(cond) {
+            source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE), "/scrna/workflow/scripts/scrna-functions.R"))
+      }
+)
+
 
 
 scrna <- readRDS(file = opt$rds)
@@ -58,19 +77,31 @@ if (!is.null(opt$csv)) {
 Idents(object = scrna) <- scrna@meta.data[[opt$idents]]
 
 n <- length(Idents(scrna) %>% unique())
-set.seed(149)
-palette <- sort(distinctColorPalette(n))
 
+palette <- function_color_palette(n)
+palette <- setNames(palette, Idents(scrna) %>% unique())
 
-names(palette) <- Idents(scrna) %>%
-      unique() %>%
-      sort() %>%
+breaks <- scrna@meta.data %>%
+      dplyr::select(opt$idents) %>%
+      dplyr::count(get(opt$idents)) %>%
+      dplyr::mutate(perc = (n * 100) / sum(n)) %>%
+      dplyr::filter(perc >= opt$percentage) %>%
+      dplyr::select(-n, -perc) %>%
+      distinct() %>%
+      pull() %>%
       as.character()
-print(palette)
-
-p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = TRUE, repel = TRUE) & ggthemes::theme_few() & scale_color_manual(values = palette)
 
 
+p1 <- DimPlot(scrna, reduction = opt$reduction.type) & scale_color_manual(values = palette)
+
+ggplotly(p1) -> p1_plotly
+
+p1_plotly %>% htmlwidgets::saveWidget(file = opt$htmlplot, selfcontained = T)
+
+m <- max(str_count(breaks))
+
+w <- c(7.5 + (m * 0.08) * (floor(length(breaks) / 11) + 1))
 
 
-ggsave(plot = p1, filename = opt$output.reduction.plot, width = 9, height = 7)
+p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = opt$labels, repel = TRUE) & scale_color_manual(values = palette, breaks = breaks)
+ggsave(plot = p1, filename = opt$pdfplot, width = w, height = 7)

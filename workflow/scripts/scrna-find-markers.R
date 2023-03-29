@@ -2,10 +2,6 @@
 
 
 option_list <- list(
-  optparse::make_option(c("--resolution"),
-    type = "double", default = 0.8,
-    help = "Resolution [default= %default]", metavar = "character"
-  ),
   optparse::make_option(c("--rds"),
     type = "character", default = NULL,
     help = "Processed rds file of a Seurat object", metavar = "character"
@@ -18,11 +14,7 @@ option_list <- list(
     type = "character", default = "wilcox",
     help = "Test use [default= %default]", metavar = "character"
   ),
-  optparse::make_option(c("--output.xlsx.positive"),
-    type = "character", default = NULL,
-    help = "Excel table of positive markers", metavar = "character"
-  ),
-  optparse::make_option(c("--output.xlsx.all"),
+  optparse::make_option(c("--output.rds"),
     type = "character", default = NULL,
     help = "Excel table of all markers", metavar = "character"
   ),
@@ -62,6 +54,4 @@ all_markers <- FindAllMarkers(scrna, logfc.threshold = opt$logfc.threshold, test
 
 
 
-openxlsx::write.xlsx(all_markers, file = opt$output.xlsx.all)
-
-openxlsx::write.xlsx(all_markers %>% filter(avg_log2FC > 0), file = opt$output.xlsx.positive)
+saveRDS(all_markers, file = opt$output.rds)

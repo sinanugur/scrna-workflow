@@ -42,7 +42,7 @@ df %>%
     ggplot(aes(x = n, y = avg_log2FC, label = gene)) +
     geom_text(angle = 75, size = 3) +
     facet_wrap(~cluster, ncol = 4) +
-    ggthemes::theme_few() +
+    # ggthemes::theme_few() +
     theme(strip.text = element_text(size = 12)) +
     ylim(c(0, maxFC)) +
     coord_cartesian(clip = "off", expand = TRUE) +

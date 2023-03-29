@@ -22,7 +22,7 @@ option_list <- list(
   ),
   optparse::make_option(c("--idents"),
     type = "character", default = "seurat_clusters",
-    help = "Meta data column name for marker analysis", metavar = "character"
+    help = "Meta data column name", metavar = "character"
   )
 )
 
@@ -52,7 +52,6 @@ if (is.null(opt$rds)) {
 require(Seurat)
 require(tidyverse)
 require(viridis)
-require(randomcoloR)
 
 markers <- c()
 
@@ -87,13 +86,12 @@ dir.create(opt$output.plot.dir, recursive = TRUE)
 
 suppressMessages(for (i in markers) {
   n <- length(Idents(scrna) %>% unique())
-  set.seed(149)
-  palette <- distinctColorPalette(n)
+  palette <- function_color_palette(n)
 
   tryCatch(
     {
-      p1 <- FeaturePlot(scrna, reduction = opt$reduction.type, features = i) & ggthemes::theme_few() & scale_color_continuous(type = "viridis") & labs(color = "Expression") & theme(axis.text = element_text(size = 10))
-      p2 <- DotPlot(scrna, features = i) & ggthemes::theme_few() & scale_color_continuous(type = "viridis") & labs(color = "Average Expression", size = "Percent Expressed") & ylab("Identity") & theme(axis.title.x = element_blank(), axis.text = element_text(size = 10)) & theme(legend.position = "right")
+      p1 <- FeaturePlot(scrna, reduction = opt$reduction.type, features = i) & scale_color_continuous(type = "viridis") & labs(color = "Expression") & theme(axis.text = element_text(size = 10))
+      p2 <- DotPlot(scrna, features = i) & scale_color_continuous(type = "viridis") & labs(color = "Average Expression", size = "Percent Expressed") & ylab("Identity") & theme(axis.title.x = element_blank(), axis.text = element_text(size = 10)) & theme(legend.position = "right")
       p3 <- VlnPlot(scrna, features = i) & ggthemes::theme_hc() & scale_fill_manual(values = palette) & theme(legend.position = "right", axis.text = element_text(size = 10)) & labs(fill = "") & xlab("Identity") & ylab("Expression Level")
 
       # p1 <- plot_df %>% filter(gene == i) %>%       ggplot(aes(x=UMAP_1,y=UMAP_2,color=expr)) + geom_point(size=0.3) + theme_cellsnake_classic() + scale_color_continuous(type = "viridis") + labs(color="Expression") + theme(axis.text = element_text(size=12))
@@ -106,6 +104,6 @@ suppressMessages(for (i in markers) {
       wp <- plot.new()
     },
     finally = {}
-  )
+  ) -> wp
   ggsave(paste0(opt$output.plot.dir, "/", i, ".pdf"), wp, height = 5 + (n * 0.15), width = 7 + (n * 0.15), useDingbats = TRUE)
 })

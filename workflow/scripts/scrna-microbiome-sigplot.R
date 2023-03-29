@@ -10,17 +10,21 @@ option_list <- list(
     type = "character", default = NULL,
     help = "Microbiome rds file", metavar = "character"
   ),
-  optparse::make_option(c("--reduction.type"),
-    type = "character", default = "umap",
-    help = "Reduction type, umap or tsne", metavar = "character"
-  ),
-  optparse::make_option(c("--dimplot"),
-    type = "character", default = "micdimplot.pdf",
+  optparse::make_option(c("--sigplot"),
+    type = "character", default = "sigplot.pdf",
     help = "Plot file name", metavar = "character"
+  ),
+  optparse::make_option(c("--sigtable"),
+    type = "character", default = NULL,
+    help = "Excel table of positive markers", metavar = "character"
   ),
   optparse::make_option(c("--taxa"),
     type = "character", default = "genus",
     help = "Taxonomic level", metavar = "character"
+  ),
+  optparse::make_option(c("--idents"),
+    type = "character", default = "seurat_clusters",
+    help = "Meta data column name", metavar = "character"
   )
 )
 
@@ -68,20 +72,34 @@ AddMetaData(scrna, microbiome %>% rownames_to_column("barcodes") %>% gather(taxa
 
 # p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = TRUE) & theme_cellsnake_classic() & scale_color_manual(values = palette)
 
-
 scrna %>%
-  dplyr::select(barcodes = .cell, orig.ident, contains(opt$taxa), starts_with(opt$reduction.type)) %>%
+  dplyr::select(one_of(opt$idents), starts_with(opt$taxa)) %>%
   gather(taxa, umi, starts_with(opt$taxa)) %>%
-  dplyr::select(barcodes, orig.ident, x = 3, y = 4, taxa, umi) %>%
-  replace(is.na(.), 0) %>%
-  ggplot(aes(x = x, y = y, color = log(umi + 1))) +
-  geom_point(size = 0.2) +
-  labs(color = "Log-UMI") +
-  theme(axis.text = element_text(size = 12)) +
-  scale_color_viridis(option = "magma", direction = -1, alpha = 0.8, na.value = "white") +
-  # ggthemes::theme_few() +
-  facet_wrap(~taxa) -> p1
+  group_by(across(opt$idents), taxa) %>%
+  dplyr::mutate(total = sum(umi, na.rm = T)) %>%
+  group_by(taxa, across(opt$idents)) %>%
+  dplyr::mutate(cell = n()) %>%
+  dplyr::ungroup() %>%
+  distinct(across(opt$idents), taxa, total, cell) %>%
+  group_by(taxa) %>%
+  dplyr::mutate(v3 = sum(total) - total, v4 = sum(cell) - cell) %>%
+  rowwise() %>%
+  dplyr::mutate(p = fisher.test(matrix(c(total, cell, v3, v4), ncol = 2), alternative = "greater")$p.value) %>%
+  ungroup() %>%
+  dplyr::mutate(p = p.adjust(p)) %>%
+  arrange(p) -> df
 
 
+df %>% ggplot(aes(x = get(opt$idents), y = -log10(p + 1e-200))) +
+  geom_col() +
+  geom_hline(yintercept = -log10(0.05), color = "red") +
+  facet_wrap(~taxa) +
+  theme_bw() +
+  coord_flip() +
+  ylab("Adjusted log P value") +
+  xlab("Identity") -> p1
 
-ggsave(plot = p1, filename = opt$dimplot, width = 13, height = 9)
+ggsave(plot = p1, filename = opt$sigplot, width = 12, height = 8)
+
+
+openxlsx::write.xlsx(df, file = opt$sigtable)

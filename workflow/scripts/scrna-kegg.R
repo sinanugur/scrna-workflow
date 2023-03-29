@@ -28,17 +28,20 @@ option_list <- list(
     type = "character", default = "org.Hs.eg.db",
     help = "Mapping", metavar = "character"
   ),
+  optparse::make_option(c("--organism"),
+    type = "character", default = "hsa",
+    help = "Organism code, look at https://www.genome.jp/kegg/catalog/org_list.html", metavar = "character"
+  ),
   optparse::make_option(c("--pval"),
     type = "double", default = 0.05,
     help = "P value treshold [default= %default]", metavar = "character"
   ),
   optparse::make_option(c("--logfc.treshold"),
-    type = "double", default = 1.5,
+    type = "double", default = 1,
     help = "LogFC [default= %default]", metavar = "character"
   )
 )
-require(clusterProfiler)
-require(org.Hs.eg.db)
+# require(clusterProfiler)
 require(tidyverse)
 
 
@@ -46,7 +49,7 @@ require(tidyverse)
 
 opt_parser <- optparse::OptionParser(option_list = option_list)
 opt <- optparse::parse_args(opt_parser)
-
+require(opt$mapping, character.only = T)
 if (is.null(opt$xlsx)) {
   optparse::print_help(opt_parser)
   stop("Arguments must be supplied", call. = FALSE)
@@ -57,13 +60,13 @@ All_Features <- openxlsx::read.xlsx(opt$xlsx)
 
 
 function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
-  print(results %>% distinct(cluster) %>% pull())
+  print(results %>% distinct(cluster) %>% dplyr::pull())
   results %>%
     as.data.frame() %>%
     dplyr::filter(p_val_adj < p) %>%
     arrange(desc(avg_log2FC)) %>%
     dplyr::select(gene, avg_log2FC) %>%
-    dplyr::mutate(GeneID = mapIds(org.Hs.eg.db, keys = gene, column = "ENTREZID", keytype = "SYMBOL", multiVals = "first")) %>%
+    dplyr::mutate(GeneID = mapIds(get(opt$mapping), keys = gene, column = "ENTREZID", keytype = "SYMBOL", multiVals = "first")) %>%
     dplyr::filter(!is.na(GeneID), !is.na(avg_log2FC), !duplicated(GeneID)) %>%
     dplyr::select(3, 2) %>%
     deframe() -> geneList
@@ -73,25 +76,25 @@ function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
 
   tryCatch(
     {
-      kk <- enrichKEGG(
+      kk1 <- clusterProfiler::enrichKEGG(
         gene = gene,
-        organism = "hsa",
+        organism = opt$organism,
         pAdjustMethod = "fdr",
         minGSSize = 2,
-        pvalueCutoff = 0.05
+        pvalueCutoff = 1
       )
     },
     error = function(e) {
-      kk <- NULL
+      kk1 <- NULL
     }
-  ) -> kk
+  ) -> kk1
 
   tryCatch(
     {
-      kk2 <- gseKEGG(
+      kk2 <- clusterProfiler::gseKEGG(
         geneList = geneList,
-        organism = "hsa",
-        pvalueCutoff = 0.05,
+        organism = opt$organism,
+        pvalueCutoff = 1,
         pAdjustMethod = "fdr",
         minGSSize = 2,
         eps = 0,
@@ -105,10 +108,10 @@ function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
 
   tryCatch(
     {
-      kk3 <- enrichMKEGG(
+      kk3 <- clusterProfiler::enrichMKEGG(
         gene = gene,
-        organism = "hsa",
-        pvalueCutoff = 0.05,
+        organism = opt$organism,
+        pvalueCutoff = 1,
         minGSSize = 2,
         pAdjustMethod = "fdr",
       )
@@ -120,13 +123,13 @@ function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
 
   tryCatch(
     {
-      kk4 <- gseMKEGG(
+      kk4 <- clusterProfiler::gseMKEGG(
         geneList = geneList,
-        organism = "hsa",
+        organism = opt$organism,
         minGSSize = 2,
         keyType = "kegg",
         pAdjustMethod = "fdr",
-        pvalueCutoff = 0.05
+        pvalueCutoff = 1
       )
     },
     error = function(e) {
@@ -134,13 +137,13 @@ function_enrichment_kegg_singlecell <- function(results, p = 0.05, f = 1.5) {
     }
   ) -> kk4
 
-  return(list(kk, kk2, kk3, kk4))
+  return(list(kk1, kk2, kk3, kk4))
 }
 
 
 All_Features %>%
   split(.$cluster) %>%
-  purrr::map(~ function_enrichment_kegg_singlecell(.)) -> all_kegg_results
+  purrr::map(~ function_enrichment_kegg_singlecell(., p = opt$pval, f = opt$logfc.treshold)) -> all_kegg_results
 
 
 
