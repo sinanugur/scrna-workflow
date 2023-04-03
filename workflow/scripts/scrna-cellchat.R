@@ -34,6 +34,10 @@ if (is.null(opt$rds)) {
   stop("At least one argument must be supplied (rds file)", call. = FALSE)
 }
 
+if (!requireNamespace("CellChat", quietly = TRUE)) {
+  remotes::install_github("sqjin/CellChat")
+}
+
 require(Seurat)
 require(tidyverse)
 require(randomcoloR)
