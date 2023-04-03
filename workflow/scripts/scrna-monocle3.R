@@ -19,13 +19,20 @@ option_list <- list(
 opt_parser <- optparse::OptionParser(option_list = option_list)
 opt <- optparse::parse_args(opt_parser)
 
+if (!requireNamespace("SeuratWrappers", quietly = TRUE)) {
+    remotes::install_github("satijalab/seurat-wrappers")
+}
 
-library(monocle3)
-library(Seurat)
-library(SeuratWrappers)
-library(tidyverse)
-library(patchwork)
-library(magrittr)
+if (!requireNamespace("monocle3", quietly = TRUE)) {
+    remotes::install_github("cole-trapnell-lab/monocle3")
+}
+
+require(monocle3)
+require(Seurat)
+require(SeuratWrappers)
+require(tidyverse)
+require(patchwork)
+require(magrittr)
 
 
 if (is.null(opt$rds)) {

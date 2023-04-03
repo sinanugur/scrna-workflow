@@ -77,18 +77,20 @@ if (any(installed_packages == FALSE)) {
   #  remotes::install_github("romanhaa/cerebroApp")
   # }
 
-  if (!requireNamespace("SeuratDisk", quietly = TRUE)) {
-    remotes::install_github("mojaveazure/seurat-disk")
-  }
-  if (!requireNamespace("CellChat", quietly = TRUE)) {
-    remotes::install_github("sqjin/CellChat")
-  }
-  if (!requireNamespace("SeuratWrappers", quietly = TRUE)) {
-    remotes::install_github("satijalab/seurat-wrappers")
-  }
-  if (!requireNamespace("monocle3", quietly = TRUE)) {
-    remotes::install_github("cole-trapnell-lab/monocle3")
-  }
+  try({
+    if (!requireNamespace("SeuratDisk", quietly = TRUE)) {
+      remotes::install_github("mojaveazure/seurat-disk")
+    }
+    if (!requireNamespace("CellChat", quietly = TRUE)) {
+      remotes::install_github("sqjin/CellChat")
+    }
+    if (!requireNamespace("SeuratWrappers", quietly = TRUE)) {
+      remotes::install_github("satijalab/seurat-wrappers")
+    }
+    if (!requireNamespace("monocle3", quietly = TRUE)) {
+      remotes::install_github("cole-trapnell-lab/monocle3")
+    }
+  })
 } else {
   print("All packages were installed...OK")
 }
