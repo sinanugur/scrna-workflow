@@ -27,8 +27,6 @@ resolution: "0.8" #default is 0.8 and 0.3 for integrated samples, you can write 
 #Differential expression paramaters
 logfc_threshold: 0.25
 test_use: "wilcox"
-
-
 marker_plots_per_cluster_n: 20 #plot summary marker plots for top markers
 umap_markers_plot: True
 tsne_markers_plot: False
@@ -53,3 +51,7 @@ min_hit_groups: 4 #see kraken2 manual
 
 #cellchat
 species: "human" #human or mouse is accepted, http://www.cellchat.org/cellchatdb/
+
+#integration params
+dims: 30
+reduction: "cca"
