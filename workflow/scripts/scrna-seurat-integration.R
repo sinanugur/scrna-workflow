@@ -20,7 +20,7 @@ option_list <- list(
     optparse::make_option(c("--reduction"),
         type = "character", default = "cca",
         help = "Integration reduction type [default= %default]", metavar = "character"
-    ),
+    )
 )
 
 opt_parser <- optparse::OptionParser(option_list = option_list)
