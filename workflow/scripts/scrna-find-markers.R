@@ -16,7 +16,7 @@ option_list <- list(
   ),
   optparse::make_option(c("--output.rds"),
     type = "character", default = NULL,
-    help = "Excel table of all markers", metavar = "character"
+    help = "RDS table of all markers", metavar = "character"
   ),
   optparse::make_option(c("--idents"),
     type = "character", default = "seurat_clusters",
