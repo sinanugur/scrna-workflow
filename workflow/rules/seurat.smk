@@ -341,10 +341,3 @@ rule plot_monocle3:
     shell:
         "{cellsnake_path}workflow/scripts/scrna-monocle3.R --rds {input.rds} --output.dir {params.outputdir} --pplot {output.pplot}"
 
-rule subset_final_rds:
-    input:
-        rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
-    output:
-        output=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/dataoutput/{keyword}.rds"
-    shell:
-        "{cellsnake_path}workflow/scripts/scrna-subset_final_rds.R --rds {input.rds} --output {output.rds}"

@@ -381,6 +381,13 @@ elif option in ["minimal","standard","clustree","clusteringTree","advanced"] and
         input:
             sample_parameter(paramspace,files)
 
+elif option in ["subset"] and files:
+    include: "rules/subset.smk"
+    rule all:
+        input:
+            rds_subset(files)
+
+
 else:
     print("Please select a correct option or no files detected...")
     pass

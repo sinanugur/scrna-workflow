@@ -98,6 +98,9 @@ scrna <- FindNeighbors(scrna, dims = 1:dimensionReduction)
 if (!opt$resolution %in% c("auto", "AUTO", "Auto")) {
   scrna <- FindClusters(scrna, resolution = as.numeric(opt$resolution))
 } else {
+  if (!requireNamespace("MultiKParallel", quietly = TRUE)) {
+    remotes::install_github("sinanugur/MultiKParallel")
+  }
   require(MultiKParallel)
   scrna_tmp <- FindClusters(scrna, resolution = seq(0.2, 2.5, 0.15))
   multik <- MultiKParallel(scrna_tmp, reps = 10, seed = 255, resolution = seq(0.2, 2.5, 0.15), numCores = opt$cpu, nPC = dimensionReduction)

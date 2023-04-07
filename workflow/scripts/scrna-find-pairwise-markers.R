@@ -83,7 +83,7 @@ scrna <- readRDS(file = opt$rds)
 DefaultAssay(scrna) <- "RNA"
 
 function_read_metadata(opt) -> df
-print(df)
+
 
 scrna@meta.data %>% dplyr::left_join(df, by = c("orig.ident" = names(df)[1])) -> scrna@meta.data
 
