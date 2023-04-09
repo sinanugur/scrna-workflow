@@ -2,6 +2,6 @@ rule subset_final_rds:
     input:
         rds=files
     output:
-        rds="dataoutput/{outname}.rds"
+        rds="dataoutput/{subset}.rds"
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-subset_final_rds.R --rds {input.rds} --output.rds {output.rds} --keywords {keywords} --column {column} --metadata {metadata} {exact}"
+        "{cellsnake_path}workflow/scripts/scrna-subset_final_rds.R --rds {input.rds} --output.rds {output.rds} --keywords {keywords} --column {subset_column} --metadata {metadata_file} {exact}"
