@@ -71,6 +71,7 @@ dependencies:
  - openblas==0.3.21
  - pip
  - scanpy>=1.9.1
+ - cython
 # - pip:
 #   - scipy>=1.6.2
 #   - regex>=2021.4.4
