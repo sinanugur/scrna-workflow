@@ -145,6 +145,9 @@ if (opt$tsne) {
 
 
 if (opt$doublet.filter) {
+  if (!requireNamespace("DoubletFinder", quietly = TRUE)) {
+    remotes::install_github("chris-mcginnis-ucsf/DoubletFinder")
+  }
   require(DoubletFinder)
 
   homotypic.prop <- modelHomotypic(scrna$seurat_clusters)

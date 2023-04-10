@@ -24,9 +24,10 @@ RUN mamba env create --name cellsnake --file /tmp/environment.yml && \
 # Activate Conda environment and install a package from PyPI
 SHELL ["bash", "-c"]
 RUN source activate cellsnake && \
-    pip install cellsnake -U
-
+    pip install cellsnake
 RUN source activate cellsnake && cellsnake --install-packages
+RUN source activate cellsnake && \
+    pip install cellsnake -U
 
 # Set working directory
 WORKDIR /app
