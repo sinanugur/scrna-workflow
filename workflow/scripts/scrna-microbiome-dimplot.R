@@ -79,7 +79,7 @@ scrna %>%
   labs(color = "Log-UMI") +
   theme(axis.text = element_text(size = 12)) +
   scale_color_viridis(option = "magma", direction = -1, alpha = 0.8, na.value = "white") +
-  # ggthemes::theme_few() +
+  ggthemes::theme_few() +
   facet_wrap(~taxa) -> p1
 
 
