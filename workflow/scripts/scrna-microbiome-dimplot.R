@@ -18,6 +18,10 @@ option_list <- list(
     type = "character", default = "micdimplot.pdf",
     help = "Plot file name", metavar = "character"
   ),
+  optparse::make_option(c("--tplot"),
+    type = "character", default = "tplot.pdf",
+    help = "Total microbiome dimplot file name", metavar = "character"
+  ),
   optparse::make_option(c("--taxa"),
     type = "character", default = "genus",
     help = "Taxonomic level", metavar = "character"
@@ -68,6 +72,8 @@ AddMetaData(scrna, microbiome %>% rownames_to_column("barcodes") %>% gather(taxa
 
 # p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = TRUE) & theme_cellsnake_classic() & scale_color_manual(values = palette)
 
+scrna@meta.data %>% dplyr::mutate(`Total Reads` = rowSums(across(starts_with(opt$taxa)))) -> scrna@meta.data
+
 
 scrna %>%
   dplyr::select(barcodes = .cell, orig.ident, contains(opt$taxa), starts_with(opt$reduction.type)) %>%
@@ -83,5 +89,8 @@ scrna %>%
   facet_wrap(~taxa) -> p1
 
 
-
 ggsave(plot = p1, filename = opt$dimplot, width = 13, height = 9)
+
+
+p2 <- FeaturePlot(scrna, features = "Total Reads", pt.size = 0.1, reduction = opt$reduction.type)
+ggsave(plot = p2, filename = opt$dimplot, width = 7, height = 7)
