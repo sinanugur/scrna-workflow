@@ -92,5 +92,5 @@ scrna %>%
 ggsave(plot = p1, filename = opt$dimplot, width = 13, height = 9)
 
 
-p2 <- FeaturePlot(scrna, features = "Total log2-UMI (Microbiome)", pt.size = 0.1, reduction = opt$reduction.type)
+p2 <- FeaturePlot(scrna, features = "Total log2-UMI (Microbiome)", pt.size = 0.1, reduction = opt$reduction.type) & scale_color_continuous(type = "viridis")
 ggsave(plot = p2, filename = opt$tplot, width = 8, height = 7)
