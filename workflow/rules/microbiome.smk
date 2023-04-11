@@ -62,7 +62,7 @@ rule dimplot_for_microbiome:
         dimplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/plot_microbiome_dimplot-{taxa}-{reduction}.pdf",
         tplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/plot_total_microbiome-{taxa}-{reduction}.pdf"
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-microbiome-dimplot.R --rds {input.rds} --microbiome.rds {input.microbiome_rds} --dimplot {output.dimplot} --tplot {outplut.tplot} --reduction.type {wildcards.reduction} --taxa {wildcards.taxa}"
+        "{cellsnake_path}workflow/scripts/scrna-microbiome-dimplot.R --rds {input.rds} --microbiome.rds {input.microbiome_rds} --dimplot {output.dimplot} --tplot {output.tplot} --reduction.type {wildcards.reduction} --taxa {wildcards.taxa}"
 
 
 rule combine_microbiome_files_for_later:
@@ -82,7 +82,7 @@ rule dimplot_for_combined_microbiome:
         dimplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/plot_integrated_microbiome_dimplot-{taxa}-{reduction}.pdf",
         tplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/plot_integrated_total_microbiome-{taxa}-{reduction}.pdf"
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-microbiome-dimplot.R --rds {input.rds} --microbiome.rds {input.microbiome_rds} --dimplot {output.dimplot} --tplot {outplut.tplot} --reduction.type {wildcards.reduction} --taxa {wildcards.taxa}"
+        "{cellsnake_path}workflow/scripts/scrna-microbiome-dimplot.R --rds {input.rds} --microbiome.rds {input.microbiome_rds} --dimplot {output.dimplot} --tplot {output.tplot} --reduction.type {wildcards.reduction} --taxa {wildcards.taxa}"
 
 rule sigplot_for_combined_microbiome:
     input:
