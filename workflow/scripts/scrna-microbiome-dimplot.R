@@ -93,4 +93,4 @@ ggsave(plot = p1, filename = opt$dimplot, width = 13, height = 9)
 
 
 p2 <- FeaturePlot(scrna, features = "Total Reads", pt.size = 0.1, reduction = opt$reduction.type)
-ggsave(plot = p2, filename = opt$dimplot, width = 7, height = 7)
+ggsave(plot = p2, filename = opt$tplot, width = 7, height = 7)
