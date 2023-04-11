@@ -60,7 +60,7 @@ rule dimplot_for_microbiome:
         microbiome_rds=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/microbiome-full-{taxa}-level.rds"
     output:
         dimplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/plot_microbiome_dimplot-{taxa}-{reduction}.pdf",
-        dimplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/plot_total_microbiome-{taxa}-{reduction}.pdf"
+        tplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/plot_total_microbiome-{taxa}-{reduction}.pdf"
     shell:
         "{cellsnake_path}workflow/scripts/scrna-microbiome-dimplot.R --rds {input.rds} --microbiome.rds {input.microbiome_rds} --dimplot {output.dimplot} --tplot {outplut.tplot} --reduction.type {wildcards.reduction} --taxa {wildcards.taxa}"
 
