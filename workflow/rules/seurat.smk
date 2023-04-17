@@ -268,7 +268,7 @@ rule go2_enrichment:
 rule deseq_analysis_from_metadata_file:
     input:
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
-        metadata=metadata_file
+        metadata=metadata
     output:
         rds=analyses_folder + "/markers/" + f"{paramspace.wildcard_pattern}" + "/deseq_{sample}-{i}.rds"
     shell:

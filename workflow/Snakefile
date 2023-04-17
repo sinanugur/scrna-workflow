@@ -79,7 +79,7 @@ percent_rp=config.get("percent_rp",0) #by default, no filtering on ribosomal gen
 highly_variable_features=config.get("highly_variable_features",2000)
 variable_selection_method=config.get("variable_selection_method","vst")
 doublet_filter= "--doublet.filter" if config.get("doublet_filter",True) in [True,"TRUE","True","T"] and is_integrated_sample is False else ""
-metadata_file=config.get("metadata_file","metadata.csv")
+metadata=config.get("metadata","metadata.csv")
 metadata_column=config.get("metadata_column","condition")
 keywords=config.get("keywords",1)
 exact="--exact" if config.get("exact",True) in [True,"TRUE","True","T"] else ""
@@ -238,7 +238,7 @@ def enrichment_analysis(paramspace,identity):
 
 def metadata_pairwise_deseq_analysis(paramspace,metadata_column):
     outs=[]
-    if os.path.isfile(metadata_file) and is_integrated_sample:
+    if os.path.isfile(metadata) and is_integrated_sample:
         outs += expand([results_folder + "/" + s + "/{params}/metaplot_volcano-" + metadata_column + ".pdf" for s in files],params=list(paramspace.instance_patterns))
         outs += expand([results_folder + "/" + s + "/{params}/metatable_positive-markers-" + metadata_column + ".xlsx" for s in files],params=list(paramspace.instance_patterns))
     return outs
