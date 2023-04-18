@@ -119,3 +119,5 @@ function_subset_by_idents <- function(scrna, opt) {
 function_subset_by_idents(scrna, opt) -> scrna
 
 head(scrna)
+
+saveRDS(scrna, file = opt$output.rds)
