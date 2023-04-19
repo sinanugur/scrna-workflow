@@ -6,25 +6,25 @@ option_list <- list(
         type = "character", default = NULL,
         help = "Processed rds file of a Seurat object", metavar = "character"
     ),
-    optparse::make_option(c("--keywords"),
-        type = "character", default = NULL,
-        help = "Keywords to slice object", metavar = "character"
+    optparse::make_option(c("--logfc.threshold"),
+        type = "double", default = 0.25,
+        help = "LogFC [default= %default]", metavar = "character"
     ),
-    optparse::make_option(c("--column"),
-        type = "character", default = NULL,
-        help = "Meta data column name for selecting the slice", metavar = "character"
+    optparse::make_option(c("--test.use"),
+        type = "character", default = "wilcox",
+        help = "Test use [default= %default]", metavar = "character"
     ),
     optparse::make_option(c("--output.rds"),
-        type = "character", default = "output.rds",
-        help = "Output RDS file name [default= %default]", metavar = "character"
+        type = "character", default = NULL,
+        help = "RDS table of all markers", metavar = "character"
+    ),
+    optparse::make_option(c("--metadata.column"),
+        type = "character", default = "condition",
+        help = "Meta data column name for marker analysis", metavar = "character"
     ),
     optparse::make_option(c("--metadata"),
         type = "character", default = NULL,
         help = "Metadata filename", metavar = "character"
-    ),
-    optparse::make_option(c("--exact"),
-        action = "store_true", default = FALSE,
-        help = "Exact match, otherwise pattern match"
     )
 )
 
@@ -38,13 +38,9 @@ if (is.null(opt$rds)) {
     stop("At least one argument must be supplied (rds file)", call. = FALSE)
 }
 
-
 require(Seurat)
 require(tidyverse)
 
-
-
-scrna <- readRDS(file = opt$rds)
 function_read_metadata <- function(opt) {
     file_type <- tools::file_ext(opt$metadata)
     possible_separators <- c(",", ";", "|", "\t")
@@ -82,42 +78,38 @@ function_read_metadata <- function(opt) {
     return(NULL)
 }
 
-if (!is.null(opt$metadata)) {
-    function_read_metadata(opt) -> df
-    if (is.null(df)) {
-        message("No metadata file provided, skipping metadata merge")
-    } else {
-        scrna@meta.data %>% dplyr::left_join(df, by = c("orig.ident" = names(df)[1])) -> scrna@meta.data
-    }
+
+scrna <- readRDS(file = opt$rds)
+DefaultAssay(scrna) <- "RNA"
+
+function_read_metadata(opt) -> df
+
+
+scrna@meta.data %>% dplyr::left_join(df, by = c("orig.ident" = names(df)[1])) -> scrna@meta.data
+
+
+# RNA_=paste0("RNA_snn_res.",opt$resolution)
+# Idents(object = scrna) <- scrna@meta.data[[RNA_]]
+Idents(object = scrna) <- scrna@meta.data[[opt$metadata.column]]
+
+combn(as.character(unique(Idents(scrna))), 2) -> pairwise
+
+
+
+results <- list()
+for (i in 1:ncol(pairwise)) {
+    pair_ <- paste0(pairwise[1, i], " vs ", pairwise[2, i])
+    markers <- FindMarkers(scrna, ident.1 = pairwise[1, i], ident.2 = pairwise[2, i], logfc.threshold = opt$logfc.threshold, test.use = opt$test.use)
+    results[[pair_]] <- markers
+
+    pair_ <- paste0(pairwise[2, i], " vs ", pairwise[1, i])
+    markers <- FindMarkers(scrna, ident.1 = pairwise[2, i], ident.2 = pairwise[1, i], logfc.threshold = opt$logfc.threshold, test.use = opt$test.use)
+    results[[pair_]] <- markers
 }
 
+results %>%
+    map(~ rownames_to_column(., var = "gene")) %>%
+    bind_rows(.id = "condition") -> all_markers
 
 
-
-function_subset_by_idents <- function(scrna, opt) {
-    if (!is.null(opt$keywords)) {
-        keywords <- strsplit(opt$keywords, ",")[[1]]
-        patterns <- paste0("(?i)", "(", paste(keywords, collapse = "|"), ")")
-
-        scrna@meta.data %>%
-            {
-                if (!opt$exact) {
-                    if (is.null(opt$column)) dplyr::filter(., if_any(everything(), str_detect, pattern = patterns)) else dplyr::filter(., if_any(opt$column, str_detect, pattern = patterns))
-                } else {
-                    dplyr::filter(., get(opt$column) %in% keywords)
-                }
-            } %>%
-            rownames() -> cells
-        scrna <- subset(scrna, cells = cells)
-
-        return(scrna)
-    }
-}
-
-
-
-function_subset_by_idents(scrna, opt) -> scrna
-
-head(scrna)
-
-saveRDS(scrna, file = opt$output.rds)
+saveRDS(all_markers, file = opt$output.rds)

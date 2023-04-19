@@ -123,7 +123,11 @@ function_read_input <- function(opt) {
   )
 }
 
+
+
 function_read_input(opt) -> scrna.data
+
+
 
 
 scrna <- CreateSeuratObject(counts = scrna.data, project = make.names(opt$sampleid), min.cells = opt$min.cells, min.features = opt$min.features)

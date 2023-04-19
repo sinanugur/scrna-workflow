@@ -18,6 +18,10 @@ option_list <- list(
     type = "character", default = "micdimplot.pdf",
     help = "Plot file name", metavar = "character"
   ),
+  optparse::make_option(c("--tplot"),
+    type = "character", default = "tplot.pdf",
+    help = "Total microbiome dimplot file name", metavar = "character"
+  ),
   optparse::make_option(c("--taxa"),
     type = "character", default = "genus",
     help = "Taxonomic level", metavar = "character"
@@ -68,20 +72,25 @@ AddMetaData(scrna, microbiome %>% rownames_to_column("barcodes") %>% gather(taxa
 
 # p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = TRUE) & theme_cellsnake_classic() & scale_color_manual(values = palette)
 
+scrna@meta.data %>% dplyr::mutate(`Total log2-UMI (Microbiome)` = log2(rowSums(across(starts_with(opt$taxa))) + 1)) -> scrna@meta.data
+
 
 scrna %>%
   dplyr::select(barcodes = .cell, orig.ident, contains(opt$taxa), starts_with(opt$reduction.type)) %>%
   gather(taxa, umi, starts_with(opt$taxa)) %>%
   dplyr::select(barcodes, orig.ident, x = 3, y = 4, taxa, umi) %>%
   replace(is.na(.), 0) %>%
-  ggplot(aes(x = x, y = y, color = log(umi + 1))) +
+  ggplot(aes(x = x, y = y, color = log2(umi + 1))) +
   geom_point(size = 0.2) +
-  labs(color = "Log-UMI") +
+  labs(color = "Log2-UMI") +
   theme(axis.text = element_text(size = 12)) +
   scale_color_viridis(option = "magma", direction = -1, alpha = 0.8, na.value = "white") +
-  # ggthemes::theme_few() +
+  ggthemes::theme_few() +
   facet_wrap(~taxa) -> p1
 
 
-
 ggsave(plot = p1, filename = opt$dimplot, width = 13, height = 9)
+
+
+p2 <- FeaturePlot(scrna, features = "Total log2-UMI (Microbiome)", pt.size = 0.1, reduction = opt$reduction.type) & scale_color_continuous(type = "viridis")
+ggsave(plot = p2, filename = opt$tplot, width = 8, height = 7)

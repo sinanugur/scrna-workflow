@@ -265,6 +265,35 @@ rule go2_enrichment:
         "{cellsnake_path}workflow/scripts/scrna-go_analysis.R --xlsx {input} --output.rds {output.rds} --mapping {mapping} --output.go {output.go} --output.gse {output.gse}"
 
 
+rule deseq_analysis_from_metadata_file:
+    input:
+        rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
+        metadata=metadata
+    output:
+        rds=analyses_folder + "/markers/" + f"{paramspace.wildcard_pattern}" + "/deseq_{sample}-{i}.rds"
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-find-pairwise-markers.R --rds {input.rds} --logfc.threshold {logfc_threshold} --test.use {test_use} --output.rds {output.rds} --metadata {input.metadata} --metadata.column {wildcards.i}"
+
+rule create_deseq_metadata_tables:
+    input:
+        analyses_folder + "/markers/" + f"{paramspace.wildcard_pattern}" + "/deseq_{sample}-{i}.rds"
+    output:
+        positive=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/metatable_positive-markers-{i}.xlsx",
+        allmarkers=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/metatable_all-markers-{i}.xlsx"
+    params:
+        paramaters=paramspace.instance,
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-marker-tables.R --rds {input} --output.xlsx.positive {output.positive} --output.xlsx.all {output.allmarkers}"
+
+rule volcano_plots:
+    input:
+        rds=analyses_folder + "/markers/" + f"{paramspace.wildcard_pattern}" + "/deseq_{sample}-{i}.rds"
+    output:
+        pdf=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  +  "/metaplot_volcano-{i}.pdf"
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-volcano.R --rds {input.rds} --vplot {output.pdf}"
+
+
 
 rule gsea_cerebro:
     input:
@@ -312,10 +341,3 @@ rule plot_monocle3:
     shell:
         "{cellsnake_path}workflow/scripts/scrna-monocle3.R --rds {input.rds} --output.dir {params.outputdir} --pplot {output.pplot}"
 
-rule subset_final_rds:
-    input:
-        rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
-    output:
-        output=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/dataoutput/{keyword}.rds"
-    shell:
-        "{cellsnake_path}workflow/scripts/scrna-subset_final_rds.R --rds {input.rds} --output {output.rds}"

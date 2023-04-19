@@ -32,15 +32,25 @@ gene_to_plot=[] if config.get("gene_to_plot",None) is None else [config.get("gen
 #configfile: "config.yaml"
 
 files=[]
+def file_capture(datafolder):
+    cellranger_new = cellsnake_glob_wildcards(datafolder +  "/{sample}/raw_feature_bc_matrix/matrix.mtx.gz").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx.gz").sample + cellsnake_glob_wildcards(datafolder +  "/{sample}/matrix.mtx.gz").sample
+    cellranger_old = cellsnake_glob_wildcards(datafolder +  "/{sample}/raw_feature_bc_matrix/matrix.mtx").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx").sample + cellsnake_glob_wildcards(datafolder +  "/{sample}/matrix.mtx").sample
+    h5files = cellsnake_glob_wildcards(datafolder + "/{sample}/filtered_feature_bc_matrix.h5").sample 
+    files=list(filter(lambda i: "/" not in i, cellranger_new + cellranger_old + h5files)) #do not capture subdirectories etc
+    return files
+
 try:
 
     if os.path.isdir(datafolder):
-        cellranger_new = cellsnake_glob_wildcards(datafolder +  "/{sample}/raw_feature_bc_matrix/matrix.mtx.gz").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx.gz").sample + cellsnake_glob_wildcards(datafolder +  "/{sample}/matrix.mtx.gz").sample
-        cellranger_old = cellsnake_glob_wildcards(datafolder +  "/{sample}/raw_feature_bc_matrix/matrix.mtx").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx").sample + cellsnake_glob_wildcards(datafolder +  "/{sample}/matrix.mtx").sample
-        h5files, = cellsnake_glob_wildcards(datafolder + "/{sample}/filtered_feature_bc_matrix.h5")
-        files=list(filter(lambda i: "/" not in i, cellranger_new + cellranger_old + h5files)) #do not capture subdirectories etc
+        files=file_capture(datafolder)
+        
+        if len(files)==0:
+            head,tail = os.path.split(datafolder.strip("/"))
+            files=file_capture(head) #probably capture a single file here
+            files=[x for x in files if tail in x]
+            if files:
+                datafolder=head
         print(files)
-    
     if os.path.isfile(datafolder):
         file_extension = pathlib.Path(datafolder)
         if (file_extension.suffix).lower() not in [".rds"]:
@@ -50,6 +60,8 @@ try:
             analyses_folder="analyses_integrated"
             results_folder="results_integrated"
             files = [file_extension.stem]
+        elif (file_extension.suffix).lower() in [".rds"] and option in ["subset"]:
+            files = datafolder
 
 except:
     print("No samples detected")
@@ -67,7 +79,12 @@ percent_rp=config.get("percent_rp",0) #by default, no filtering on ribosomal gen
 highly_variable_features=config.get("highly_variable_features",2000)
 variable_selection_method=config.get("variable_selection_method","vst")
 doublet_filter= "--doublet.filter" if config.get("doublet_filter",True) in [True,"TRUE","True","T"] and is_integrated_sample is False else ""
-metadata_file=config.get("metadata_file","metadata.csv")
+metadata=config.get("metadata","metadata.csv")
+metadata_column=config.get("metadata_column","condition")
+keywords=config.get("keywords",1)
+exact="--exact" if config.get("exact",True) in [True,"TRUE","True","T"] else ""
+subset_file=config.get("subset_file","subset")
+subset_column=config.get("subset_column","seurat_clusters")
 
 min_percentage_to_plot=config.get("min_percentage_to_plot",5) #only plot clusters with more than 5% of cells
 
@@ -128,6 +145,9 @@ microbiome_min_cells=config.get("microbiome_min_cells",1)
 microbiome_min_features=config.get("microbiome_min_features",3)
 confidence=config.get("confidence",0.05)
 min_hit_groups=config.get("min_hit_groups",4)
+
+reduction=config.get("reduction","cca")
+dims=config.get("dims",30)
 
 #initialization of paramspace object using defaults
 def initialization_of_paramspace(tsv_file,dictionary):
@@ -216,6 +236,13 @@ def enrichment_analysis(paramspace,identity):
         outs += expand([results_folder + "/" + s + "/{params}/enrichment_analysis/table_KEGG-module_geneset_enrichment-" + x + ".xlsx" for x in identity for s in files],params=list(paramspace.instance_patterns))
     return outs
 
+def metadata_pairwise_deseq_analysis(paramspace,metadata_column):
+    outs=[]
+    if os.path.isfile(metadata) and is_integrated_sample:
+        outs += expand([results_folder + "/" + s + "/{params}/metaplot_volcano-" + metadata_column + ".pdf" for s in files],params=list(paramspace.instance_patterns))
+        outs += expand([results_folder + "/" + s + "/{params}/metatable_positive-markers-" + metadata_column + ".xlsx" for s in files],params=list(paramspace.instance_patterns))
+    return outs
+
 
 
 def kraken_predictions(paramspace,taxa,identity):
@@ -230,6 +257,7 @@ def kraken_predictions(paramspace,taxa,identity):
         outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/plot_integrated_significance-" + taxa + "-" + x + ".pdf" for x in identity for s in files],params=list(paramspace.instance_patterns))
         outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/table_integrated_significance-" + taxa + "-" + x + ".xlsx" for x in identity for s in files],params=list(paramspace.instance_patterns))
     return outs
+
 
 def write_main_log(files):
 
@@ -311,7 +339,8 @@ def sample_parameter(paramspace,files):
                 identity_dependent_dimplot(paramspace,identity_to_analysis),
                 identity_dependent_metrics(paramspace,[x for x in identity_to_analysis if x != "orig.ident"]),
                 kraken_predictions(paramspace,taxa,identity_to_analysis),
-                selected_gene_plot(paramspace,gene_to_plot,identity_to_analysis)
+                selected_gene_plot(paramspace,gene_to_plot,identity_to_analysis),
+                metadata_pairwise_deseq_analysis(paramspace,metadata_column)
                 ]
     if option in ["clustree","clusteringTree","minimal","standard","advanced"]:
         outs += expand([results_folder + "/" + s + "/{params}/technicals/plot_clustree.pdf" for s in files],params=list(paramspace.instance_patterns))
@@ -368,6 +397,13 @@ elif option in ["minimal","standard","clustree","clusteringTree","advanced"] and
     rule all:
         input:
             sample_parameter(paramspace,files)
+
+elif option in ["subset"] and files:
+    include: "rules/subset.smk"
+    rule all:
+        input:
+            "dataoutput/" + subset_file + ".rds"
+
 
 else:
     print("Please select a correct option or no files detected...")
