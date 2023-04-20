@@ -98,7 +98,8 @@ grid_search=config.get("grid_search",False) #requires params file in tsv format
 #clustering and normalization paramaters
 normalization_method=config.get("normalization_method","LogNormalize")
 scale_factor=config.get("scale_factor",10000)
-resolution=config.get("resolution","0.8" if is_integrated_sample is False else "0.3") #a double or "auto", default is 0.8
+#resolution=config.get("resolution","0.8" if is_integrated_sample is False else "0.3") #a double or "auto", default is 0.8
+resolution=config.get("resolution","0.8") #a double or "auto", default is 0.8
 
 #dimension reduction options: by default both UMAP and TSNE will be plotted with predicted clusters
 umap_plot="--umap" if config.get("umap_plot",True) in [True,"TRUE","True","T"] else ""
@@ -346,6 +347,8 @@ def sample_parameter(paramspace,files):
         outs += expand([results_folder + "/" + s + "/{params}/technicals/plot_clustree.pdf" for s in files],params=list(paramspace.instance_patterns))
         outs += expand([results_folder + "/" + s + "/{params}/technicals/plot_nFeature.pdf" for s in files],params=list(paramspace.instance_patterns))
         outs += expand([results_folder + "/" + s + "/{params}/technicals/plot_nCount.pdf" for s in files],params=list(paramspace.instance_patterns))
+        outs += expand([results_folder + "/" + s + "/{params}/technicals/plot_mt.percent.pdf" for s in files],params=list(paramspace.instance_patterns))
+        outs += expand([results_folder + "/" + s + "/{params}/technicals/plot_rp.percent.pdf" for s in files],params=list(paramspace.instance_patterns))
     if option in ["advanced"]:
         outs += cellchat_plot(paramspace,[x for x in identity_to_analysis if x != "orig.ident"])
         outs += dim_reduction_and_marker_plots(paramspace,identity_to_analysis)

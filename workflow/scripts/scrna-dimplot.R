@@ -100,7 +100,7 @@ p1_plotly %>% htmlwidgets::saveWidget(file = opt$htmlplot, selfcontained = T)
 
 m <- max(str_count(breaks))
 
-w <- c(7.5 + (m * 0.08) * (floor(length(breaks) / 11) + 1))
+w <- c(8 + (m * 0.09) * (floor(length(breaks) / 11) + 1))
 
 
 p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = opt$labels, repel = TRUE) & scale_color_manual(values = palette, breaks = breaks)

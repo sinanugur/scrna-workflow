@@ -91,10 +91,12 @@ rule plot_some_technicals:
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
         fplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/plot_nFeature.pdf",
-        cplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/plot_nCount.pdf"
+        cplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/plot_nCount.pdf",
+        mtplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/plot_mt.percent.pdf",
+        rpplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/plot_rp.percent.pdf"
 
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-technicals.R --rds {input.rds} --fplot {output.fplot} --cplot {output.cplot}"
+        "{cellsnake_path}workflow/scripts/scrna-technicals.R --rds {input.rds} --fplot {output.fplot} --cplot {output.cplot} --mtplot {output.mtplot} --rpplot {output.rpplot}"
 
 
 
