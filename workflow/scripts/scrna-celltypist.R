@@ -35,6 +35,7 @@ if (is.null(opt$rds) || is.null(opt$csv)) {
       stop("At least one argument must be supplied (rds and sampleid)", call. = FALSE)
 }
 
+require(patchwork)
 require(tidyverse)
 require(Seurat)
 
@@ -79,17 +80,26 @@ breaks <- scrna@meta.data %>%
       pull() %>%
       as.character()
 
-p1 <- DimPlot(scrna, reduction = "tsne", label = opt$labels, group.by = "majority_voting", repel = TRUE) & scale_color_manual(values = palette, breaks = breaks)
-p2 <- DimPlot(scrna, reduction = "umap", label = opt$labels, group.by = "majority_voting", repel = TRUE) & scale_color_manual(values = palette, breaks = breaks)
+p1 <- DimPlot(scrna, reduction = "tsne", label = opt$labels, group.by = "majority_voting", repel = TRUE) &
+      scale_color_manual(values = palette, breaks = breaks) & theme(plot.title = element_blank()) &
+      theme(legend.direction = "horizontal", legend.text = element_text(size = 7)) &
+      guides(colour = guide_legend(ncol = 2, override.aes = list(size = 7)))
+p2 <- DimPlot(scrna, reduction = "umap", label = opt$labels, group.by = "majority_voting", repel = TRUE) &
+      scale_color_manual(values = palette, breaks = breaks) & theme(plot.title = element_blank()) &
+      theme(legend.direction = "horizontal", legend.text = element_text(size = 7)) &
+      guides(colour = guide_legend(ncol = 2, override.aes = list(size = 7)))
 
 
 m <- max(str_count(breaks))
 
 w <- c(7.5 + (m * 0.08) * (floor(length(breaks) / 11) + 1))
 
+(p1 / guide_area()) + plot_layout(heights = c(2.5, 1), widths = c(1, 0.6), guides = "collect") -> p1
+(p2 / guide_area()) + plot_layout(heights = c(2.5, 1), widths = c(1, 0.6), guides = "collect") -> p2
 
-ggsave(plot = p1, filename = opt$output.tsne.plot, width = w, height = 7)
-ggsave(plot = p2, filename = opt$output.umap.plot, width = w, height = 7)
+
+ggsave(plot = p1, filename = opt$output.tsne.plot, width = 7.5, height = 8)
+ggsave(plot = p2, filename = opt$output.umap.plot, width = 7.5, height = 8)
 
 
 
