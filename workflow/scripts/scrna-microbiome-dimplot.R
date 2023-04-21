@@ -92,5 +92,8 @@ scrna %>%
 ggsave(plot = p1, filename = opt$dimplot, width = 13, height = 9)
 
 
-p2 <- FeaturePlot(scrna, features = "Total log2-UMI (Microbiome)", pt.size = 0.1, reduction = opt$reduction.type) & scale_color_continuous(type = "viridis")
-ggsave(plot = p2, filename = opt$tplot, width = 8, height = 7)
+p2 <- FeaturePlot(scrna, pt.size = 0.1, reduction = opt$reduction.type) & scale_color_continuous(type = "viridis")
+
+(p2 / guide_area()) + plot_layout(heights = c(2.5, 1), widths = c(1, 0.6), guides = "collect") -> p2
+
+ggsave(plot = p2, filename = opt$tplot, width = 7.5, height = 8)
