@@ -38,6 +38,7 @@ if (is.null(opt$rds)) {
   stop("At least one argument must be supplied (rds file)", call. = FALSE)
 }
 
+require(patchwork)
 require(Seurat)
 # require(randomcoloR)
 require(tidyseurat)
