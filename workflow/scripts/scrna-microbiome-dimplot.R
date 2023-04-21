@@ -41,7 +41,7 @@ if (is.null(opt$rds)) {
 require(patchwork)
 require(Seurat)
 # require(randomcoloR)
-require(tidyseurat)
+
 require(viridis)
 require(tidyverse)
 
@@ -73,7 +73,9 @@ AddMetaData(scrna, microbiome %>% rownames_to_column("barcodes") %>% gather(taxa
 
 # p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = TRUE) & theme_cellsnake_classic() & scale_color_manual(values = palette)
 
-scrna@meta.data %>% dplyr::mutate(`Total log2-UMI (Microbiome)` = log2(rowSums(across(starts_with(opt$taxa))) + 1)) -> scrna@meta.data
+scrna@meta.data %>%
+  dplyr::mutate(`Total log2-UMI (Microbiome)` = log2(rowSums(across(starts_with(opt$taxa))) + 1)) %>%
+  mutate(across(contains("genus"), ~ replace(., .x == 0, NA))) -> scrna@meta.data
 
 
 # scrna %>%
@@ -104,16 +106,18 @@ print(plotting_taxas)
 
 pdf(opt$dimplot, width = 7, height = 7)
 for (i in plotting_taxas) {
-  p1 <- FeaturePlot(scrna, features = i, pt.size = 0.1, reduction = opt$reduction.type) & scale_color_continuous(type = "viridis", na.value = "gray96") & theme(plot.title = element_blank())
+  FeaturePlot(scrna, features = i, pt.size = 0.1, reduction = opt$reduction.type) &
+    scale_color_continuous(type = "viridis", na.value = "gray96") -> p1
 
-  # p1 <- (p1 / guide_area()) + plot_layout(heights = c(2.5, 1), widths = c(1, 0.6), guides = "collect")
+  p1 <- (p1 / guide_area()) + plot_layout(heights = c(2.5, 1), widths = c(1, 0.6), guides = "collect")
   print(p1)
 }
 dev.off()
 
 
 
-p2 <- FeaturePlot(scrna, features = "Total log2-UMI (Microbiome)", pt.size = 0.1, reduction = opt$reduction.type) & scale_color_continuous(type = "viridis", na.value = "gray96") & theme(plot.title = element_blank())
+p2 <- FeaturePlot(scrna, features = "Total log2-UMI (Microbiome)", pt.size = 0.1, reduction = opt$reduction.type) &
+  scale_color_continuous(type = "viridis", na.value = "gray96") & theme(plot.title = element_blank())
 
 (p2 / guide_area()) + plot_layout(heights = c(2.5, 1), widths = c(1, 0.6), guides = "collect") -> p2
 
