@@ -116,8 +116,8 @@ dev.off()
 
 
 
-p2 <- FeaturePlot(scrna, features = "Total log2-UMI (Microbiome)", pt.size = 0.1, reduction = opt$reduction.type) &
-  scale_color_continuous(type = "viridis", na.value = "gray96") & theme(plot.title = element_blank())
+p2 <- FeaturePlot(scrna, features = "Total log2-Expression (Microbiome)", pt.size = 0.1, reduction = opt$reduction.type) &
+  scale_color_continuous(type = "viridis", na.value = "gray96")
 
 (p2 / guide_area()) + plot_layout(heights = c(2.5, 1), widths = c(1, 0.6), guides = "collect") -> p2
 
