@@ -74,7 +74,7 @@ AddMetaData(scrna, microbiome %>% rownames_to_column("barcodes") %>% gather(taxa
 # p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = TRUE) & theme_cellsnake_classic() & scale_color_manual(values = palette)
 
 scrna@meta.data %>%
-  dplyr::mutate(`Total log2-UMI (Microbiome)` = log2(rowSums(across(starts_with(opt$taxa))) + 1)) %>%
+  dplyr::mutate(`Total log2-Expression (Microbiome)` = log2(rowSums(across(starts_with(opt$taxa))) + 1)) %>%
   dplyr::mutate(across(contains("genus"), ~ replace(., .x == 0, NA))) -> scrna@meta.data
 
 
