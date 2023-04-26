@@ -11,6 +11,8 @@ def input_function(wildcards):
             return(datafolder +  "/" + wildcards.sample + "/filtered_feature_bc_matrix/")
         elif os.path.isfile(datafolder + "/" + wildcards.sample + "/filtered_feature_bc_matrix.h5"):
             return(datafolder + "/" + wildcards.sample + "/")
+        elif os.path.isfile(datafolder + "/" + wildcards.sample + "/outs/filtered_feature_bc_matrix.h5"):
+            return(datafolder + "/" + wildcards.sample + "/outs/")
         elif os.path.isfile(datafolder + "/" + wildcards.sample + "/raw_feature_bc_matrix/matrix.mtx.gz"):
             return(datafolder + "/" + wildcards.sample + "/raw_feature_bc_matrix/")
         elif os.path.isfile(datafolder + "/" + wildcards.sample + "/matrix.mtx.gz"):

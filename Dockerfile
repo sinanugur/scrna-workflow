@@ -27,7 +27,7 @@ RUN source activate cellsnake && \
     pip install cellsnake
 RUN source activate cellsnake && cellsnake --install-packages
 RUN source activate cellsnake && \
-	pip install -i https://test.pypi.org/simple/ cellsnake==0.2.0rc1
+	pip install -i https://test.pypi.org/simple/ cellsnake==0.2.0rc2
 # Set working directory
 WORKDIR /app
 

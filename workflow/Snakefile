@@ -33,23 +33,40 @@ gene_to_plot=[] if config.get("gene_to_plot",None) is None else [config.get("gen
 
 files=[]
 def file_capture(datafolder):
-    cellranger_new = cellsnake_glob_wildcards(datafolder +  "/{sample}/raw_feature_bc_matrix/matrix.mtx.gz").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx.gz").sample + cellsnake_glob_wildcards(datafolder +  "/{sample}/matrix.mtx.gz").sample
-    cellranger_old = cellsnake_glob_wildcards(datafolder +  "/{sample}/raw_feature_bc_matrix/matrix.mtx").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx").sample + cellsnake_glob_wildcards(datafolder +  "/{sample}/matrix.mtx").sample
-    h5files = cellsnake_glob_wildcards(datafolder + "/{sample}/filtered_feature_bc_matrix.h5").sample 
-    files=list(filter(lambda i: "/" not in i, cellranger_new + cellranger_old + h5files)) #do not capture subdirectories etc
+    files = cellsnake_glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx.gz").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix.h5").sample 
+    if files:
+        return files
+    
+    files = cellsnake_glob_wildcards(datafolder +  "/{sample}/matrix.mtx.gz").sample + cellsnake_glob_wildcards(datafolder +  "/{sample}/matrix.mtx").sample
+
+    if files:
+        return files
+
+    files = cellsnake_glob_wildcards(datafolder +  "/{sample}/raw_feature_bc_matrix/matrix.mtx.gz").sample + cellsnake_glob_wildcards(datafolder +  "/{sample}/raw_feature_bc_matrix/matrix.mtx").sample
+
+    if files:
+        return files
+
+    files = cellsnake_glob_wildcards(datafolder + "/{sample}/filtered_feature_bc_matrix.h5").sample
+    if files:
+        return files
+
+    #files=list(filter(lambda i: "/" not in i, cellranger_new + cellranger_old + h5files)) #do not capture subdirectories etc
     return files
 
 try:
 
     if os.path.isdir(datafolder):
         files=file_capture(datafolder)
-        
+        files=list(filter(lambda i: "/" not in i, files))
+
         if len(files)==0:
             head,tail = os.path.split(datafolder.strip("/"))
             files=file_capture(head) #probably capture a single file here
             files=[x for x in files if tail in x]
             if files:
                 datafolder=head
+
         print(files)
     if os.path.isfile(datafolder):
         file_extension = pathlib.Path(datafolder)
