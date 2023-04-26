@@ -67,12 +67,11 @@ try:
             if files:
                 datafolder=head
 
-        print(files)
+        
     if os.path.isfile(datafolder):
         file_extension = pathlib.Path(datafolder)
         if (file_extension.suffix).lower() not in [".rds"]:
             files = [file_extension.stem]
-            print(files)
         elif is_integrated_sample:
             analyses_folder="analyses_integrated"
             results_folder="results_integrated"
@@ -81,6 +80,7 @@ try:
             files = datafolder
     
     files=set(files)
+    print(files)
 
 except:
     print("No samples detected")
