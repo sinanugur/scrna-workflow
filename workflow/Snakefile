@@ -79,6 +79,8 @@ try:
             files = [file_extension.stem]
         elif (file_extension.suffix).lower() in [".rds"] and option in ["subset"]:
             files = datafolder
+    
+    files=set(files)
 
 except:
     print("No samples detected")
