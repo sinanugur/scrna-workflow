@@ -32,6 +32,11 @@ option_list <- list(
 # require(clusterProfiler)
 require(tidyverse)
 
+try({
+  if (!requireNamespace(opt$mapping, quietly = TRUE)) {
+    BiocManager::install(opt$mapping)
+  }
+})
 
 
 opt_parser <- optparse::OptionParser(option_list = option_list)

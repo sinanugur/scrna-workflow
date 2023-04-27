@@ -43,6 +43,7 @@ if (is.null(opt$rds)) {
       stop("At least one argument must be supplied (rds file)", call. = FALSE)
 }
 
+require(patchwork)
 require(plotly)
 require(Seurat)
 require(tidyverse)
@@ -100,8 +101,14 @@ p1_plotly %>% htmlwidgets::saveWidget(file = opt$htmlplot, selfcontained = T)
 
 m <- max(str_count(breaks))
 
-w <- c(7.5 + (m * 0.08) * (floor(length(breaks) / 11) + 1))
+w <- c(8 + (m * 0.09) * (floor(length(breaks) / 11) + 1))
 
 
-p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = opt$labels, repel = TRUE) & scale_color_manual(values = palette, breaks = breaks)
-ggsave(plot = p1, filename = opt$pdfplot, width = w, height = 7)
+p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = opt$labels, repel = TRUE) &
+      scale_color_manual(values = palette, breaks = breaks) &
+      theme(legend.direction = "horizontal", legend.text = element_text(size = 7)) &
+      guides(colour = guide_legend(ncol = 2, override.aes = list(size = 7)))
+
+(p1 / guide_area()) + plot_layout(heights = c(2.5, 1), widths = c(1, 0.6), guides = "collect") -> p1
+
+ggsave(plot = p1, filename = opt$pdfplot, width = 7.5, height = 8)

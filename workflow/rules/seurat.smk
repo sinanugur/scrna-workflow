@@ -11,6 +11,8 @@ def input_function(wildcards):
             return(datafolder +  "/" + wildcards.sample + "/filtered_feature_bc_matrix/")
         elif os.path.isfile(datafolder + "/" + wildcards.sample + "/filtered_feature_bc_matrix.h5"):
             return(datafolder + "/" + wildcards.sample + "/")
+        elif os.path.isfile(datafolder + "/" + wildcards.sample + "/outs/filtered_feature_bc_matrix.h5"):
+            return(datafolder + "/" + wildcards.sample + "/outs/")
         elif os.path.isfile(datafolder + "/" + wildcards.sample + "/raw_feature_bc_matrix/matrix.mtx.gz"):
             return(datafolder + "/" + wildcards.sample + "/raw_feature_bc_matrix/")
         elif os.path.isfile(datafolder + "/" + wildcards.sample + "/matrix.mtx.gz"):
@@ -91,10 +93,12 @@ rule plot_some_technicals:
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
     output:
         fplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/plot_nFeature.pdf",
-        cplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/plot_nCount.pdf"
+        cplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/plot_nCount.pdf",
+        mtplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/plot_mt.percent.pdf",
+        rpplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/technicals/plot_rp.percent.pdf"
 
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-technicals.R --rds {input.rds} --fplot {output.fplot} --cplot {output.cplot}"
+        "{cellsnake_path}workflow/scripts/scrna-technicals.R --rds {input.rds} --fplot {output.fplot} --cplot {output.cplot} --mtplot {output.mtplot} --rpplot {output.rpplot}"
 
 
 

@@ -33,35 +33,53 @@ gene_to_plot=[] if config.get("gene_to_plot",None) is None else [config.get("gen
 
 files=[]
 def file_capture(datafolder):
-    cellranger_new = cellsnake_glob_wildcards(datafolder +  "/{sample}/raw_feature_bc_matrix/matrix.mtx.gz").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx.gz").sample + cellsnake_glob_wildcards(datafolder +  "/{sample}/matrix.mtx.gz").sample
-    cellranger_old = cellsnake_glob_wildcards(datafolder +  "/{sample}/raw_feature_bc_matrix/matrix.mtx").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx").sample + cellsnake_glob_wildcards(datafolder +  "/{sample}/matrix.mtx").sample
-    h5files = cellsnake_glob_wildcards(datafolder + "/{sample}/filtered_feature_bc_matrix.h5").sample 
-    files=list(filter(lambda i: "/" not in i, cellranger_new + cellranger_old + h5files)) #do not capture subdirectories etc
+    files = cellsnake_glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx.gz").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix/matrix.mtx").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/outs/filtered_feature_bc_matrix.h5").sample 
+    if files:
+        return files
+    
+    files = cellsnake_glob_wildcards(datafolder +  "/{sample}/matrix.mtx.gz").sample + cellsnake_glob_wildcards(datafolder +  "/{sample}/matrix.mtx").sample
+
+    if files:
+        return files
+
+    files = cellsnake_glob_wildcards(datafolder +  "/{sample}/raw_feature_bc_matrix/matrix.mtx.gz").sample + cellsnake_glob_wildcards(datafolder +  "/{sample}/raw_feature_bc_matrix/matrix.mtx").sample
+
+    if files:
+        return files
+
+    files = cellsnake_glob_wildcards(datafolder + "/{sample}/filtered_feature_bc_matrix.h5").sample
+    if files:
+        return files
+
+    #files=list(filter(lambda i: "/" not in i, cellranger_new + cellranger_old + h5files)) #do not capture subdirectories etc
     return files
 
 try:
 
     if os.path.isdir(datafolder):
         files=file_capture(datafolder)
-        
+        files=list(filter(lambda i: "/" not in i, files))
+
         if len(files)==0:
             head,tail = os.path.split(datafolder.strip("/"))
             files=file_capture(head) #probably capture a single file here
             files=[x for x in files if tail in x]
             if files:
                 datafolder=head
-        print(files)
+
     if os.path.isfile(datafolder):
         file_extension = pathlib.Path(datafolder)
         if (file_extension.suffix).lower() not in [".rds"]:
             files = [file_extension.stem]
-            print(files)
         elif is_integrated_sample:
             analyses_folder="analyses_integrated"
             results_folder="results_integrated"
             files = [file_extension.stem]
         elif (file_extension.suffix).lower() in [".rds"] and option in ["subset"]:
             files = datafolder
+    
+    files=set(files)
+    print(files)
 
 except:
     print("No samples detected")
@@ -98,7 +116,8 @@ grid_search=config.get("grid_search",False) #requires params file in tsv format
 #clustering and normalization paramaters
 normalization_method=config.get("normalization_method","LogNormalize")
 scale_factor=config.get("scale_factor",10000)
-resolution=config.get("resolution","0.8" if is_integrated_sample is False else "0.3") #a double or "auto", default is 0.8
+#resolution=config.get("resolution","0.8" if is_integrated_sample is False else "0.3") #a double or "auto", default is 0.8
+resolution=config.get("resolution","0.8") #a double or "auto", default is 0.8
 
 #dimension reduction options: by default both UMAP and TSNE will be plotted with predicted clusters
 umap_plot="--umap" if config.get("umap_plot",True) in [True,"TRUE","True","T"] else ""
@@ -254,6 +273,7 @@ def kraken_predictions(paramspace,taxa,identity):
         outs = outs + ["analyses_integrated/seurat/" + integration_id + "-" + taxa + ".rds"]
     elif is_integrated_sample is True and os.path.isfile("analyses_integrated/seurat/" + integration_id + "-" + taxa + ".rds"):
         outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/plot_integrated_microbiome_dimplot-" + taxa + "-" + x + ".pdf" for x in ["umap","tsne"] for s in files],params=list(paramspace.instance_patterns))
+        outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/plot_integrated_total_microbiome-" + taxa + "-" + x + ".pdf" for x in ["umap","tsne"] for s in files],params=list(paramspace.instance_patterns))
         outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/plot_integrated_significance-" + taxa + "-" + x + ".pdf" for x in identity for s in files],params=list(paramspace.instance_patterns))
         outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/table_integrated_significance-" + taxa + "-" + x + ".xlsx" for x in identity for s in files],params=list(paramspace.instance_patterns))
     return outs
@@ -346,6 +366,8 @@ def sample_parameter(paramspace,files):
         outs += expand([results_folder + "/" + s + "/{params}/technicals/plot_clustree.pdf" for s in files],params=list(paramspace.instance_patterns))
         outs += expand([results_folder + "/" + s + "/{params}/technicals/plot_nFeature.pdf" for s in files],params=list(paramspace.instance_patterns))
         outs += expand([results_folder + "/" + s + "/{params}/technicals/plot_nCount.pdf" for s in files],params=list(paramspace.instance_patterns))
+        outs += expand([results_folder + "/" + s + "/{params}/technicals/plot_mt.percent.pdf" for s in files],params=list(paramspace.instance_patterns))
+        outs += expand([results_folder + "/" + s + "/{params}/technicals/plot_rp.percent.pdf" for s in files],params=list(paramspace.instance_patterns))
     if option in ["advanced"]:
         outs += cellchat_plot(paramspace,[x for x in identity_to_analysis if x != "orig.ident"])
         outs += dim_reduction_and_marker_plots(paramspace,identity_to_analysis)

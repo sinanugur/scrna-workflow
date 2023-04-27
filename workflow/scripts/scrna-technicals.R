@@ -15,6 +15,14 @@ option_list <- list(
   optparse::make_option(c("--cplot"),
     type = "character", default = NULL,
     help = "nCount plot", metavar = "character"
+  ),
+  optparse::make_option(c("--mtplot"),
+    type = "character", default = NULL,
+    help = "Percent MT plot", metavar = "character"
+  ),
+  optparse::make_option(c("--rpplot"),
+    type = "character", default = NULL,
+    help = "Ribo plot", metavar = "character"
   )
 )
 
@@ -45,3 +53,12 @@ ggsave(opt$fplot, width = 7, height = 5)
 FeaturePlot(scrna, features = "nCount_RNA", pt.size = 0.1)
 
 ggsave(opt$cplot, width = 7, height = 5)
+
+
+FeaturePlot(scrna, features = "percent.mt", pt.size = 0.1)
+
+ggsave(opt$mtplot, width = 7, height = 5)
+
+FeaturePlot(scrna, features = "percent.rp", pt.size = 0.1)
+
+ggsave(opt$rpplot, width = 7, height = 5)
