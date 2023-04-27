@@ -67,7 +67,6 @@ try:
             if files:
                 datafolder=head
 
-        
     if os.path.isfile(datafolder):
         file_extension = pathlib.Path(datafolder)
         if (file_extension.suffix).lower() not in [".rds"]:
