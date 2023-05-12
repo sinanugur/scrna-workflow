@@ -90,16 +90,33 @@ scrna %>%
   arrange(p) -> df
 
 
-df %>% ggplot(aes(x = get(opt$idents), y = -log10(p + 1e-200))) +
-  geom_col() +
-  geom_hline(yintercept = -log10(0.05), color = "red") +
-  facet_wrap(~taxa) +
-  theme_bw() +
-  coord_flip() +
-  ylab("Adjusted log P value") +
-  xlab("Identity") -> p1
 
-ggsave(plot = p1, filename = opt$sigplot, width = 12, height = 8)
 
 
 openxlsx::write.xlsx(df, file = opt$sigtable)
+
+plotting_taxas <- scrna@meta.data %>%
+  dplyr::select(starts_with(opt$taxa)) %>%
+  select(
+    where(
+      ~ !all(is.na(.x))
+    )
+  ) %>%
+  colnames() %>%
+  unique()
+
+pdf(opt$sigplot, width = 6, height = 6)
+for (i in plotting_taxas) {
+  df %>% dplyr::filter(taxa %in% i) -> df2
+  try({
+    df2 %>% ggplot(aes(x = get(opt$idents), y = -log10(p + 1e-200))) +
+      geom_col() +
+      geom_hline(yintercept = -log10(0.05), color = "red") +
+      ggthemes::theme_few() +
+      coord_flip() +
+      ylab("Adjusted log P value") +
+      xlab("Identity") -> p1
+    print(p1)
+  })
+}
+dev.off()
