@@ -84,7 +84,7 @@ scrna %>%
   group_by(taxa) %>%
   dplyr::mutate(v3 = sum(total) - total, v4 = sum(cell) - cell) %>%
   rowwise() %>%
-  dplyr::mutate(p = fisher.test(matrix(c(total, cell, v3, v4 - cell), ncol = 2), alternative = "greater")$p.value) %>%
+  dplyr::mutate(p = fisher.test(matrix(c(total, cell, v3, abs(v4 - cell)), ncol = 2), alternative = "greater")$p.value) %>%
   ungroup() %>%
   dplyr::mutate(p = p.adjust(p)) %>%
   dplyr::mutate(`Taxa reads in this cluster` = total, `Cells in this cluster` = cell, `Taxa reads in other cluster` = v3, `Total cells in other clusters` = v4 - cell) %>%
