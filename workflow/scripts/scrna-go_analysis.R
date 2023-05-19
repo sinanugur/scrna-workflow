@@ -34,7 +34,7 @@ require(tidyverse)
 
 try({
   if (!requireNamespace(opt$mapping, quietly = TRUE)) {
-    BiocManager::install(opt$mapping)
+    BiocManager::install(opt$mapping, update = TRUE)
   }
 })
 
@@ -76,7 +76,7 @@ function_enrichment_go_singlecell <- function(results, p = 0.05, f = 1.5) {
         OrgDb = get(opt$mapping),
         ont = "ALL",
         pAdjustMethod = "fdr",
-        pvalueCutoff = 0.05,
+        pvalueCutoff = 1,
         readable = TRUE
       )
     },
@@ -93,8 +93,9 @@ function_enrichment_go_singlecell <- function(results, p = 0.05, f = 1.5) {
         ont = "ALL",
         minGSSize = 2,
         maxGSSize = 500,
-        pvalueCutoff = 0.05,
-        verbose = FALSE
+        pvalueCutoff = 1,
+        verbose = FALSE,
+        eps = 0
       )
     },
     error = function(e) {

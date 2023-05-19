@@ -20,11 +20,11 @@ opt_parser <- optparse::OptionParser(option_list = option_list)
 opt <- optparse::parse_args(opt_parser)
 
 if (!requireNamespace("SeuratWrappers", quietly = TRUE)) {
-    remotes::install_github("satijalab/seurat-wrappers")
+    remotes::install_github("satijalab/seurat-wrappers", upgrade = "never")
 }
 
 if (!requireNamespace("monocle3", quietly = TRUE)) {
-    remotes::install_github("cole-trapnell-lab/monocle3")
+    remotes::install_github("cole-trapnell-lab/monocle3", upgrade = "never")
 }
 
 require(monocle3)

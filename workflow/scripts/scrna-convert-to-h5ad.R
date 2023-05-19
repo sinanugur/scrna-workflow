@@ -20,7 +20,7 @@ if (is.null(opt$rds)) {
 }
 
 if (!requireNamespace("SeuratDisk", quietly = TRUE)) {
-  remotes::install_github("mojaveazure/seurat-disk")
+  remotes::install_github("mojaveazure/seurat-disk", upgrade = "never")
 }
 require(Seurat)
 require(SeuratDisk)

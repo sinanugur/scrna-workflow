@@ -99,7 +99,7 @@ if (!opt$resolution %in% c("auto", "AUTO", "Auto")) {
   scrna <- FindClusters(scrna, resolution = as.numeric(opt$resolution))
 } else {
   if (!requireNamespace("MultiKParallel", quietly = TRUE)) {
-    remotes::install_github("sinanugur/MultiKParallel")
+    remotes::install_github("sinanugur/MultiKParallel", upgrade = "never")
   }
   require(MultiKParallel)
   scrna_tmp <- FindClusters(scrna, resolution = seq(0.2, 2.5, 0.15))
@@ -146,7 +146,7 @@ if (opt$tsne) {
 
 if (opt$doublet.filter) {
   if (!requireNamespace("DoubletFinder", quietly = TRUE)) {
-    remotes::install_github("chris-mcginnis-ucsf/DoubletFinder")
+    remotes::install_github("chris-mcginnis-ucsf/DoubletFinder", upgrade = "never")
   }
   require(DoubletFinder)
 

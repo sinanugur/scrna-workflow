@@ -450,7 +450,7 @@ function_color_palette <- function(n) {
   }
 
   if (!requireNamespace("randomcoloR", quietly = TRUE)) {
-    remotes::install_github("chris-mcginnis-ucsf/DoubletFinder")
+    install.packages("randomcoloR")
   }
 
   randomcoloR::distinctColorPalette(n)
