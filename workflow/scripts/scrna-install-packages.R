@@ -86,7 +86,7 @@ if (any(installed_packages == FALSE)) {
       remotes::install_github("mojaveazure/seurat-disk", upgrade = "never")
     }
     if (!requireNamespace("CellChat", quietly = TRUE)) {
-      remotes::install_github("sqjin/CellChat", upgrade = "never")
+      remotes::install_github("sqjin/CellChat")
     }
     if (!requireNamespace("SeuratWrappers", quietly = TRUE)) {
       remotes::install_github("satijalab/seurat-wrappers", upgrade = "never")
