@@ -2,7 +2,7 @@
 
 
 
-function_pca_dimensions <- function(Spatial_Data) {
+function_pca_dimensions <- function(Spatial_Data) { # https://hbctraining.github.io/scRNA-seq/lessons/elbow_plot_metric.html
   pct <- Stdev(object = Spatial_Data, reduction = "pca") / sum(Stdev(object = Spatial_Data, reduction = "pca")) * 100
   # Calculate cumulative percents for each PC
   cum <- cumsum(pct)
@@ -450,7 +450,7 @@ function_color_palette <- function(n) {
   }
 
   if (!requireNamespace("randomcoloR", quietly = TRUE)) {
-    remotes::install_github("chris-mcginnis-ucsf/DoubletFinder")
+    install.packages("randomcoloR")
   }
 
   randomcoloR::distinctColorPalette(n)

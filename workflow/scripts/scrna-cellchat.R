@@ -35,7 +35,7 @@ if (is.null(opt$rds)) {
 }
 
 if (!requireNamespace("CellChat", quietly = TRUE)) {
-  remotes::install_github("sqjin/CellChat")
+  remotes::install_github("sqjin/CellChat", upgrade = "never")
 }
 
 require(Seurat)

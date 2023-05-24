@@ -2,6 +2,8 @@ from collections import defaultdict
 from yaml import load
 import os
 
+def get_mem_mb(wildcards, attempt):
+    return attempt * 5000
 
 def input_function(wildcards):
     if os.path.isfile(datafolder):
@@ -72,8 +74,11 @@ rule normalization_pca_rds:
         umap_plot=umap_plot,
         tsne_plot=tsne_plot,
         integration="--integration" if is_integrated_sample is True else " "
+    threads: 5
+    resources:
+        mem_mb=get_mem_mb
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-normalization-pca.R --rds {input} {params.doublet_filter} --normalization.method {normalization_method} "
+        "{cellsnake_path}workflow/scripts/scrna-normalization-pca.R --rds {input} {params.doublet_filter} --normalization.method {normalization_method} --cpu {threads} "
         "--scale.factor {scale_factor} --reference {singler_ref} --variable.selection.method {variable_selection_method} --nfeature {highly_variable_features} --resolution {params.paramaters[resolution]} "
         "--output.rds {output.rds} {umap_plot} {tsne_plot} {params.integration}"
 

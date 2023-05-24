@@ -34,23 +34,28 @@ Positive_Features %>%
     group_by(cluster) %>%
     slice_max(n = 20, order_by = avg_log2FC) -> df
 
-maxFC <- (df %>% pull(avg_log2FC) %>% max()) + 1
-
-df %>%
-    group_by(cluster) %>%
-    dplyr::mutate(n = dense_rank(dplyr::desc(avg_log2FC))) %>%
-    ggplot(aes(x = n, y = avg_log2FC, label = gene)) +
-    geom_text(angle = 75, size = 3) +
-    facet_wrap(~cluster, ncol = 4) +
-    # ggthemes::theme_few() +
-    theme(strip.text = element_text(size = 12)) +
-    ylim(c(0, maxFC)) +
-    coord_cartesian(clip = "off", expand = TRUE) +
-    ggtitle("Top markers") -> p1
 
 Positive_Features %>%
     distinct(cluster) %>%
-    pull() %>%
-    length() -> n
+    pull() -> clusters
 
-ggsave(opt$output.plot, p1, height = (2.1 + ceiling(n / 4) * 2.1), width = 9.5, useDingbats = TRUE)
+
+
+pdf(opt$output.plot, width = 6, height = 6)
+for (i in clusters) {
+    df %>% dplyr::filter(cluster %in% i) -> df2
+    maxFC <- (df2 %>% pull(avg_log2FC) %>% max()) + 1
+
+    try({
+        df2 %>%
+            dplyr::mutate(n = dense_rank(dplyr::desc(avg_log2FC))) %>%
+            ggplot(aes(x = n, y = avg_log2FC, label = gene)) +
+            geom_text(angle = 75, size = 4) +
+            ggthemes::theme_few() +
+            ylim(c(0, maxFC)) +
+            coord_cartesian(clip = "off", expand = TRUE) +
+            ggtitle("Top markers", subtitle = paste(i, "vs all")) -> p1
+        print(p1)
+    })
+}
+dev.off()

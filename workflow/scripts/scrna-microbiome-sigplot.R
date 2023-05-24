@@ -87,19 +87,43 @@ scrna %>%
   dplyr::mutate(p = fisher.test(matrix(c(total, cell, v3, v4), ncol = 2), alternative = "greater")$p.value) %>%
   ungroup() %>%
   dplyr::mutate(p = p.adjust(p)) %>%
+  dplyr::mutate(`Taxa reads in this cluster` = total, `Cells in this cluster` = cell, `Total reads` = v3 + total, `Total cells` = v4) %>%
+  dplyr::select(-total, -cell, -v3, -v4) %>%
   arrange(p) -> df
 
 
-df %>% ggplot(aes(x = get(opt$idents), y = -log10(p + 1e-200))) +
-  geom_col() +
-  geom_hline(yintercept = -log10(0.05), color = "red") +
-  facet_wrap(~taxa) +
-  theme_bw() +
-  coord_flip() +
-  ylab("Adjusted log P value") +
-  xlab("Identity") -> p1
-
-ggsave(plot = p1, filename = opt$sigplot, width = 12, height = 8)
+scrna@meta.data %>%
+  dplyr::select(starts_with(opt$idents)) %>%
+  pull() %>%
+  unique() %>%
+  length() -> n
 
 
 openxlsx::write.xlsx(df, file = opt$sigtable)
+
+plotting_taxas <- scrna@meta.data %>%
+  dplyr::select(starts_with(opt$taxa)) %>%
+  select(
+    where(
+      ~ !all(is.na(.x))
+    )
+  ) %>%
+  colnames() %>%
+  unique()
+
+pdf(opt$sigplot, width = 6, height = 2 + 0.10 * n)
+for (i in plotting_taxas) {
+  df %>% dplyr::filter(taxa %in% i) -> df2
+  try({
+    df2 %>% ggplot(aes(x = get(opt$idents), y = -log10(p + 1e-200))) +
+      geom_col() +
+      geom_hline(yintercept = -log10(0.05), color = "red") +
+      ggthemes::theme_few() +
+      coord_flip() +
+      ylab("Adjusted log P value") +
+      ggtitle(paste0(i)) +
+      xlab("Identity") -> p1
+    print(p1)
+  })
+}
+dev.off()

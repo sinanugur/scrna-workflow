@@ -49,7 +49,6 @@ if (any(installed_packages == FALSE)) {
 
   librarian::shelf("clustree")
   librarian::shelf("openxlsx")
-  librarian::shelf("chris-mcginnis-ucsf/DoubletFinder")
   librarian::shelf("viridis")
   if (!requireNamespace("topGO", quietly = TRUE)) {
     BiocManager::install("topGO")
@@ -62,7 +61,6 @@ if (any(installed_packages == FALSE)) {
 
   librarian::shelf("miQC") # conda installer
   # librarian::shelf('scater') #use conda installer
-  librarian::shelf("sinanugur/MultiKParallel")
   librarian::shelf("stemangiola/tidyseurat")
 
   librarian::shelf("limma")
@@ -78,17 +76,23 @@ if (any(installed_packages == FALSE)) {
   # }
 
   try({
+    if (!requireNamespace("MultiKParallel", quietly = TRUE)) {
+      remotes::install_github("sinanugur/MultiKParallel", upgrade = "never")
+    }
+    if (!requireNamespace("DoubletFinder", quietly = TRUE)) {
+      remotes::install_github("chris-mcginnis-ucsf/DoubletFinder", upgrade = "never")
+    }
     if (!requireNamespace("SeuratDisk", quietly = TRUE)) {
-      remotes::install_github("mojaveazure/seurat-disk")
+      remotes::install_github("mojaveazure/seurat-disk", upgrade = "never")
     }
     if (!requireNamespace("CellChat", quietly = TRUE)) {
       remotes::install_github("sqjin/CellChat")
     }
     if (!requireNamespace("SeuratWrappers", quietly = TRUE)) {
-      remotes::install_github("satijalab/seurat-wrappers")
+      remotes::install_github("satijalab/seurat-wrappers", upgrade = "never")
     }
     if (!requireNamespace("monocle3", quietly = TRUE)) {
-      remotes::install_github("cole-trapnell-lab/monocle3")
+      remotes::install_github("cole-trapnell-lab/monocle3", upgrade = "never")
     }
   })
 } else {
