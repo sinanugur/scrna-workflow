@@ -66,64 +66,56 @@ microbiome <- readRDS(file = opt$microbiome.rds)
 
 
 AddMetaData(scrna, microbiome %>% rownames_to_column("barcodes") %>% gather(taxa, umi, -barcodes) %>% dplyr::group_by(taxa) %>% dplyr::mutate(sum = sum(umi, na.rm = T)) %>% ungroup() %>%
-  dplyr::mutate(taxa = ifelse(sum >= min(sort(unique(sum), decreasing = T)[1:11], na.rm = T), paste0(opt$taxa, "_", taxa), paste0(opt$taxa, "_", "others"))) %>%
+  dplyr::mutate(taxa = paste0(opt$taxa, "_", taxa)) %>%
   dplyr::select(-sum) %>% dplyr::group_by(barcodes, taxa) %>% dplyr::summarise(sum = sum(umi, na.rm = T)) %>% ungroup() %>% spread(taxa, sum) %>% column_to_rownames("barcodes")) -> scrna
 
 
 # p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = TRUE) & theme_cellsnake_classic() & scale_color_manual(values = palette)
 
 scrna %>%
-  dplyr::select(one_of(opt$idents), starts_with(opt$taxa)) %>%
+  dplyr::select(orig.ident, one_of(opt$idents), starts_with(opt$taxa)) %>%
   gather(taxa, umi, starts_with(opt$taxa)) %>%
-  group_by(across(opt$idents), taxa) %>%
+  group_by(across(opt$idents), orig.ident, taxa) %>%
   dplyr::mutate(total = sum(umi, na.rm = T)) %>%
   group_by(taxa, across(opt$idents)) %>%
   dplyr::mutate(cell = n()) %>%
   dplyr::ungroup() %>%
-  distinct(across(opt$idents), taxa, total, cell) %>%
+  distinct(orig.ident, across(opt$idents), taxa, total, cell) %>%
   group_by(taxa) %>%
   dplyr::mutate(v3 = sum(total) - total, v4 = sum(cell) - cell) %>%
   rowwise() %>%
-  dplyr::mutate(p = fisher.test(matrix(c(total, cell, v3, v4), ncol = 2), alternative = "greater")$p.value) %>%
+  # dplyr::mutate(p = fisher.test(matrix(c(total, cell, v3, v4), ncol = 2), alternative = "greater")$p.value) %>%
   ungroup() %>%
-  dplyr::mutate(p = p.adjust(p)) %>%
-  dplyr::mutate(`Taxa reads in this cluster` = total, `Cells in this cluster` = cell, `Total reads` = v3 + total, `Total cells` = v4) %>%
+  # dplyr::mutate(p = p.adjust(p)) %>%
+  dplyr::mutate(`Taxa reads in this group` = total, `Cells in this group` = cell, `Total reads` = v3 + total, `Total cells` = v4) %>%
+  dplyr::filter(`Taxa reads in this group` > 0) %>%
   dplyr::select(-total, -cell, -v3, -v4) %>%
-  arrange(p) -> df
+  arrange(desc(`Taxa reads in this group`)) -> df
 
 
-scrna@meta.data %>%
-  dplyr::select(starts_with(opt$idents)) %>%
-  pull() %>%
-  unique() %>%
-  length() -> n
+# scrna@meta.data %>%
+#  dplyr::select(starts_with(opt$idents)) %>%
+#  pull() %>%
+#  unique() %>%
+#  length() -> n
 
 
 openxlsx::write.xlsx(df, file = opt$sigtable)
 
-plotting_taxas <- scrna@meta.data %>%
-  dplyr::select(starts_with(opt$taxa)) %>%
-  select(
-    where(
-      ~ !all(is.na(.x))
-    )
-  ) %>%
-  colnames() %>%
-  unique()
 
-pdf(opt$sigplot, width = 6, height = 2 + 0.10 * n)
-for (i in plotting_taxas) {
-  df %>% dplyr::filter(taxa %in% i) -> df2
-  try({
-    df2 %>% ggplot(aes(x = get(opt$idents), y = -log10(p + 1e-200))) +
-      geom_col() +
-      geom_hline(yintercept = -log10(0.05), color = "red") +
-      ggthemes::theme_few() +
-      coord_flip() +
-      ylab("Adjusted log P value") +
-      ggtitle(paste0(i)) +
-      xlab("Identity") -> p1
-    print(p1)
-  })
-}
-dev.off()
+# pdf(opt$sigplot, width = 6, height = 2 + 0.10 * n)
+# for (i in plotting_taxas) {
+#  df %>% dplyr::filter(taxa %in% i) -> df2
+#  try({
+#    df2 %>% ggplot(aes(x = get(opt$idents), y = -log10(p + 1e-200))) +
+#      geom_col() +
+#      geom_hline(yintercept = -log10(0.05), color = "red") +
+#      ggthemes::theme_few() +
+#      coord_flip() +
+#      ylab("Adjusted log P value") +
+#      ggtitle(paste0(i)) +
+#      xlab("Identity") -> p1
+#    print(p1)
+#  })
+# }
+# dev.off()

@@ -75,6 +75,7 @@ AddMetaData(scrna, microbiome %>% rownames_to_column("barcodes") %>% gather(taxa
 
 scrna@meta.data %>%
   dplyr::mutate(`Total log2-Expression (Microbiome)` = log2(rowSums(across(starts_with(opt$taxa))) + 1)) %>%
+  dplyr::mutate(across(contains("Microbiome"), ~ replace(., .x == 0, NA))) %>%
   dplyr::mutate(across(contains("genus"), ~ replace(., .x == 0, NA))) -> scrna@meta.data
 
 

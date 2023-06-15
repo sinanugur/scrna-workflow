@@ -62,6 +62,8 @@ tryCatch(
 
 CreateSeuratObject(LoadH5Seurat(opt$h5seurat)[["RNA"]]@counts, min.cells = opt$min.cells, min.features = opt$min.features) -> scrna
 
+
+head(scrna)
 scrna <- RenameCells(object = scrna, add.cell.id = make.names(opt$sampleid)) # add cell.id to cell name
 
 
@@ -75,14 +77,14 @@ df %>%
   rownames_to_column("barcode") %>%
   gather(group, umi, -barcode) %>%
   group_by(group) %>%
-  summarise(sum = log(sum(umi))) %>%
+  summarise(sum = log2(sum(umi))) %>%
   arrange(desc(sum)) %>%
   slice_max(n = 50, order_by = sum) %>%
   ggplot(aes(reorder(group, sum), sum)) +
   geom_col() +
   coord_flip() +
   ggthemes::theme_few() +
-  ylab("log-total UMI") +
+  ylab("Total log2-Expression (Microbiome)") +
   xlab(opt$taxa) +
   ggtitle(opt$sampleid) +
   theme(axis.title = element_text(size = 12)) -> p1

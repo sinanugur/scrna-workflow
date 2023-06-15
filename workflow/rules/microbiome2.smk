@@ -12,12 +12,12 @@ rule run_kraken:
     input:
         bam=kraken2_input_function
     output:
-        matrix=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/matrix.mtx",
-        hierarchy=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/hierarchy.txt",
-        outdir=directory(analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/"),
-        unmapped=temp(analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_unmapped.bam"),
-        fq=temp(analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_unmapped.fq"),
-        kr=temp(analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_output.kraken")
+        matrix=analyses_folder + "/kraken/{sample}/counts/matrix.mtx",
+        hierarchy=analyses_folder + "/kraken/{sample}/counts/hierarchy.txt",
+        outdir=directory(analyses_folder + "/kraken/{sample}/"),
+        unmapped=temp(analyses_folder + "/kraken/{sample}/{sample}" + "_unmapped.bam"),
+        fq=temp(analyses_folder + "/kraken/{sample}/{sample}" + "_unmapped.fq"),
+        kr=temp(analyses_folder + "/kraken/{sample}/{sample}" + "_output.kraken")
     threads: 10
     shell:
         """
@@ -28,25 +28,25 @@ rule run_kraken:
 
 rule collapse_kraken:
     input:
-        outdir=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}",
-        hierarchy=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/hierarchy.txt"
+        outdir=analyses_folder + "/kraken/{sample}",
+        hierarchy=analyses_folder + "/kraken/{sample}/counts/hierarchy.txt"
     output:
-        analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{taxa}.h5ad"
+        analyses_folder + "/kraken/{sample}/{taxa}.h5ad"
 
     shell:
         "{cellsnake_path}workflow/scripts/scrna-kraken2-collapse.py {input.outdir}/counts {input.hierarchy} {wildcards.taxa} {output}"
 
 rule convert_to_seurat:
     input:
-        analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{taxa}.h5ad"
+        analyses_folder + "/kraken/{sample}/{taxa}.h5ad"
     output:
-        analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{taxa}.h5seurat"
+        analyses_folder + "/kraken/{sample}/{taxa}.h5seurat"
     shell:
         """Rscript -e 'SeuratDisk::Convert("{input}",dest = "h5seurat", overwrite = TRUE)'"""
 
 rule parse_h5seurat:
     input:
-        analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{taxa}.h5seurat"
+        analyses_folder + "/kraken/{sample}/{taxa}.h5seurat"
     output:
         microbiome_rds=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/microbiome-full-{taxa}-level.rds",
         plot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/plot_microbiome_barplot-{taxa}-level.pdf"
@@ -57,7 +57,7 @@ rule parse_h5seurat:
 rule dimplot_for_microbiome:
     input:
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
-        microbiome_rds=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/microbiome-full-{taxa}-level.rds" if is_integrated_sample is False else "analyses_integrated/seurat/" + integration_id + "-{taxa}.rds"
+        microbiome_rds=analyses_folder + "/kraken/{sample}/microbiome-full-{taxa}-level.rds" if is_integrated_sample is False else "analyses_integrated/seurat/" + integration_id + "-{taxa}.rds"
     output:
         dimplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/plot_microbiome_dimplot-{taxa}-{reduction}.pdf",
         tplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/plot_microbiome_total_dimplot-{taxa}-{reduction}.pdf"
@@ -68,7 +68,7 @@ rule dimplot_for_microbiome:
 rule table_for_microbiome:
     input:
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
-        microbiome_rds=analyses_folder + "/kraken/" + f"{paramspace.wildcard_pattern}" + "/{sample}/microbiome-full-{taxa}-level.rds" if is_integrated_sample is False else "analyses_integrated/seurat/" + integration_id + "-{taxa}.rds"
+        microbiome_rds=analyses_folder + "/kraken/{sample}/microbiome-full-{taxa}-level.rds" if is_integrated_sample is False else "analyses_integrated/seurat/" + integration_id + "-{taxa}.rds"
 
     output:
         #dimplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/microbiome/plot_significance-{taxa}-{i}.pdf",

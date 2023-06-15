@@ -151,7 +151,7 @@ gsea_group=config.get("gsea_group","seurat_clusters")
 
 integration_id=config.get("integration_id","integrated")
 celltypist_model=config.get("celltypist_model","Immune_All_Low.pkl")
-singler_ref=config.get("singler_ref","HumanPrimaryCellAtlasData")
+singler_ref=config.get("singler_ref","BlueprintEncodeData") #HumanPrimaryCellAtlasData
 
 
 #cellchat
@@ -161,9 +161,9 @@ species=config.get("species","human") #cellchat species, only mouse or human
 kraken_db_folder=config.get("kraken_db_folder",None)
 taxa=config.get("taxa","genus")
 microbiome_min_cells=config.get("microbiome_min_cells",1)
-microbiome_min_features=config.get("microbiome_min_features",3)
-confidence=config.get("confidence",0.05)
-min_hit_groups=config.get("min_hit_groups",4)
+microbiome_min_features=config.get("microbiome_min_features",1)
+confidence=config.get("confidence",0.01)
+min_hit_groups=config.get("min_hit_groups",3)
 
 reduction=config.get("reduction","cca")
 dims=config.get("dims",30)
@@ -267,15 +267,17 @@ def metadata_pairwise_deseq_analysis(paramspace,metadata_column):
 def kraken_predictions(paramspace,taxa,identity):
     #bamfiles=cellsnake_glob_wildcards(datafolder + "/{sample}/outs/possorted_genome_bam.bam").sample + cellsnake_glob_wildcards(datafolder + "/{sample}/possorted_genome_bam.bam").sample 
     outs=[]
+    identity.append("singler")
     if kraken_db_folder is not None:
-        outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/plot_microbiome_full-" + taxa + "-level.pdf" for s in files],params=list(paramspace.instance_patterns))
+        #outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/plot_microbiome_barplot-" + taxa + "-level.pdf" for s in files],params=list(paramspace.instance_patterns))
         outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/plot_microbiome_dimplot-" + taxa + "-" + x + ".pdf" for x in ["umap","tsne"] for s in files],params=list(paramspace.instance_patterns))
+        #outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/plot_significance-" + taxa + "-" + x + ".pdf" for x in identity for s in files],params=list(paramspace.instance_patterns))
+        outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/table_microbiome-" + taxa + "-" + x + ".xlsx" for x in identity for s in files],params=list(paramspace.instance_patterns))
         outs = outs + ["analyses_integrated/seurat/" + integration_id + "-" + taxa + ".rds"]
     elif is_integrated_sample is True and os.path.isfile("analyses_integrated/seurat/" + integration_id + "-" + taxa + ".rds"):
-        outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/plot_integrated_microbiome_dimplot-" + taxa + "-" + x + ".pdf" for x in ["umap","tsne"] for s in files],params=list(paramspace.instance_patterns))
-        outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/plot_integrated_total_microbiome-" + taxa + "-" + x + ".pdf" for x in ["umap","tsne"] for s in files],params=list(paramspace.instance_patterns))
-        outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/plot_integrated_significance-" + taxa + "-" + x + ".pdf" for x in identity for s in files],params=list(paramspace.instance_patterns))
-        outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/table_integrated_significance-" + taxa + "-" + x + ".xlsx" for x in identity for s in files],params=list(paramspace.instance_patterns))
+        #outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/plot_microbiome_barplot-" + taxa + "-level.pdf" for s in files],params=list(paramspace.instance_patterns))
+        outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/plot_microbiome_dimplot-" + taxa + "-" + x + ".pdf" for x in ["umap","tsne"] for s in files],params=list(paramspace.instance_patterns))
+        outs = outs + expand([results_folder + "/" + s + "/{params}/microbiome/table_microbiome-" + taxa + "-" + x + ".xlsx" for x in identity for s in files],params=list(paramspace.instance_patterns))
     return outs
 
 
@@ -358,7 +360,7 @@ def sample_parameter(paramspace,files):
         outs = outs + [
                 identity_dependent_dimplot(paramspace,identity_to_analysis),
                 identity_dependent_metrics(paramspace,[x for x in identity_to_analysis if x != "orig.ident"]),
-                kraken_predictions(paramspace,taxa,identity_to_analysis),
+                kraken_predictions(paramspace,taxa,[x for x in identity_to_analysis if x != "orig.ident"]),
                 selected_gene_plot(paramspace,gene_to_plot,identity_to_analysis),
                 metadata_pairwise_deseq_analysis(paramspace,metadata_column)
                 ]
