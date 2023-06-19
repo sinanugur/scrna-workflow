@@ -72,26 +72,34 @@ AddMetaData(scrna, microbiome %>% rownames_to_column("barcodes") %>% gather(taxa
 
 # p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = TRUE) & theme_cellsnake_classic() & scale_color_manual(values = palette)
 
-scrna %>%
-  dplyr::select(orig.ident, one_of(opt$idents), starts_with(opt$taxa)) %>%
-  gather(taxa, umi, starts_with(opt$taxa)) %>%
-  group_by(across(opt$idents), orig.ident, taxa) %>%
-  dplyr::mutate(total = sum(umi, na.rm = T)) %>%
-  group_by(taxa, across(opt$idents)) %>%
-  dplyr::mutate(cell = n()) %>%
-  dplyr::ungroup() %>%
-  distinct(orig.ident, across(opt$idents), taxa, total, cell) %>%
-  group_by(taxa) %>%
-  dplyr::mutate(v3 = sum(total) - total, v4 = sum(cell) - cell) %>%
-  rowwise() %>%
-  # dplyr::mutate(p = fisher.test(matrix(c(total, cell, v3, v4), ncol = 2), alternative = "greater")$p.value) %>%
-  ungroup() %>%
-  # dplyr::mutate(p = p.adjust(p)) %>%
-  dplyr::mutate(`Taxa reads in this group` = total, `Cells in this group` = cell, `Total reads` = v3 + total, `Total cells` = v4) %>%
-  dplyr::filter(`Taxa reads in this group` > 0) %>%
-  dplyr::select(-total, -cell, -v3, -v4) %>%
-  arrange(desc(`Taxa reads in this group`)) -> df
-
+tryCatch(
+  {
+    scrna %>%
+      dplyr::select(orig.ident, one_of(opt$idents), starts_with(opt$taxa)) %>%
+      gather(taxa, umi, starts_with(opt$taxa)) %>%
+      group_by(across(opt$idents), orig.ident, taxa) %>%
+      dplyr::mutate(total = sum(umi, na.rm = T)) %>%
+      group_by(taxa, across(opt$idents)) %>%
+      dplyr::mutate(cell = n()) %>%
+      dplyr::ungroup() %>%
+      distinct(orig.ident, across(opt$idents), taxa, total, cell) %>%
+      group_by(taxa) %>%
+      dplyr::mutate(v3 = sum(total) - total, v4 = sum(cell) - cell) %>%
+      rowwise() %>%
+      # dplyr::mutate(p = fisher.test(matrix(c(total, cell, v3, v4), ncol = 2), alternative = "greater")$p.value) %>%
+      ungroup() %>%
+      # dplyr::mutate(p = p.adjust(p)) %>%
+      dplyr::mutate(`Taxa reads in this group` = total, `Cells in this group` = cell, `Total reads` = v3 + total, `Total cells` = v4) %>%
+      dplyr::filter(`Taxa reads in this group` > 0) %>%
+      dplyr::select(-total, -cell, -v3, -v4) %>%
+      arrange(desc(`Taxa reads in this group`)) -> df
+  },
+  error = function(e) {
+    print(e)
+    stop("Error in fisher test")
+    df <- data.frame(orig.ident = character(), `Taxa reads in this group` = numeric(), `Cells in this group` = numeric(), `Total reads` = numeric(), `Total cells` = numeric())
+  }
+) -> df
 
 # scrna@meta.data %>%
 #  dplyr::select(starts_with(opt$idents)) %>%
