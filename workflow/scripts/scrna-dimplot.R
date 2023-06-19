@@ -93,7 +93,7 @@ breaks <- scrna@meta.data %>%
       as.character()
 
 
-p1 <- DimPlot(scrna, reduction = opt$reduction.type) & scale_color_manual(values = palette)
+p1 <- DimPlot(scrna, reduction = opt$reduction.type, raster = FALSE) & scale_color_manual(values = palette)
 
 ggplotly(p1) -> p1_plotly
 
@@ -104,7 +104,7 @@ m <- max(str_count(breaks))
 w <- c(8 + (m * 0.09) * (floor(length(breaks) / 11) + 1))
 
 
-p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = opt$labels, repel = TRUE) &
+p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = opt$labels, repel = TRUE, raster = FALSE) &
       scale_color_manual(values = palette, breaks = breaks) &
       theme(legend.direction = "horizontal", legend.text = element_text(size = 7)) &
       guides(colour = guide_legend(ncol = 2, override.aes = list(size = 7)))
