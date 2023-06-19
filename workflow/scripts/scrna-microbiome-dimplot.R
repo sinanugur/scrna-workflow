@@ -113,7 +113,7 @@ print(plotting_taxas)
 pdf(opt$dimplot, width = 7, height = 7)
 for (i in plotting_taxas) {
   try({
-    FeaturePlot(scrna, features = i, pt.size = 0.1, reduction = opt$reduction.type) &
+    FeaturePlot(scrna, features = i, pt.size = 0.1, reduction = opt$reduction.type, raster = FALSE) &
       scale_color_continuous(type = "viridis", na.value = "gray96") -> p1
 
     p1 <- (p1 / guide_area()) + plot_layout(heights = c(2.5, 1), widths = c(1, 0.6), guides = "collect")
@@ -125,7 +125,7 @@ dev.off()
 
 pdf(opt$tplot, width = 7.5, height = 8)
 try({
-  FeaturePlot(scrna, features = "Total log2-Expression (Microbiome)", pt.size = 0.1, reduction = opt$reduction.type) &
+  FeaturePlot(scrna, features = "Total log2-Expression (Microbiome)", pt.size = 0.1, reduction = opt$reduction.type, raster = FALSE) &
     scale_color_continuous(type = "viridis", na.value = "gray96") -> p2
 
   p2 <- (p2 / guide_area()) + plot_layout(heights = c(2.5, 1), widths = c(1, 0.6), guides = "collect")
