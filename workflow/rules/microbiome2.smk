@@ -36,7 +36,7 @@ rule collapse_kraken:
     shell:
         "{cellsnake_path}workflow/scripts/scrna-kraken2-collapse.py {input.outdir}/counts {input.hierarchy} {wildcards.taxa} {output}"
 
-rule convert_to_seurat:
+checkpoint convert_to_seurat:
     input:
         analyses_folder + "/kraken/{sample}/{taxa}.h5ad"
     output:

@@ -79,7 +79,7 @@ tryCatch(
       gather(taxa, umi, starts_with(opt$taxa)) %>%
       group_by(across(opt$idents), orig.ident, taxa) %>%
       dplyr::mutate(total = sum(umi, na.rm = T)) %>%
-      group_by(taxa, across(opt$idents)) %>%
+      # group_by(taxa, orig.ident, across(opt$idents)) %>%
       dplyr::mutate(cell = n()) %>%
       dplyr::ungroup() %>%
       distinct(orig.ident, across(opt$idents), taxa, total, cell) %>%
@@ -89,15 +89,15 @@ tryCatch(
       # dplyr::mutate(p = fisher.test(matrix(c(total, cell, v3, v4), ncol = 2), alternative = "greater")$p.value) %>%
       ungroup() %>%
       # dplyr::mutate(p = p.adjust(p)) %>%
-      dplyr::mutate(`Taxa reads in this group` = total, `Cells in this group` = cell, `Total reads` = v3 + total, `Total cells` = v4) %>%
+      dplyr::mutate(`Taxa reads in this group` = total, `Cells in this group` = cell, `Total reads for this taxa` = v3 + total, `Total cells` = v4 + cell) %>%
       dplyr::filter(`Taxa reads in this group` > 0) %>%
       dplyr::select(-total, -cell, -v3, -v4) %>%
       arrange(desc(`Taxa reads in this group`)) -> df
   },
   error = function(e) {
     print(e)
-    stop("Error in fisher test")
-    df <- data.frame(orig.ident = character(), `Taxa reads in this group` = numeric(), `Cells in this group` = numeric(), `Total reads` = numeric(), `Total cells` = numeric())
+    stop("Error")
+    df <- data.frame(orig.ident = character(), `Taxa reads in this group` = numeric(), `Cells in this group` = numeric(), `Total reads for this taxa` = numeric(), `Total cells` = numeric())
   }
 ) -> df
 
