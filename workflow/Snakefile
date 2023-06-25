@@ -161,7 +161,7 @@ species=config.get("species","human") #cellchat species, only mouse or human
 kraken_db_folder=config.get("kraken_db_folder",None)
 taxa=config.get("taxa","genus")
 microbiome_min_cells=config.get("microbiome_min_cells",1)
-microbiome_min_features=config.get("microbiome_min_features",1)
+microbiome_min_features=config.get("microbiome_min_features",3)
 confidence=config.get("confidence",0.01)
 min_hit_groups=config.get("min_hit_groups",3)
 

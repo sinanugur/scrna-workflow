@@ -110,6 +110,8 @@ tryCatch(
 
 openxlsx::write.xlsx(df, file = opt$sigtable)
 
+write_tsv(df, file = opt$sigtable %>% str_replace(".xlsx", ".tsv"))
+
 
 # pdf(opt$sigplot, width = 6, height = 2 + 0.10 * n)
 # for (i in plotting_taxas) {
