@@ -60,35 +60,46 @@ tryCatch(
 
 # CreateSeuratObject(scrna.data,min.cells = 1,min.features = 5) -> scrna
 
-CreateSeuratObject(LoadH5Seurat(opt$h5seurat)[["RNA"]]@counts, min.cells = opt$min.cells, min.features = opt$min.features) -> scrna
 
 
-head(scrna)
-scrna <- RenameCells(object = scrna, add.cell.id = make.names(opt$sampleid)) # add cell.id to cell name
+tryCatch(
+  {
+    CreateSeuratObject(LoadH5Seurat(opt$h5seurat)[["RNA"]]@counts, min.cells = opt$min.cells, min.features = opt$min.features) -> scrna
 
 
-scrna[["RNA"]]@counts %>%
-  as.matrix() %>%
-  t() %>%
-  as.data.frame() %>%
-  select(-starts_with("Homo")) -> df
+    head(scrna)
+    scrna <- RenameCells(object = scrna, add.cell.id = make.names(opt$sampleid)) # add cell.id to cell name
+    scrna[["RNA"]]@counts %>%
+      as.matrix() %>%
+      t() %>%
+      as.data.frame() %>%
+      select(-starts_with("Homo")) -> df
+  },
+  error = function(e) {
+    df <- NULL
+  }
+) -> df
 
-df %>%
-  rownames_to_column("barcode") %>%
-  gather(group, umi, -barcode) %>%
-  group_by(group) %>%
-  summarise(sum = log2(sum(umi))) %>%
-  arrange(desc(sum)) %>%
-  slice_max(n = 50, order_by = sum) %>%
-  ggplot(aes(reorder(group, sum), sum)) +
-  geom_col() +
-  coord_flip() +
-  ggthemes::theme_few() +
-  ylab("Total log2-Expression (Microbiome)") +
-  xlab(opt$taxa) +
-  ggtitle(opt$sampleid) +
-  theme(axis.title = element_text(size = 12)) -> p1
 
-ggsave(plot = p1, filename = opt$output.plot, width = 6, height = 9)
+pdf(opt$output.plot, width = 6, height = 9)
+try({
+  df %>%
+    rownames_to_column("barcode") %>%
+    gather(group, umi, -barcode) %>%
+    group_by(group) %>%
+    summarise(sum = log2(sum(umi))) %>%
+    arrange(desc(sum)) %>%
+    slice_max(n = 50, order_by = sum) %>%
+    ggplot(aes(reorder(group, sum), sum)) +
+    geom_col() +
+    coord_flip() +
+    ggthemes::theme_few() +
+    ylab("Total log2-Expression (Microbiome)") +
+    xlab(opt$taxa) +
+    ggtitle(opt$sampleid) +
+    theme(axis.title = element_text(size = 12)) -> p1
+  print(p1)
+})
+dev.off()
 
 saveRDS(df, file = opt$output.rds)

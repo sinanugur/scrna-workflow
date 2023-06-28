@@ -65,15 +65,17 @@ microbiome <- readRDS(file = opt$microbiome.rds)
 
 
 
-AddMetaData(scrna, microbiome %>% rownames_to_column("barcodes") %>% gather(taxa, umi, -barcodes) %>% dplyr::group_by(taxa) %>% dplyr::mutate(sum = sum(umi, na.rm = T)) %>% ungroup() %>%
-  dplyr::mutate(taxa = paste0(opt$taxa, "_", taxa)) %>%
-  dplyr::select(-sum) %>% dplyr::group_by(barcodes, taxa) %>% dplyr::summarise(sum = sum(umi, na.rm = T)) %>% ungroup() %>% spread(taxa, sum) %>% column_to_rownames("barcodes")) -> scrna
+
 
 
 # p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = TRUE) & theme_cellsnake_classic() & scale_color_manual(values = palette)
 
 tryCatch(
   {
+    AddMetaData(scrna, microbiome %>% rownames_to_column("barcodes") %>% gather(taxa, umi, -barcodes) %>% dplyr::group_by(taxa) %>% dplyr::mutate(sum = sum(umi, na.rm = T)) %>% ungroup() %>%
+      dplyr::mutate(taxa = paste0(opt$taxa, "_", taxa)) %>%
+      dplyr::select(-sum) %>% dplyr::group_by(barcodes, taxa) %>% dplyr::summarise(sum = sum(umi, na.rm = T)) %>% ungroup() %>% spread(taxa, sum) %>% column_to_rownames("barcodes")) -> scrna
+
     scrna %>%
       dplyr::select(orig.ident, one_of(opt$idents), starts_with(opt$taxa)) %>%
       gather(taxa, umi, starts_with(opt$taxa)) %>%
@@ -96,7 +98,6 @@ tryCatch(
   },
   error = function(e) {
     print(e)
-    stop("Error")
     df <- data.frame(orig.ident = character(), `Taxa reads in this group` = numeric(), `Cells in this group` = numeric(), `Total reads for this taxa` = numeric(), `Total cells` = numeric())
   }
 ) -> df
@@ -107,6 +108,7 @@ tryCatch(
 #  unique() %>%
 #  length() -> n
 
+head(df)
 
 openxlsx::write.xlsx(df, file = opt$sigtable)
 
