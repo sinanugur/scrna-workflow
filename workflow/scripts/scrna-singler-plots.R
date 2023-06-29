@@ -50,6 +50,7 @@ require(SingleR)
 # require(celldex)
 require(pheatmap)
 require(Seurat)
+require(tidyverse)
 
 scrna <- readRDS(file = opt$rds)
 DefaultAssay(scrna) <- "RNA"
