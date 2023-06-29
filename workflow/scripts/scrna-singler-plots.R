@@ -69,7 +69,7 @@ plotScoreHeatmap(pred, show.labels = F, max.labels = 20) -> p1
 ggsave(plot = p1, filename = opt$sheplottop, width = 7, height = 4)
 
 
-tab <- table(Assigned = pred$pruned.labels, Cluster = scrna[[opt$idents]])
+tab <- table(Assigned = pred$pruned.labels, Cluster = scrna@meta.data[[opt$idents]])
 
 
 pheatmap(log2(tab + 10), color = colorRampPalette(c("white", "blue"))(101)) -> p1
@@ -81,6 +81,4 @@ n2 <- length(unique(pred$pruned.labels))
 
 ggsave(plot = p1, filename = opt$pheplot, width = 6 + (n1 * 0.10), height = 4 + (n2 * 0.10))
 
-tab %>%
-      as.data.frame() %>%
-      openxlsx::write.xlsx(file = opt$xlsx, row.names = F)
+tab %>% openxlsx::write.xlsx(file = opt$xlsx, row.names = F)
