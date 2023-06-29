@@ -20,7 +20,7 @@ option_list <- list(
       ),
       optparse::make_option(c("--csv"),
             type = "character", default = NULL,
-            help = "CSV meta file", metavar = "character"
+            help = "CSV meta file or this can be a singler RDS file", metavar = "character"
       ),
       optparse::make_option(c("--idents"),
             type = "character", default = "seurat_clusters",
@@ -64,17 +64,28 @@ DefaultAssay(scrna) <- "RNA"
 
 
 if (!is.null(opt$csv)) {
-      metadata <- read.csv(
-            opt$csv,
-            row.names = 1
-      )
+      try({
+            metadata <- read.csv(
+                  opt$csv,
+                  row.names = 1
+            )
 
-      scrna@meta.data <- scrna@meta.data %>%
-            tibble::rownames_to_column("barcodes") %>%
-            dplyr::left_join(metadata %>% as.data.frame() %>% rownames_to_column("barcodes"), by = "barcodes") %>%
-            tibble::column_to_rownames("barcodes")
+            scrna@meta.data <- scrna@meta.data %>%
+                  tibble::rownames_to_column("barcodes") %>%
+                  dplyr::left_join(metadata %>% as.data.frame() %>% rownames_to_column("barcodes"), by = "barcodes") %>%
+                  tibble::column_to_rownames("barcodes")
+      })
+      try({
+            pred <- readRDS(opt$csv)
+            AddMetaData(scrna, pred["pruned.labels"] %>% as.data.frame() %>% dplyr::select(singler = pruned.labels)) -> scrna
+      })
 }
 
+
+
+
+
+###################### dimplot######################
 Idents(object = scrna) <- scrna@meta.data[[opt$idents]]
 
 n <- length(Idents(scrna) %>% unique())
