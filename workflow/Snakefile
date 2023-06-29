@@ -346,7 +346,6 @@ def sample_parameter(paramspace,files):
         outs = outs + [
                 expand([results_folder + "/" + s + "/{params}/summarized_markers-for-" + x + ".pdf" for x in identity_to_analysis for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/plot_marker-heatmap-" + x + ".pdf" for x in identity_to_analysis for s in files],params=list(paramspace.instance_patterns)),
-                singler_plots(paramspace,identity_to_analysis),
                 #expand([results_folder + "/" + s + "/{params}/singler/clusters-celltype_annotation.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 #expand([results_folder + "/" + s + "/{params}/singler/score_heatmap_top-celltype_annotation.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 #expand([results_folder + "/" + s + "/{params}/singler/annotation.umap.html" for s in files],params=list(paramspace.instance_patterns)),
@@ -364,7 +363,8 @@ def sample_parameter(paramspace,files):
                 expand([results_folder + "/" + s + "/{params}/plot_annotation_tsne.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/plot_annotation_umap.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/plot_annotation_pca.pdf" for s in files],params=list(paramspace.instance_patterns)),
-                metadata_pairwise_deseq_analysis(paramspace,metadata_column)
+                metadata_pairwise_deseq_analysis(paramspace,metadata_column),
+                singler_plots(paramspace,identity_to_analysis)
                 ]
     if option in ["clustree","clusteringTree","minimal","standard","advanced"]:
         outs += expand([results_folder + "/" + s + "/{params}/technicals/plot_clustree.pdf" for s in files],params=list(paramspace.instance_patterns))
