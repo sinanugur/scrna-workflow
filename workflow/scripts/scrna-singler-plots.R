@@ -29,6 +29,10 @@ option_list <- list(
             type = "character", default = "pred.rds",
             help = "Input prediction file", metavar = "character"
       ),
+      optparse::make_option(c("--xlsx"),
+            type = "character", default = "predictions.xlsx",
+            help = "Input prediction file", metavar = "character"
+      )
 )
 
 
@@ -75,3 +79,7 @@ n1 <- length(unique(scrna$seurat_clusters))
 n2 <- length(unique(pred$pruned.labels))
 
 ggsave(plot = p1, filename = opt$pheplot, width = 6 + (n1 * 0.10), height = 4 + (n2 * 0.10))
+
+tab %>%
+      as.data.frame() %>%
+      openxlsx::write.xlsx(file = opt$xlsx, row.names = F)

@@ -37,6 +37,7 @@ organism: "hsa" #alternatives https://www.genome.jp/kegg/catalog/org_list.html
 
 #SingleR reference
 singler_ref: "BlueprintEncodeData" # https://bioconductor.org/packages/release/data/experiment/vignettes/celldex/inst/doc/userguide.html#1_Overview
+singler_granulation: "label.main" #label.main or label.fine
 
 #celltypist
 celltypist_model: "Immune_All_Low.pkl" #refer to Celltypist for another model 

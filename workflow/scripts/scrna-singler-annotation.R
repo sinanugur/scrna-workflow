@@ -12,6 +12,10 @@ option_list <- list(
     optparse::make_option(c("--reference"),
         type = "character", default = "HumanPrimaryCellAtlasData",
         help = "SingleR reference", metavar = "character"
+    ),
+    optparse::make_option(c("--granulation"),
+        type = "character", default = "label.main",
+        help = "SingleR granulation level", metavar = "character"
     )
 )
 
@@ -38,6 +42,6 @@ DefaultAssay(scrna) <- "RNA"
 ref <- get(opt$reference)()
 
 smObjSCE <- as.SingleCellExperiment(scrna)
-pred <- SingleR(test = smObjSCE, ref = ref, labels = ref$label.fine)
+pred <- SingleR(test = smObjSCE, ref = ref, labels = ref[[opt$granulation]])
 
 saveRDS(pred, file = opt$output)

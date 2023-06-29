@@ -219,7 +219,7 @@ rule singler_annotation:
     output:
         prediction=analyses_folder + "/singler/" + f"{paramspace.wildcard_pattern}" + "/{sample}_annotation.rds"
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-singler-annotation.R --rds {input} --output {output.prediction} --reference {singler_ref}"
+        "{cellsnake_path}workflow/scripts/scrna-singler-annotation.R --rds {input} --output {output.prediction} --reference {singler_ref} --granulation {singler_granulation}"
 
 
 rule plot_singler_celltype: #this singler rule use idents information from the clustering step
@@ -229,10 +229,11 @@ rule plot_singler_celltype: #this singler rule use idents information from the c
     output:
         sheplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/singler/plot_score_heatmap-{i}.pdf",
         pheplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/singler/plot_clusters-{i}.pdf",
-        sheplottop=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/singler/plot_score_heatmap_top-{i}.pdf"
+        sheplottop=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/singler/plot_score_heatmap_top-{i}.pdf",
+        xlsx=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/singler/table_annotations_per-{i}.pdf"
 
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-singler-plots.R --rds {input.rds} --prediction {input.prediction} --sheplot {output.sheplot} --pheplot {output.pheplot} --sheplottop {output.sheplottop} --idents {wildcards.i}"
+        "{cellsnake_path}workflow/scripts/scrna-singler-plots.R --rds {input.rds} --prediction {input.prediction} --sheplot {output.sheplot} --pheplot {output.pheplot} --sheplottop {output.sheplottop} --xlsx {output.xlsx} --idents {wildcards.i}"
 
 
 rule celltypist_celltype:
