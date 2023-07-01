@@ -44,21 +44,21 @@ require(tidyverse)
 scrna <- readRDS(file = opt$rds)
 
 
-FeaturePlot(scrna, features = "nFeature_RNA", pt.size = 0.1)
+FeaturePlot(scrna, features = "nFeature_RNA", pt.size = 0.1, raster = FALSE)
 
 ggsave(opt$fplot, width = 7, height = 5)
 
 
 
-FeaturePlot(scrna, features = "nCount_RNA", pt.size = 0.1)
+FeaturePlot(scrna, features = "nCount_RNA", pt.size = 0.1, raster = FALSE)
 
 ggsave(opt$cplot, width = 7, height = 5)
 
 
-FeaturePlot(scrna, features = "percent.mt", pt.size = 0.1)
+FeaturePlot(scrna, features = "percent.mt", pt.size = 0.1, raster = FALSE)
 
 ggsave(opt$mtplot, width = 7, height = 5)
 
-FeaturePlot(scrna, features = "percent.rp", pt.size = 0.1)
+FeaturePlot(scrna, features = "percent.rp", pt.size = 0.1, raster = FALSE)
 
 ggsave(opt$rpplot, width = 7, height = 5)
