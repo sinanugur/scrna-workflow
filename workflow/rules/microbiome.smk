@@ -17,14 +17,16 @@ rule run_kraken:
         outdir=directory(analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/"),
         unmapped=temp(analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_unmapped.bam"),
         fq=temp(analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_unmapped.fq"),
-        kr=analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_output.kraken",
-        classified=analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_classified_sequences.txt"
+        kr=analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_output.kraken" if kraken_extra_files is True else temp(analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_output.kraken"),
+        classified=analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_classified_sequences.txt" if kraken_extra_files is True else temp(analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_classified_sequences.txt")
     threads: 10
-    shell:
-        """
-        rm -r {output.outdir}/counts
-        {cellsnake_path}workflow/mg2sc/src/scMeG-kraken.py --input {input.bam} --outdir {output.outdir} --DBpath {kraken_db_folder} --threads {threads} --minimum-hit-groups {min_hit_groups} --confidence {confidence} --prefix {wildcards.sample}
-        """
+    run:
+        shell("""
+            rm -r {output.outdir}/counts;
+            {cellsnake_path}workflow/mg2sc/src/scMeG-kraken.py --input {input.bam} --outdir {output.outdir} --DBpath {kraken_db_folder} --threads {threads} --minimum-hit-groups {min_hit_groups} --confidence {confidence} --prefix {wildcards.sample}
+            """)
+        #if kraken_extra_files is False:
+        #    shell("rm -r {output.kr} {output.classified}")
 
 
 rule collapse_kraken:
