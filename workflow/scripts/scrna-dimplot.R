@@ -28,7 +28,7 @@ option_list <- list(
       ),
       optparse::make_option(c("--percentage"),
             type = "double", default = 5,
-            help = "Cluster mimnimum percentage to plot", metavar = "double"
+            help = "Cluster minimum percentage to plot", metavar = "double"
       ),
       optparse::make_option(c("--labels"), action = "store_true", default = FALSE, help = "Print labels on the plot")
 )
@@ -118,7 +118,7 @@ w <- c(8 + (m * 0.09) * (floor(length(breaks) / 11) + 1))
 p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = opt$labels, repel = TRUE, raster = FALSE) &
       scale_color_manual(values = palette, breaks = breaks) &
       theme(legend.direction = "horizontal", legend.text = element_text(size = 7)) &
-      guides(colour = guide_legend(ncol = 2, override.aes = list(size = 7)))
+      guides(colour = guide_legend(ncol = 3, override.aes = list(size = 7)))
 
 (p1 / guide_area()) + plot_layout(heights = c(2.5, 1), widths = c(1, 0.6), guides = "collect") -> p1
 
