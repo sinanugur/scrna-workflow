@@ -221,6 +221,7 @@ def identity_dependent_metrics(paramspace,identity):
         plots +=  expand([results_folder + "/" + s + "/{params}/metrics/plot_cellcount-" + x + ".pdf"  for x in identity for s in files],params=list(paramspace.instance_patterns))
         plots +=  expand([results_folder + "/" + s + "/{params}/metrics/plot_cellcount_barplot-" + x + ".pdf"  for x in identity for s in files],params=list(paramspace.instance_patterns))
         plots +=  expand([results_folder + "/" + s + "/{params}/metrics/plot_cellcount_barplot-" + x + ".html"  for x in identity for s in files],params=list(paramspace.instance_patterns))
+        plots +=  expand([results_folder + "/" + s + "/{params}/metrics/table_metrics-" + x + ".xlsx"  for x in identity for s in files],params=list(paramspace.instance_patterns))
     return plots
 
 def cellchat_plot(paramspace,identity):

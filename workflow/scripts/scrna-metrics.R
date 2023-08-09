@@ -23,6 +23,10 @@ option_list <- list(
   optparse::make_option(c("--htmlplot"),
     type = "character", default = "htmlplot.pdf",
     help = "Cell cluster html plot", metavar = "character"
+  ),
+  optparse::make_option(c("--xlsx"),
+    type = "character", default = "metrics.xlsx",
+    help = "Metrics table output", metavar = "character"
   )
 )
 
@@ -59,14 +63,22 @@ ggsave(opt$ccplot, p1)
 scrna@meta.data %>%
   dplyr::group_by(orig.ident, get(opt$idents)) %>%
   dplyr::count() %>%
-  dplyr::select("Sample Name" = 1, "Cluster" = 2, "Total Cells" = 3) %>%
-  ggplot(aes(x = Cluster, y = `Total Cells`, fill = `Sample Name`)) +
+  dplyr::select("Sample Name" = 1, "Cluster" = 2, "Total Cells" = 3) -> df
+
+df %>% openxlsx::write.xlsx(opt$xlsx)
+
+write_tsv(df, file = opt$xlsx %>% str_replace(".xlsx", ".tsv"))
+
+df %>% ggplot(aes(x = Cluster, y = `Total Cells`, fill = `Sample Name`)) +
   geom_col() +
   ggthemes::theme_hc() +
-  theme(legend.title = element_blank()) -> p2
+  theme(legend.title = element_blank()) +
+  guides(colour = guide_legend(ncol = 3, override.aes = list(size = 7))) -> p2
 n <- length(unique(scrna@meta.data[opt$idents]))
 
-ggsave(opt$ccbarplot, p2, height = 5, width = 5 + (n * 0.12))
+id <- length(unique(scrna@meta.data$orig.ident))
+
+ggsave(opt$ccbarplot, p2, height = 5 + (id * 0.06), width = 5 + (n * 0.12))
 
 
 ggplotly(p2) -> p1_plotly
