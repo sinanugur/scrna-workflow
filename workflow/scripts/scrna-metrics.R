@@ -78,7 +78,7 @@ n <- length(unique(scrna@meta.data[opt$idents]))
 
 id <- length(unique(scrna@meta.data$orig.ident))
 
-ggsave(opt$ccbarplot, p2, height = 5 + (id * 0.06), width = 5 + (n * 0.12))
+ggsave(opt$ccbarplot, p2, height = 5.2 + (id * 0.09), width = 6 + (n * 0.2))
 
 
 ggplotly(p2) -> p1_plotly
