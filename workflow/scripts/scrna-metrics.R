@@ -58,6 +58,8 @@ scrna@meta.data %>%
   dplyr::select("Sample Name" = orig.ident, "Total Cells" = n, "Total Clusters" = total_clusters) %>%
   ggtexttable(rows = NULL, theme = ttheme("light")) -> p1
 
+id <- length(unique(scrna@meta.data$orig.ident))
+
 ggsave(opt$ccplot, p1, height = 7 + (id * 0.2))
 
 scrna@meta.data %>%
@@ -76,7 +78,7 @@ df %>% ggplot(aes(x = Cluster, y = `Total Cells`, fill = `Sample Name`)) +
   guides(colour = guide_legend(ncol = 3, override.aes = list(size = 7))) -> p2
 n <- length(unique(scrna@meta.data[opt$idents]))
 
-id <- length(unique(scrna@meta.data$orig.ident))
+
 
 ggsave(opt$ccbarplot, p2, height = 5.2 + (id * 0.09), width = 6 + (n * 0.23))
 
