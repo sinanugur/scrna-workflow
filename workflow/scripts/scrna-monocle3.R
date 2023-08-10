@@ -43,7 +43,16 @@ scrna <- readRDS(file = opt$rds)
 
 
 cds <- as.cell_data_set(scrna)
-cds <- cluster_cells(cds)
+
+tryCatch(
+    {
+        cds <- cluster_cells(cds)
+    },
+    error = function(e) {
+        cds <- cluster_cells(cds, cluster_method = "louvain")
+    }
+) -> cds
+
 
 p1 <- plot_cells(cds, color_cells_by = "singler", show_trajectory_graph = FALSE)
 p2 <- plot_cells(cds, color_cells_by = "partition", show_trajectory_graph = FALSE)
