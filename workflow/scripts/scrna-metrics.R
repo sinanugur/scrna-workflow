@@ -58,7 +58,7 @@ scrna@meta.data %>%
   dplyr::select("Sample Name" = orig.ident, "Total Cells" = n, "Total Clusters" = total_clusters) %>%
   ggtexttable(rows = NULL, theme = ttheme("light")) -> p1
 
-ggsave(opt$ccplot, p1)
+ggsave(opt$ccplot, p1, height = 7 + (id * 0.2))
 
 scrna@meta.data %>%
   dplyr::group_by(orig.ident, get(opt$idents)) %>%
