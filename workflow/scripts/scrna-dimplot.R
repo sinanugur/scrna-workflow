@@ -20,7 +20,7 @@ option_list <- list(
       ),
       optparse::make_option(c("--csv"),
             type = "character", default = NULL,
-            help = "CSV meta file", metavar = "character"
+            help = "CSV meta file or this can be a singler RDS file", metavar = "character"
       ),
       optparse::make_option(c("--idents"),
             type = "character", default = "seurat_clusters",
@@ -28,7 +28,7 @@ option_list <- list(
       ),
       optparse::make_option(c("--percentage"),
             type = "double", default = 5,
-            help = "Cluster mimnimum percentage to plot", metavar = "double"
+            help = "Cluster minimum percentage to plot", metavar = "double"
       ),
       optparse::make_option(c("--labels"), action = "store_true", default = FALSE, help = "Print labels on the plot")
 )
@@ -64,17 +64,28 @@ DefaultAssay(scrna) <- "RNA"
 
 
 if (!is.null(opt$csv)) {
-      metadata <- read.csv(
-            opt$csv,
-            row.names = 1
-      )
+      try({
+            metadata <- read.csv(
+                  opt$csv,
+                  row.names = 1
+            )
 
-      scrna@meta.data <- scrna@meta.data %>%
-            tibble::rownames_to_column("barcodes") %>%
-            dplyr::left_join(metadata %>% as.data.frame() %>% rownames_to_column("barcodes"), by = "barcodes") %>%
-            tibble::column_to_rownames("barcodes")
+            scrna@meta.data <- scrna@meta.data %>%
+                  tibble::rownames_to_column("barcodes") %>%
+                  dplyr::left_join(metadata %>% as.data.frame() %>% rownames_to_column("barcodes"), by = "barcodes") %>%
+                  tibble::column_to_rownames("barcodes")
+      })
+      try({
+            pred <- readRDS(opt$csv)
+            AddMetaData(scrna, pred["pruned.labels"] %>% as.data.frame() %>% dplyr::select(singler = pruned.labels)) -> scrna
+      })
 }
 
+
+
+
+
+###################### dimplot######################
 Idents(object = scrna) <- scrna@meta.data[[opt$idents]]
 
 n <- length(Idents(scrna) %>% unique())
@@ -93,7 +104,7 @@ breaks <- scrna@meta.data %>%
       as.character()
 
 
-p1 <- DimPlot(scrna, reduction = opt$reduction.type) & scale_color_manual(values = palette)
+p1 <- DimPlot(scrna, reduction = opt$reduction.type, raster = FALSE) & scale_color_manual(values = palette)
 
 ggplotly(p1) -> p1_plotly
 
@@ -104,10 +115,10 @@ m <- max(str_count(breaks))
 w <- c(8 + (m * 0.09) * (floor(length(breaks) / 11) + 1))
 
 
-p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = opt$labels, repel = TRUE) &
+p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = opt$labels, repel = TRUE, raster = FALSE) &
       scale_color_manual(values = palette, breaks = breaks) &
       theme(legend.direction = "horizontal", legend.text = element_text(size = 7)) &
-      guides(colour = guide_legend(ncol = 2, override.aes = list(size = 7)))
+      guides(colour = guide_legend(ncol = 3, override.aes = list(size = 7)))
 
 (p1 / guide_area()) + plot_layout(heights = c(2.5, 1), widths = c(1, 0.6), guides = "collect") -> p1
 

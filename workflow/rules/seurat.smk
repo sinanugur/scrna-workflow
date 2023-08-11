@@ -89,9 +89,10 @@ rule plot_some_metrics:
         ccplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/metrics/plot_cellcount-{i}.pdf",
         ccbarplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/metrics/plot_cellcount_barplot-{i}.pdf",
         html=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/metrics/plot_cellcount_barplot-{i}.html",
+        xlsx=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/metrics/table_metrics-{i}.xlsx",
         t=temp(directory(results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/metrics/plot_cellcount_barplot-{i}_files/"))
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-metrics.R --rds {input.rds} --ccplot {output.ccplot} --ccbarplot {output.ccbarplot} --html {output.html} --idents {wildcards.i}"
+        "{cellsnake_path}workflow/scripts/scrna-metrics.R --rds {input.rds} --ccplot {output.ccplot} --ccbarplot {output.ccbarplot} --html {output.html} --idents {wildcards.i} --xlsx {output.xlsx}"
 
 rule plot_some_technicals:
     input:
@@ -123,7 +124,8 @@ rule plot_dimplots:
 
 rule plot_singler_dimplots: #this is singler annotation that does not include cluster idents and only use singler annotation
     input:
-        analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
+        rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
+        prediction=analyses_folder + "/singler/" + f"{paramspace.wildcard_pattern}" + "/{sample}_annotation.rds"
     output:
         pl=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/plot_annotation_{reduction}.pdf",
         html=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/plot_annotation_{reduction}.html",
@@ -131,7 +133,7 @@ rule plot_singler_dimplots: #this is singler annotation that does not include cl
     params:
         paramaters=paramspace.instance,
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-dimplot.R --rds {input} --reduction.type {wildcards.reduction} --pdfplot {output.pl} --htmlplot {output.html} --idents singler --percentage {min_percentage_to_plot}  {show_labels}"
+        "{cellsnake_path}workflow/scripts/scrna-dimplot.R --rds {input.rds} --reduction.type {wildcards.reduction} --pdfplot {output.pl} --htmlplot {output.html} --csv {input.prediction} --idents singler --percentage {min_percentage_to_plot}  {show_labels}"
 
     
     
@@ -212,17 +214,27 @@ rule h5ad:
     shell:
         "{cellsnake_path}workflow/scripts/scrna-convert-to-h5ad.R --rds {input.rds} --output {output}"
 
+rule singler_annotation:
+    input:
+        analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
+    output:
+        prediction=analyses_folder + "/singler/" + f"{paramspace.wildcard_pattern}" + "/{sample}_annotation.rds"
+    shell:
+        "{cellsnake_path}workflow/scripts/scrna-singler-annotation.R --rds {input} --output {output.prediction} --reference {singler_ref} --granulation {singler_granulation}"
+
 
 rule plot_singler_celltype: #this singler rule use idents information from the clustering step
     input:
-        rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds"
+        rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
+        prediction=analyses_folder + "/singler/" + f"{paramspace.wildcard_pattern}" + "/{sample}_annotation.rds"
     output:
         sheplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/singler/plot_score_heatmap-{i}.pdf",
         pheplot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/singler/plot_clusters-{i}.pdf",
-        sheplottop=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/singler/plot_score_heatmap_top-{i}.pdf"
+        sheplottop=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/singler/plot_score_heatmap_top-{i}.pdf",
+        xlsx=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}" + "/singler/table_annotations_per-{i}.xlsx"
 
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-singler-plots.R --rds {input.rds} --reference {singler_ref} --sheplot {output.sheplot} --pheplot {output.pheplot} --sheplottop {output.sheplottop} --idents {wildcards.i}"
+        "{cellsnake_path}workflow/scripts/scrna-singler-plots.R --rds {input.rds} --prediction {input.prediction} --sheplot {output.sheplot} --pheplot {output.pheplot} --sheplottop {output.sheplottop} --xlsx {output.xlsx} --idents {wildcards.i}"
 
 
 rule celltypist_celltype:

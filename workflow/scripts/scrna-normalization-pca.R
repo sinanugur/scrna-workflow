@@ -40,7 +40,7 @@ option_list <- list(
   ),
   optparse::make_option(c("--reference"),
     type = "character", default = "HumanPrimaryCellAtlasData",
-    help = "SingleR reference", metavar = "character"
+    help = "SingleR reference for annotation", metavar = "character"
   )
 )
 
@@ -131,7 +131,6 @@ if (!opt$resolution %in% c("auto", "AUTO", "Auto")) {
 }
 
 
-print("here")
 
 if (opt$umap) {
   scrna <- RunUMAP(scrna, dims = 1:dimensionReduction)
@@ -194,6 +193,7 @@ DefaultAssay(scrna) <- "RNA"
 smObjSCE <- as.SingleCellExperiment(scrna)
 pred <- SingleR(test = smObjSCE, ref = ref, labels = ref$label.fine)
 AddMetaData(scrna, pred["pruned.labels"] %>% as.data.frame() %>% dplyr::select(singler = pruned.labels)) -> scrna
+attr(scrna, "SingleRref") <- opt$reference
 
 try({
   DefaultAssay(scrna) <- "integrated"

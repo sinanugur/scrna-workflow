@@ -25,9 +25,13 @@ option_list <- list(
             type = "character", default = NULL,
             help = "A meta data table", metavar = "character"
       ),
-      optparse::make_option(c("--reference"),
-            type = "character", default = "HumanPrimaryCellAtlasData",
-            help = "SingleR reference", metavar = "character"
+      optparse::make_option(c("--prediction"),
+            type = "character", default = "pred.rds",
+            help = "Input prediction file", metavar = "character"
+      ),
+      optparse::make_option(c("--xlsx"),
+            type = "character", default = "predictions.xlsx",
+            help = "Input prediction file", metavar = "character"
       )
 )
 
@@ -43,25 +47,18 @@ if (is.null(opt$rds)) {
 
 require(optparse)
 require(SingleR)
-require(SingleCellExperiment)
 # require(celldex)
-require(tidyverse)
 require(pheatmap)
 require(Seurat)
+require(tidyverse)
 
 scrna <- readRDS(file = opt$rds)
 DefaultAssay(scrna) <- "RNA"
 
-if (!is.null(opt$tsv)) {
-      markers <- read_tsv(opt$tsv, col_names = FALSE) %>% pull()
-}
 
 
 # celltype annotation with SingleR
-ref <- get(opt$reference)()
-
-smObjSCE <- as.SingleCellExperiment(scrna)
-pred <- SingleR(test = smObjSCE, ref = ref, labels = ref$label.fine)
+pred <- readRDS(opt$prediction)
 
 
 plotScoreHeatmap(pred) -> p1
@@ -72,14 +69,16 @@ plotScoreHeatmap(pred, show.labels = F, max.labels = 20) -> p1
 ggsave(plot = p1, filename = opt$sheplottop, width = 7, height = 4)
 
 
-tab <- table(Assigned = pred$pruned.labels, Cluster = smObjSCE[[opt$idents]])
+tab <- table(Assigned = pred$pruned.labels, Cluster = scrna@meta.data[[opt$idents]])
 
 
 pheatmap(log2(tab + 10), color = colorRampPalette(c("white", "blue"))(101)) -> p1
 
 
 
-n1 <- length(unique(smObjSCE$seurat_clusters))
+n1 <- length(unique(scrna$seurat_clusters))
 n2 <- length(unique(pred$pruned.labels))
 
 ggsave(plot = p1, filename = opt$pheplot, width = 6 + (n1 * 0.10), height = 4 + (n2 * 0.10))
+
+tab %>% openxlsx::write.xlsx(file = opt$xlsx, row.names = F)

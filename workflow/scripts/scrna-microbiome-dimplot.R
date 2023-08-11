@@ -65,16 +65,28 @@ DefaultAssay(scrna) <- "RNA"
 microbiome <- readRDS(file = opt$microbiome.rds)
 
 
+tryCatch(
+  {
+    AddMetaData(scrna, microbiome %>% rownames_to_column("barcodes") %>% gather(taxa, umi, -barcodes) %>% dplyr::group_by(taxa) %>% dplyr::mutate(sum = sum(umi, na.rm = T)) %>% ungroup() %>%
+      dplyr::mutate(taxa = ifelse(sum >= min(sort(unique(sum), decreasing = T)[1:11], na.rm = T), paste0(opt$taxa, "_", taxa), paste0(opt$taxa, "_", "others"))) %>%
+      dplyr::select(-sum) %>% dplyr::group_by(barcodes, taxa) %>% dplyr::summarise(sum = sum(umi, na.rm = T)) %>% ungroup() %>% spread(taxa, sum) %>% column_to_rownames("barcodes")) -> scrna
+  },
+  error = function(e) {
+    print(e)
+    print("No microbiome data")
 
-AddMetaData(scrna, microbiome %>% rownames_to_column("barcodes") %>% gather(taxa, umi, -barcodes) %>% dplyr::group_by(taxa) %>% dplyr::mutate(sum = sum(umi, na.rm = T)) %>% ungroup() %>%
-  dplyr::mutate(taxa = ifelse(sum >= min(sort(unique(sum), decreasing = T)[1:11], na.rm = T), paste0(opt$taxa, "_", taxa), paste0(opt$taxa, "_", "others"))) %>%
-  dplyr::select(-sum) %>% dplyr::group_by(barcodes, taxa) %>% dplyr::summarise(sum = sum(umi, na.rm = T)) %>% ungroup() %>% spread(taxa, sum) %>% column_to_rownames("barcodes")) -> scrna
 
+    scrna@meta.data <- scrna@meta.data %>% dplyr::mutate(!!paste0(opt$taxa, "_nodetected") := 0)
+    return(scrna)
+  }
+) -> scrna
 
+head(scrna)
 # p1 <- DimPlot(scrna, reduction = opt$reduction.type, label = TRUE) & theme_cellsnake_classic() & scale_color_manual(values = palette)
 
 scrna@meta.data %>%
   dplyr::mutate(`Total log2-Expression (Microbiome)` = log2(rowSums(across(starts_with(opt$taxa))) + 1)) %>%
+  dplyr::mutate(across(contains("Microbiome"), ~ replace(., .x == 0, NA))) %>%
   dplyr::mutate(across(contains("genus"), ~ replace(., .x == 0, NA))) -> scrna@meta.data
 
 
@@ -112,7 +124,7 @@ print(plotting_taxas)
 pdf(opt$dimplot, width = 7, height = 7)
 for (i in plotting_taxas) {
   try({
-    FeaturePlot(scrna, features = i, pt.size = 0.1, reduction = opt$reduction.type) &
+    FeaturePlot(scrna, features = i, pt.size = 0.1, reduction = opt$reduction.type, raster = FALSE) &
       scale_color_continuous(type = "viridis", na.value = "gray96") -> p1
 
     p1 <- (p1 / guide_area()) + plot_layout(heights = c(2.5, 1), widths = c(1, 0.6), guides = "collect")
@@ -122,10 +134,13 @@ for (i in plotting_taxas) {
 dev.off()
 
 
+pdf(opt$tplot, width = 7.5, height = 8)
+try({
+  FeaturePlot(scrna, features = "Total log2-Expression (Microbiome)", pt.size = 0.1, reduction = opt$reduction.type, raster = FALSE) &
+    scale_color_continuous(type = "viridis", na.value = "gray96") -> p2
 
-p2 <- FeaturePlot(scrna, features = "Total log2-Expression (Microbiome)", pt.size = 0.1, reduction = opt$reduction.type) &
-  scale_color_continuous(type = "viridis", na.value = "gray96")
-
-(p2 / guide_area()) + plot_layout(heights = c(2.5, 1), widths = c(1, 0.6), guides = "collect") -> p2
-
-ggsave(plot = p2, filename = opt$tplot, width = 7.5, height = 8)
+  p2 <- (p2 / guide_area()) + plot_layout(heights = c(2.5, 1), widths = c(1, 0.6), guides = "collect")
+  print(p2)
+})
+dev.off()
+# ggsave(plot = p2, filename = opt$tplot, width = 7.5, height = 8)

@@ -80,11 +80,11 @@ breaks <- scrna@meta.data %>%
       pull() %>%
       as.character()
 
-p1 <- DimPlot(scrna, reduction = "tsne", label = opt$labels, group.by = "majority_voting", repel = TRUE) &
+p1 <- DimPlot(scrna, reduction = "tsne", label = opt$labels, group.by = "majority_voting", repel = TRUE, raster = FALSE) &
       scale_color_manual(values = palette, breaks = breaks) & theme(plot.title = element_blank()) &
       theme(legend.direction = "horizontal", legend.text = element_text(size = 7)) &
       guides(colour = guide_legend(ncol = 2, override.aes = list(size = 7)))
-p2 <- DimPlot(scrna, reduction = "umap", label = opt$labels, group.by = "majority_voting", repel = TRUE) &
+p2 <- DimPlot(scrna, reduction = "umap", label = opt$labels, group.by = "majority_voting", repel = TRUE, raster = FALSE) &
       scale_color_manual(values = palette, breaks = breaks) & theme(plot.title = element_blank()) &
       theme(legend.direction = "horizontal", legend.text = element_text(size = 7)) &
       guides(colour = guide_legend(ncol = 2, override.aes = list(size = 7)))

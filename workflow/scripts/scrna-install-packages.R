@@ -65,7 +65,7 @@ if (any(installed_packages == FALSE)) {
 
   librarian::shelf("limma")
   librarian::shelf("ggthemes")
-  librarian::shelf("NMF")
+  # librarian::shelf("NMF")
   librarian::shelf("ComplexHeatmap")
   librarian::shelf("clusterProfiler")
 
@@ -86,7 +86,10 @@ if (any(installed_packages == FALSE)) {
       remotes::install_github("mojaveazure/seurat-disk", upgrade = "never")
     }
     if (!requireNamespace("CellChat", quietly = TRUE)) {
-      remotes::install_github("sqjin/CellChat")
+      remotes::install_version("NMF", "0.26")
+      remotes::install_version("circlize", "0.4.15")
+      remotes::install_version("igraph", "1.4.3")
+      remotes::install_github("sqjin/CellChat", upgrade = "never")
     }
     if (!requireNamespace("SeuratWrappers", quietly = TRUE)) {
       remotes::install_github("satijalab/seurat-wrappers", upgrade = "never")
