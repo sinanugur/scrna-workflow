@@ -24,6 +24,7 @@ if (!requireNamespace("SeuratWrappers", quietly = TRUE)) {
 }
 
 if (!requireNamespace("monocle3", quietly = TRUE)) {
+    remotes::install_version("igraph", "1.4.3")
     remotes::install_github("cole-trapnell-lab/monocle3", upgrade = "never")
 }
 

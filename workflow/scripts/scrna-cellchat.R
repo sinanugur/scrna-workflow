@@ -35,6 +35,9 @@ if (is.null(opt$rds)) {
 }
 
 if (!requireNamespace("CellChat", quietly = TRUE)) {
+  remotes::install_version("NMF", "0.26")
+  remotes::install_version("circlize", "0.4.15")
+  remotes::install_version("igraph", "1.4.3")
   remotes::install_github("sqjin/CellChat", upgrade = "never")
 }
 
