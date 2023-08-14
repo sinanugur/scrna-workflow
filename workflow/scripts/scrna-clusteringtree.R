@@ -10,8 +10,7 @@ option_list <- list(
     type = "integer", default = 2000,
     help = "Highly variable features [default= %default]", metavar = "integer"
   ),
-
-        optparse::make_option(c("--variable.selection.method"),
+  optparse::make_option(c("--variable.selection.method"),
     type = "character", default = "vst",
     help = "Find variable features selection method [default= %default]", metavar = "character"
   ),
@@ -23,7 +22,6 @@ option_list <- list(
     type = "character", default = "LogNormalize",
     help = "Normalization method[default= %default]", metavar = "character"
   ),
-
   optparse::make_option(c("--integration"), action = "store_true", default = FALSE),
   optparse::make_option(c("--clplot"),
     type = "character", default = "clustree.pdf",
@@ -55,70 +53,73 @@ require(tidyverse)
 require(optparse)
 require(Seurat)
 require(clustree)
-try({source("workflow/scripts/scrna-functions.R")},silent=TRUE)
-try({source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE),"/scrna/workflow/scripts/scrna-functions.R"))},silent=TRUE)
+try(
+  {
+    source("workflow/scripts/scrna-functions.R")
+  },
+  silent = TRUE
+)
+try(
+  {
+    source(paste0(system("python -c 'import os; import cellsnake; print(os.path.dirname(cellsnake.__file__))'", intern = TRUE), "/scrna/workflow/scripts/scrna-functions.R"))
+  },
+  silent = TRUE
+)
 
 scrna <- readRDS(file = opt$rds)
 
-if(isFALSE(opt$integration)) {
-
-
-scrna <- NormalizeData(scrna, normalization.method = opt$normalization.method, scale.factor = opt$scale.factor)
-scrna <- FindVariableFeatures(scrna, selection.method = opt$variable.selection.method, nfeatures = opt$nfeatures)
+if (isFALSE(opt$integration)) {
+  scrna <- NormalizeData(scrna, normalization.method = opt$normalization.method, scale.factor = opt$scale.factor)
+  scrna <- FindVariableFeatures(scrna, selection.method = opt$variable.selection.method, nfeatures = opt$nfeatures)
 } else {
-
-try({DefaultAssay(scrna) <- "integrated"}) #for now only for Seurat, Harmony will come
-
+  try({
+    DefaultAssay(scrna) <- "integrated"
+  }) # for now only for Seurat, Harmony will come
 }
 
 
-#all.genes <- rownames(scrna) memory requirements can be large if using all genes
-not.all.genes <- VariableFeatures(scrna) #only variable features
+# all.genes <- rownames(scrna) memory requirements can be large if using all genes
+not.all.genes <- VariableFeatures(scrna) # only variable features
 
 scrna <- ScaleData(scrna, features = not.all.genes)
 scrna <- RunPCA(scrna, features = not.all.genes)
 
 
-if(isFALSE(opt$integration)) {
-# output.dir=paste0("results/",opt$sampleid,"/technicals/")
-# dir.create(output.dir,recursive = T)
+if (isFALSE(opt$integration)) {
+  # output.dir=paste0("results/",opt$sampleid,"/technicals/")
+  # dir.create(output.dir,recursive = T)
 
-# Identify the 10 most highly variable genes
-top10 <- head(not.all.genes, 10)
+  # Identify the 10 most highly variable genes
+  top10 <- head(not.all.genes, 10)
 
-# plot variable features with and without labels
-plot1 <- VariableFeaturePlot(scrna)
-plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
-
-
-
-# ggsave(paste0(output.dir,"highly-variable-features.pdf"), plot2 ,width = 8,height = 9)
-ggsave(opt$hvfplot, plot2, width = 8, height = 9)
-
-DimHeatmap(scrna, dims = 1:15, cells = 500, balanced = TRUE, fast = FALSE)
-# ggsave(paste0(output.dir,"DimHeatMap_plot.pdf") ,width = 8,height = 15)
-ggsave(opt$heplot, width = 8, height = 15)
+  # plot variable features with and without labels
+  plot1 <- VariableFeaturePlot(scrna)
+  plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
 
 
-scrna <- JackStraw(scrna, num.replicate = 20, dims = 50,verbose=FALSE)
-scrna <- ScoreJackStraw(scrna, dims = 1:50)
-plot1 <- JackStrawPlot(scrna, dims = 1:50)
-plot2 <- ElbowPlot(scrna, ndims = 50)
-# ggsave(paste0(output.dir,"JackandElbow_plot.pdf"), plot1 + plot2,width = 13,height = 5)
-ggsave(opt$jeplot, plot1 + plot2, width = 13, height = 5)
 
+  # ggsave(paste0(output.dir,"highly-variable-features.pdf"), plot2 ,width = 8,height = 9)
+  ggsave(opt$hvfplot, plot2, width = 8, height = 9)
+
+  DimHeatmap(scrna, dims = 1:15, cells = 500, balanced = TRUE, fast = FALSE)
+  # ggsave(paste0(output.dir,"DimHeatMap_plot.pdf") ,width = 8,height = 15)
+  ggsave(opt$heplot, width = 8, height = 15)
+
+
+  scrna <- JackStraw(scrna, num.replicate = 20, dims = 50, verbose = FALSE)
+  scrna <- ScoreJackStraw(scrna, dims = 1:50)
+  plot1 <- JackStrawPlot(scrna, dims = 1:50)
+  plot2 <- ElbowPlot(scrna, ndims = 50)
+  # ggsave(paste0(output.dir,"JackandElbow_plot.pdf"), plot1 + plot2,width = 13,height = 5)
+  ggsave(opt$jeplot, plot1 + plot2, width = 13, height = 5)
 }
 
-if(isFALSE(opt$integration)) {
-
- resolution=seq(0.1, 2.5, 0.1)
-
+if (isFALSE(opt$integration)) {
+  resolution <- seq(0.1, 2.5, 0.1)
 } else {
+  resolution <- seq(0.1, 1.5, 0.1)
+}
 
-resolution=seq(0.1, 1.5, 0.1)
-
-  }
-  
 
 
 dimensionReduction <- function_pca_dimensions(scrna)
