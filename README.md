@@ -21,19 +21,18 @@ git clone https://github.com/sinanugur/scrna-workflow.git
 cd scrna-workflow
 mamba env create --name scrna-workflow --file environment.yml
 conda activate scrna-workflow
-
-mamba env create --name cellsnake_testing --file environment.yml
 ```
 
 For Apple Silicon (i.e. M1, M2 etc.) architecture, you have to put CONDA_SUBDIR=osx-64 before creating the environment.
 ```
 CONDA_SUBDIR=osx-64 mamba env create --name scrna-workflow --file environment.yml
+conda activate scrna-workflow
 ```
 
 
-After the environent created and activated, to install required R packages:
+After the environment created and activated successfully, to install all the required R packages, you should run the installation script, this may take some time:
 ```
-./install_r_packages.sh
+bash install_r_packages.sh
 ```
 
 
@@ -51,21 +50,16 @@ Then we can run integration.
 snakemake -j 10 --config option=integration
 ```
 
-Now it is time to work on the integrated sample. We can run full advanced run on the integrated object which is always generates at the same location.
+Now it is time to work on the integrated sample. We can run standard workflow on the integrated object which is always generates at the same location.
 ```shell
-snakemake -j 10 --config  datafolder=analyses_integrated/seurat/integrated.rds resolution=0.3 option=advanced is_integrated_sample=True --rerun-incomplete
+snakemake -j 10 --config  datafolder=analyses_integrated/seurat/integrated.rds option=standard is_integrated_sample=True --rerun-incomplete
+```
+
+You may change some of the options or you may provide a config file as well, for example.
+```shell
+snakemake -j 10 --config  datafolder=analyses_integrated/seurat/integrated.rds option=standard is_integrated_sample=True --configfile=config.yaml --rerun-incomplete
 ```
 
 
 
 
-
-Do a dry run:
-```
-snakemake -j 5 -n
-```
-
-Show command line arguments and dry run:
-```
-snakemake -j 5 -n -p
-```
