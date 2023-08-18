@@ -16,7 +16,7 @@ rule run_kraken:
         hierarchy=analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/hierarchy.txt",
         outdir=directory(analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/"),
         unmapped=temp(analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_unmapped.bam"),
-        fq=temp(analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_unmapped.fq"),
+        fq=temp(analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_unmapped.fq") if kraken_extra_files is False else analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_unmapped.fq",
         kr=analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_output.kraken" if kraken_extra_files is True else temp(analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_output.kraken"),
         classified=analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_classified_sequences.txt" if kraken_extra_files is True else temp(analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_classified_sequences.txt")
     threads: 10
