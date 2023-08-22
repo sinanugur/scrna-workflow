@@ -15,7 +15,7 @@ rule run_kraken:
         matrix=analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/matrix.mtx",
         hierarchy=analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/" + f"{paramspace.wildcard_pattern}" + "/{sample}/counts/hierarchy.txt",
         outdir=directory(analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/"),
-        unmapped=temp(analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_unmapped.bam"),
+        unmapped=temp(analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_unmapped.bam") if kraken_extra_files is False else analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_unmapped.bam",
         fq=temp(analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_unmapped.fq") if kraken_extra_files is False else analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/" + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_unmapped.fq",
         kr=analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_output.kraken" if kraken_extra_files is True else temp(analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_output.kraken"),
         classified=analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_classified_sequences.txt" if kraken_extra_files is True else temp(analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_classified_sequences.txt")
@@ -23,7 +23,7 @@ rule run_kraken:
     run:
         shell("""
             rm -r {output.outdir}/counts;
-            {cellsnake_path}workflow/mg2sc/src/scMeG-kraken.py --input {input.bam} --outdir {output.outdir} --DBpath {kraken_db_folder} --threads {threads} --minimum-hit-groups {min_hit_groups} --confidence {confidence} --prefix {wildcards.sample}
+            {cellsnake_path}workflow/mg2sc/src/scMeG-kraken.py --input {input.bam} --outdir {output.outdir} --DBpath {kraken_db_folder} --threads {threads} --minimum-hit-groups {min_hit_groups} --confidence {confidence} --complexity {complexity} --prefix {wildcards.sample}
             """)
         #if kraken_extra_files is False:
         #    shell("rm -r {output.kr} {output.classified}")

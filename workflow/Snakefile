@@ -167,6 +167,8 @@ confidence=config.get("confidence",0.01)
 min_hit_groups=config.get("min_hit_groups",3)
 kraken_extra_files=True if config.get("kraken_extra_files",False) in [True,"TRUE","True","T"] else False
 
+complexity=config.get("complexity",0)
+
 reduction=config.get("reduction","cca")
 dims=config.get("dims",30)
 
