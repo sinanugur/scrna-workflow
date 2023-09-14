@@ -8,6 +8,9 @@ def kraken2_input_function(wildcards):
         return(datafolder + "/" + wildcards.sample + "/outs/possorted_genome_bam.bam")
 
 
+
+
+
 rule run_kraken:
     input:
         bam=kraken2_input_function
@@ -20,10 +23,12 @@ rule run_kraken:
         kr=analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_output.kraken" if kraken_extra_files is True else temp(analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_output.kraken"),
         classified=analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_classified_sequences.txt" if kraken_extra_files is True else temp(analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_classified_sequences.txt")
     threads: 10
+    params:
+        bowtie= "--bowtie " + bowtie_database_prefix  if bowtie_database_prefix is not None else ""
     run:
         shell("""
             rm -r {output.outdir}/counts;
-            {cellsnake_path}workflow/mg2sc/src/scMeG-kraken.py --input {input.bam} --outdir {output.outdir} --DBpath {kraken_db_folder} --threads {threads} --minimum-hit-groups {min_hit_groups} --confidence {confidence} --complexity {complexity} --prefix {wildcards.sample}
+            {cellsnake_path}workflow/mg2sc/src/scMeG-kraken.py --input {input.bam} {params.bowtie} --outdir {output.outdir} --DBpath {kraken_db_folder} --threads {threads} --minimum-hit-groups {min_hit_groups} --confidence {confidence} --complexity {complexity} --prefix {wildcards.sample}
             """)
         #if kraken_extra_files is False:
         #    shell("rm -r {output.kr} {output.classified}")

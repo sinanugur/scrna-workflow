@@ -166,6 +166,7 @@ microbiome_min_features=config.get("microbiome_min_features",3)
 confidence=config.get("confidence",0.01)
 min_hit_groups=config.get("min_hit_groups",3)
 kraken_extra_files=True if config.get("kraken_extra_files",False) in [True,"TRUE","True","T"] else False
+bowtie_database_prefix=config.get("bowtie_database_prefix",None)
 
 complexity=config.get("complexity",0)
 
