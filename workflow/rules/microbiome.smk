@@ -29,6 +29,11 @@ rule run_kraken:
         shell("""
             rm -r {output.outdir}/counts;
             {cellsnake_path}workflow/mg2sc/src/scMeG-kraken.py --input {input.bam} {params.bowtie} --outdir {output.outdir} --DBpath {kraken_db_folder} --threads {threads} --minimum-hit-groups {min_hit_groups} --confidence {confidence} --complexity {complexity} --prefix {wildcards.sample}
+            rm -f {output.unmapped}.tmp
+            rm -f {output.fq}.tmp
+            rm -f {output.fq}.id
+            rm -f {output.fq}.exclude
+            rm -f {output.kr}.tmp
             """)
         #if kraken_extra_files is False:
         #    shell("rm -r {output.kr} {output.classified}")
