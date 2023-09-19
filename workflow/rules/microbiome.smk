@@ -24,7 +24,7 @@ rule run_kraken:
         classified=analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_classified_sequences.txt" if kraken_extra_files is True else temp(analyses_folder + "/kraken/" + "{confidence}_{min_hit_groups}/"  + f"{paramspace.wildcard_pattern}" + "/{sample}/{sample}" + "_classified_sequences.txt")
     threads: 10
     params:
-        bowtie= "--bowtie " + bowtie_database_prefix  if bowtie_database_prefix is not None else ""
+        bowtie= "--bowtie " + bowtie_database_prefix  if bowtie_database_prefix is not None else "",
         predb= "--predb " + prekraken_db_folder  if prekraken_db_folder is not None else ""
     run:
         shell("""
