@@ -25,10 +25,11 @@ rule run_kraken:
     threads: 10
     params:
         bowtie= "--bowtie " + bowtie_database_prefix  if bowtie_database_prefix is not None else ""
+        predb= "--predb " + prekraken_db_folder  if prekraken_db_folder is not None else ""
     run:
         shell("""
             rm -r {output.outdir}/counts;
-            {cellsnake_path}workflow/mg2sc/src/scMeG-kraken.py --input {input.bam} {params.bowtie} --outdir {output.outdir} --DBpath {kraken_db_folder} --threads {threads} --minimum-hit-groups {min_hit_groups} --confidence {confidence} --complexity {complexity} --prefix {wildcards.sample}
+            {cellsnake_path}workflow/mg2sc/src/scMeG-kraken.py --input {input.bam} {params.bowtie} {params.predb} --outdir {output.outdir} --DBpath {kraken_db_folder} --threads {threads} --minimum-hit-groups {min_hit_groups} --confidence {confidence} --complexity {complexity} --prefix {wildcards.sample}
             rm -f {output.unmapped}.tmp
             rm -f {output.fq}.tmp
             rm -f {output.fq}.id
