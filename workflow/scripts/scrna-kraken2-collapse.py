@@ -122,7 +122,10 @@ hierarchy=sys.argv[2] #hierarchy file
 taxa=sys.argv[3] #collapse to what, for example genus
 output=sys.argv[4] #output h5ad file
 
-
-adata=collapse_taxonomy(adata,hierarchy,taxa)
+try:
+	adata=collapse_taxonomy(adata,hierarchy,taxa)
+except:
+	print("Error in collapsing taxonomy")
+	print("This might be due to low number of reads in the sample")
 
 adata.write_h5ad(output)
