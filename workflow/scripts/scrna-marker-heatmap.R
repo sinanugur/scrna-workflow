@@ -67,7 +67,7 @@ DoHeatmap(object = scrna, features = not.all.genes, label = F) & theme(axis.text
 ggsave(opt$output.plot, p1, height = 4 + (n * 0.2), width = 5 + (n * 0.05), useDingbats = TRUE)
 
 
-AverageExpression(scrna, group.by = opt$idents)[["RNA"]] -> df
+AverageExpression(scrna, group.by = opt$idents)[["RNA"]] %>% as.data.frame() -> df
 
 
 openxlsx::write.xlsx(df, file = opt$output.average)
