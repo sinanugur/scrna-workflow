@@ -78,7 +78,7 @@ try:
         elif (file_extension.suffix).lower() in [".rds"] and option in ["subset"]:
             files = datafolder
     
-    files=if type(file) is list set(files) else files
+    files=set(files) if isinstance(file,list) is list else files
     print(files)
 
 except:
