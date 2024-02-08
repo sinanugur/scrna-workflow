@@ -78,11 +78,11 @@ try:
         elif (file_extension.suffix).lower() in [".rds"] and option in ["subset"]:
             files = datafolder
     
-    files=set(files) if isinstance(file,list) is list else files
-    print(files)
+    files=set(files) if isinstance(files,list) else files
+    print("Samples detected : " + " ".join(files))
 
 except:
-    print("No samples detected")
+    print("No samples detected or something went wrong...")
 
 
 
