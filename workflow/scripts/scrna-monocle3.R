@@ -79,7 +79,16 @@ for (i in partitions) {
 
     cds2 <- as.cell_data_set(integrated.sub)
     if (i != "1") {
-        cds2 <- cluster_cells(cds2)
+        # cds2 <- cluster_cells(cds2)
+
+        tryCatch(
+            {
+                cds2 <- cluster_cells(cds2)
+            },
+            error = function(e) {
+                cds2 <- cluster_cells(cds2, cluster_method = "louvain")
+            }
+        ) -> cds2
     }
     cds2 <- learn_graph(cds2)
     p1 <- plot_cells(cds2, label_groups_by_cluster = FALSE, label_leaves = FALSE, label_branch_points = FALSE)

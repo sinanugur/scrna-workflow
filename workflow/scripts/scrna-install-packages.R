@@ -80,7 +80,7 @@ if (any(installed_packages == FALSE)) {
       remotes::install_github("sinanugur/MultiKParallel", upgrade = "never")
     }
     if (!requireNamespace("DoubletFinder", quietly = TRUE)) {
-      remotes::install_github("https://github.com/chris-mcginnis-ucsf/DoubletFinder/commit/1b1d4e2d7f893a3552d9f8f791ab868ee4c782e6", upgrade = "never")
+      remotes::install_github("chris-mcginnis-ucsf/DoubletFinder@1b1d4e2d7f893a3552d9f8f791ab868ee4c782e6", upgrade = "never")
     }
     if (!requireNamespace("SeuratDisk", quietly = TRUE)) {
       remotes::install_github("mojaveazure/seurat-disk", upgrade = "never")
