@@ -23,7 +23,7 @@ dependencies:
  - r-ggraph==2.1.0
  - r-seurat==4.3.0
  - r-clustree==0.5.0
-  - r-viridis
+ - r-viridis
  - r-librarian
  - r-patchwork
  - r-optparse
