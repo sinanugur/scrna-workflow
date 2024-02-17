@@ -74,6 +74,7 @@ dependencies:
  - scanpy>=1.9.1
  - cython
  - r-matrixstats==1.0.0
+ - r-matrix==1.6_1.1
  #- r-ggthemes==4.2.4
  - r-ggthemes
  #- r-gplots==3.1.3
