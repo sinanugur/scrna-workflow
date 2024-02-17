@@ -86,10 +86,10 @@ if (any(installed_packages == FALSE)) {
       remotes::install_github("mojaveazure/seurat-disk", upgrade = "never")
     }
     if (!requireNamespace("CellChat", quietly = TRUE)) {
-      devtools::install_github("immunogenomics/presto")
-      remotes::install_version("NMF", "0.26")
-      remotes::install_version("circlize", "0.4.15")
-      # remotes::install_version("igraph", "1.4.3")
+      remotes::install_github("immunogenomics/presto", upgrade = "never")
+      remotes::install_version("NMF", "0.26", upgrade = "never")
+      remotes::install_version("circlize", "0.4.15", upgrade = "never")
+      remotes::install_version("igraph", "2.0.1.1", upgrade = "never")
       remotes::install_github("jinworks/CellChat", upgrade = "never")
     }
     if (!requireNamespace("SeuratWrappers", quietly = TRUE)) {
