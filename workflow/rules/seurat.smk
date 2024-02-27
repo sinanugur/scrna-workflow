@@ -173,9 +173,10 @@ rule plot_summarized_markers_heatmap:
         rds=analyses_folder + "/processed/" + f"{paramspace.wildcard_pattern}" + "/{sample}.rds",
         excel=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/table_positive-markers-{i}.xlsx"
     output:
-        results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/plot_marker-heatmap-{i}.pdf"
+        plot=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/plot_marker-heatmap-{i}.pdf",
+        excel=results_folder + "/{sample}/" + f"{paramspace.wildcard_pattern}"  + "/table_average-expression-{i}.xlsx"
     shell:
-        "{cellsnake_path}workflow/scripts/scrna-marker-heatmap.R --rds {input.rds} --xlsx {input.excel} --output.plot {output} --idents {wildcards.i}" 
+        "{cellsnake_path}workflow/scripts/scrna-marker-heatmap.R --rds {input.rds} --xlsx {input.excel} --output.plot {output.plot} --output.average {output.excel} --idents {wildcards.i}" 
 
 
 rule plot_top_positive_markers_separately:

@@ -80,19 +80,20 @@ if (any(installed_packages == FALSE)) {
       remotes::install_github("sinanugur/MultiKParallel", upgrade = "never")
     }
     if (!requireNamespace("DoubletFinder", quietly = TRUE)) {
-      remotes::install_github("chris-mcginnis-ucsf/DoubletFinder", upgrade = "never")
+      remotes::install_github("chris-mcginnis-ucsf/DoubletFinder@1b1d4e2d7f893a3552d9f8f791ab868ee4c782e6", upgrade = "never")
     }
     if (!requireNamespace("SeuratDisk", quietly = TRUE)) {
       remotes::install_github("mojaveazure/seurat-disk", upgrade = "never")
     }
     if (!requireNamespace("CellChat", quietly = TRUE)) {
-      remotes::install_version("NMF", "0.26")
-      remotes::install_version("circlize", "0.4.15")
-      remotes::install_version("igraph", "1.4.3")
-      remotes::install_github("sqjin/CellChat", upgrade = "never")
+      remotes::install_github("immunogenomics/presto", upgrade = "never")
+      remotes::install_version("NMF", "0.26", upgrade = "never")
+      remotes::install_version("circlize", "0.4.15", upgrade = "never")
+      remotes::install_version("igraph", "2.0.1.1", upgrade = "never")
+      remotes::install_github("jinworks/CellChat", upgrade = "never")
     }
     if (!requireNamespace("SeuratWrappers", quietly = TRUE)) {
-      remotes::install_github("satijalab/seurat-wrappers", upgrade = "never")
+      remotes::install_github("satijalab/seurat-wrappers@d28512f804d5fe05e6d68900ca9221020d52cf1d", upgrade = "never")
     }
     if (!requireNamespace("monocle3", quietly = TRUE)) {
       remotes::install_github("cole-trapnell-lab/monocle3", upgrade = "never")

@@ -78,11 +78,11 @@ try:
         elif (file_extension.suffix).lower() in [".rds"] and option in ["subset"]:
             files = datafolder
     
-    files=set(files)
-    print(files)
+    files=set(files) if isinstance(files,list) else files
+    print("Samples detected : " + " ".join(files))
 
 except:
-    print("No samples detected")
+    print("No samples detected or something went wrong...")
 
 
 
@@ -160,12 +160,16 @@ species=config.get("species","human") #cellchat species, only mouse or human
 
 #Kraken DB
 kraken_db_folder=config.get("kraken_db_folder",None)
+prekraken_db_folder=config.get("prekraken_db_folder",None)
 taxa=config.get("taxa","genus")
 microbiome_min_cells=config.get("microbiome_min_cells",1)
 microbiome_min_features=config.get("microbiome_min_features",3)
 confidence=config.get("confidence",0.01)
 min_hit_groups=config.get("min_hit_groups",3)
 kraken_extra_files=True if config.get("kraken_extra_files",False) in [True,"TRUE","True","T"] else False
+bowtie_database_prefix=config.get("bowtie_database_prefix",None)
+
+complexity=config.get("complexity",0)
 
 reduction=config.get("reduction","cca")
 dims=config.get("dims",30)
@@ -348,6 +352,7 @@ def sample_parameter(paramspace,files):
         outs = outs + [
                 expand([results_folder + "/" + s + "/{params}/summarized_markers-for-" + x + ".pdf" for x in identity_to_analysis for s in files],params=list(paramspace.instance_patterns)),
                 expand([results_folder + "/" + s + "/{params}/plot_marker-heatmap-" + x + ".pdf" for x in identity_to_analysis for s in files],params=list(paramspace.instance_patterns)),
+                expand([results_folder + "/" + s + "/{params}/table_average-expression-" + x + ".xlsx" for x in identity_to_analysis for s in files],params=list(paramspace.instance_patterns)),
                 #expand([results_folder + "/" + s + "/{params}/singler/clusters-celltype_annotation.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 #expand([results_folder + "/" + s + "/{params}/singler/score_heatmap_top-celltype_annotation.pdf" for s in files],params=list(paramspace.instance_patterns)),
                 #expand([results_folder + "/" + s + "/{params}/singler/annotation.umap.html" for s in files],params=list(paramspace.instance_patterns)),

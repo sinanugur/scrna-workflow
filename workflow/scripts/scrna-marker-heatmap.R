@@ -18,6 +18,10 @@ option_list <- list(
     optparse::make_option(c("--idents"),
         type = "character", default = "seurat_clusters",
         help = "Meta data column name for marker analysis", metavar = "character"
+    ),
+    optparse::make_option(c("--output.average"),
+        type = "character", default = "output.xlsx",
+        help = "Output average expression table", metavar = "character"
     )
 )
 
@@ -61,3 +65,11 @@ scrna <- ScaleData(scrna, features = not.all.genes)
 DoHeatmap(object = scrna, features = not.all.genes, label = F) & theme(axis.text.y = element_text(size = 5)) & scale_fill_continuous(type = "viridis") -> p1
 
 ggsave(opt$output.plot, p1, height = 4 + (n * 0.2), width = 5 + (n * 0.05), useDingbats = TRUE)
+
+
+AverageExpression(scrna, group.by = opt$idents)[["RNA"]] %>%
+    as.data.frame() %>%
+    rownames_to_column("id") -> df
+
+
+openxlsx::write.xlsx(df, file = opt$output.average)

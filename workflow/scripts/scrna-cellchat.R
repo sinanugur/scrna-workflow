@@ -82,7 +82,7 @@ cellchat <- createCellChat(object = scrna, group.by = "identity", datatype = "RN
 
 cellchat@DB <- CellChatDB
 cellchat <- subsetData(cellchat) # This step is necessary even if using the whole database
-cellchat <- identifyOverExpressedGenes(cellchat)
+
 
 # Part II: Inference of cell-cell communication network
 
@@ -90,8 +90,6 @@ cellchat <- identifyOverExpressedGenes(cellchat)
 # cellchat@data
 # cellchat@data.signaling
 # unique(cellchat@idents)
-
-
 
 
 cellchat <- identifyOverExpressedGenes(cellchat)
